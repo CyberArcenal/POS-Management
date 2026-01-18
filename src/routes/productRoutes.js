@@ -1,0 +1,1 @@
+// productRoutes.js placeholder

@@ -1,0 +1,1 @@
+// UserTable.tsx placeholder

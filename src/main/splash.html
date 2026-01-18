@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading - POS Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0d2538 0%, #1a3a53 100%); /* POS Professional Blue */
+            color: #ffffff;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
+        }
+
+        /* Background pattern - POS themed */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.1) 50%, transparent 51%);
+            background-size: 50px 50px, 100px 100px;
+            z-index: 1;
+        }
+
+        /* Main container - fixed size */
+        .main-container {
+            max-width: 480px;
+            width: 90%;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Logo section */
+        .logo-container {
+            text-align: center;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); /* POS Blue gradient */
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-icon i {
+            font-size: 36px;
+            font-style: normal;
+            font-weight: 800;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-subtext {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(248, 250, 252, 0.8);
+        }
+
+        /* Loading bar */
+        .loading-container {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8); /* POS Blue */
+            border-radius: 3px;
+            animation: loading 2s ease-in-out infinite;
+        }
+
+        .loading-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(248, 250, 252, 0.9);
+            height: 20px;
+            margin-top: 8px;
+        }
+
+        /* Status messages - POS themed */
+        .status-container {
+            width: 100%;
+            background: rgba(13, 37, 56, 0.8); /* Dark blue background */
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.3); /* Primary blue border */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        .status-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .status-icon.pending {
+            background: rgba(245, 158, 11, 0.2); /* warning color */
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-icon.success {
+            background: rgba(16, 185, 129, 0.2); /* success color */
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-icon.error {
+            background: rgba(239, 68, 68, 0.2); /* danger color */
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Features - POS themed badges */
+        .features-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .feature-badge {
+            background: rgba(59, 130, 246, 0.15); /* primary blue with transparency */
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #dbeafe; /* light blue */
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .feature-badge:hover {
+            background: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Version info - fixed at bottom */
+        .version-info {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(203, 213, 225, 0.5); /* text-secondary with transparency */
+            width: 100%;
+            z-index: 2;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Migration status styles */
+        .migration-status {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 12px;
+            color: #10b981;
+            display: none;
+        }
+
+        .migration-count {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 600px) {
+            .main-container {
+                gap: 20px;
+                transform: scale(0.9);
+            }
+            
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .logo-icon i {
+                font-size: 28px;
+            }
+            
+            .logo-text {
+                font-size: 24px;
+            }
+            
+            .logo-subtext {
+                font-size: 12px;
+            }
+            
+            .features-container {
+                display: none; /* Hide features on very small screens */
+            }
+        }
+
+        @media (max-height: 500px) {
+            .main-container {
+                transform: scale(0.8);
+            }
+            
+            .status-container {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .status-item {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background pattern -->
+    <div class="bg-pattern"></div>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i>POS</i>
+            </div>
+            <div class="logo-text">POS Management System</div>
+            <div class="logo-subtext">Point of Sale Software</div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-container">
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="loading-text" id="loading-text">Initializing POS System...</div>
+            <!-- Migration status will be shown here -->
+            <div class="migration-status" id="migration-status">
+                <span id="migration-text">Updating database...</span>
+                <span class="migration-count" id="migration-count"></span>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-container">
+            <div class="status-item" id="status-db">
+                <div class="status-icon pending">⟳</div>
+                <span>Database Connection</span>
+            </div>
+            <div class="status-item" id="status-migrations">
+                <div class="status-icon pending">⟳</div>
+                <span>Sales Modules</span>
+            </div>
+            <div class="status-item" id="status-services">
+                <div class="status-icon pending">⟳</div>
+                <span>Inventory Services</span>
+            </div>
+            <div class="status-item" id="status-ui">
+                <div class="status-icon pending">⟳</div>
+                <span>POS Interface</span>
+            </div>
+        </div>
+
+        <!-- Features - POS specific -->
+        <div class="features-container">
+            <div class="feature-badge">Sales Processing</div>
+            <div class="feature-badge">Inventory Management</div>
+            <div class="feature-badge">Customer Database</div>
+            <div class="feature-badge">Barcode Scanning</div>
+            <div class="feature-badge">Receipt Printing</div>
+            <div class="feature-badge">Sales Reports</div>
+        </div>
+    </div>
+
+    <!-- Version info -->
+    <div class="version-info">
+        <div>POS Management System v1.0.0 • Professional Point of Sale Solution</div>
+    </div>
+
+    <script>
+        // POS Management specific loading phases
+        const loadingPhases = [
+            "Initializing POS System...",
+            "Loading sales modules...",
+            "Preparing inventory database...",
+            "Initializing barcode services...",
+            "Setting up receipt printer...",
+            "Loading customer database...",
+            "Ready to process sales..."
+        ];
+        
+        let phase = 0;
+        const loadingText = document.getElementById('loading-text');
+        const migrationStatus = document.getElementById('migration-status');
+        const migrationText = document.getElementById('migration-text');
+        const migrationCount = document.getElementById('migration-count');
+        
+        // Change loading text every 2 seconds
+        const textInterval = setInterval(() => {
+            loadingText.style.opacity = '0.5';
+            setTimeout(() => {
+                phase = (phase + 1) % loadingPhases.length;
+                loadingText.textContent = loadingPhases[phase];
+                loadingText.style.opacity = '1';
+                
+                // Update status icons
+                if (phase < 4) {
+                    updateStatus(phase, true);
+                }
+                
+                // On phase 2, show migration status if applicable
+                if (phase === 2) {
+                    // Simulate migration check
+                    setTimeout(() => {
+                        showMigrationStatus(2); // Example: 2 migrations
+                    }, 1000);
+                }
+                
+            }, 200);
+        }, 2000);
+        
+        // Status updates
+        const statusItems = ['status-db', 'status-migrations', 'status-services', 'status-ui'];
+        
+        function updateStatus(index, success) {
+            const item = document.getElementById(statusItems[index]);
+            const icon = item.querySelector('.status-icon');
+            
+            if (success) {
+                icon.className = 'status-icon success';
+                icon.textContent = '✓';
+                
+                // Add success animation
+                icon.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    icon.style.transform = 'scale(1)';
+                }, 300);
+                
+                // Update text color to success
+                item.style.color = 'rgba(16, 185, 129, 0.9)';
+            } else {
+                icon.className = 'status-icon error';
+                icon.textContent = '✗';
+                item.style.color = 'rgba(239, 68, 68, 0.9)';
+            }
+        }
+        
+        function showMigrationStatus(count) {
+            if (count > 0) {
+                migrationStatus.style.display = 'block';
+                migrationText.textContent = 'Applying database updates: ';
+                migrationCount.textContent = count + ' migration(s)';
+                migrationStatus.style.animation = 'fadeIn 0.5s ease';
+                
+                // Simulate migration progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 20;
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        migrationText.textContent = 'Database updated successfully ✓';
+                        migrationCount.textContent = '';
+                        migrationStatus.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                        
+                        // Update migration status
+                        updateStatus(1, true);
+                    }
+                }, 500);
+            }
+        }
+        
+        // Simulate system startup - POS specific
+        setTimeout(() => {
+            updateStatus(0, true);
+            loadingText.textContent = "Connecting to sales database...";
+        }, 800);
+        
+        setTimeout(() => {
+            // Database connected, now checking migrations
+            loadingText.textContent = "Checking database schema...";
+        }, 1800);
+        
+        setTimeout(() => {
+            // Migrations completed
+            loadingText.textContent = "Initializing sales modules...";
+            updateStatus(1, true);
+        }, 3200);
+        
+        setTimeout(() => {
+            loadingText.textContent = "Starting inventory services...";
+            updateStatus(2, true);
+        }, 4500);
+        
+        setTimeout(() => {
+            loadingText.textContent = "Loading POS interface...";
+            updateStatus(3, true);
+        }, 5800);
+        
+        // Final ready state
+        setTimeout(() => {
+            loadingText.textContent = "POS System Ready ✓";
+            loadingText.style.color = '#10b981';
+            loadingText.style.fontWeight = '600';
+            
+            // Change loading bar to success color
+            document.querySelector('.loading-progress').style.background = 'linear-gradient(90deg, #10b981, #06b6d4)';
+            
+            // Clear interval
+            clearInterval(textInterval);
+            
+            // Add pulse animation to indicate ready
+            loadingText.style.animation = 'pulse 1s infinite';
+            
+        }, 7000);
+        
+        // Listen for migration messages from main process
+        if (window.electronAPI) {
+            window.electronAPI.onMigrationStart((data) => {
+                showMigrationStatus(data.pendingCount || 0);
+            });
+            
+            window.electronAPI.onMigrationComplete((data) => {
+                migrationText.textContent = data.message || 'Database updated successfully ✓';
+                migrationCount.textContent = data.appliedCount ? data.appliedCount + ' migration(s) applied' : '';
+                migrationStatus.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+            });
+            
+            window.electronAPI.onMigrationFailed((data) => {
+                migrationText.textContent = data.message || 'Database update failed ✗';
+                migrationStatus.style.background = 'rgba(239, 68, 68, 0.1)';
+                migrationStatus.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                migrationCount.textContent = '';
+            });
+        }
+    </script>
+</body>
+</html>

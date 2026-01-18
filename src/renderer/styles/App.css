@@ -1,0 +1,619 @@
+/* POS MANAGEMENT THEME */
+@import "tailwindcss";
+
+:root {
+  /* Primary Color Palette - Professional & Transaction-focused */
+  --primary-color: #2563eb; /* Blue - Trust, Professionalism, Reliability */
+  --primary-hover: #1d4ed8; /* Darker Blue */
+  --secondary-color: #059669; /* Green - Success, Growth, Money */
+  --success-color: #10b981; /* Emerald Green - Successful Transaction */
+  --warning-color: #f59e0b; /* Amber - Warning, Attention Needed */
+  --danger-color: #ef4444; /* Red - Error, Failed Transaction */
+  --info-color: #3b82f6; /* Blue - Information, Details */
+  
+  /* Background Colors - Light & Clean for POS */
+  --background-color: #f8fafc; /* Light Gray-Blue */
+  --sidebar-bg: #1e293b; /* Dark Slate Blue */
+  --sidebar-border: #334155; /* Slate 700 */
+  --sidebar-text: #f1f5f9;
+  --header-bg: #ffffff;
+  
+  /* Text Colors */
+  --text-primary: #0f172a; /* Dark Slate for readability */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-tertiary: #64748b; /* Slate 500 */
+  
+  /* Card Backgrounds */
+  --card-bg: #ffffff; /* White */
+  --card-secondary-bg: #f1f5f9; /* Slate 50 */
+  --card-hover-bg: #e2e8f0; /* Slate 100 */
+  
+  /* Border Colors */
+  --border-color: #cbd5e1; /* Slate 300 */
+  --border-light: #e2e8f0; /* Slate 100 */
+  --border-dark: #94a3b8; /* Slate 400 */
+  
+  /* Transaction Status Colors */
+  --status-completed: #059669; /* Green - Completed Transaction */
+  --status-pending: #f59e0b; /* Amber - Pending Payment */
+  --status-cancelled: #ef4444; /* Red - Cancelled Transaction */
+  --status-refunded: #8b5cf6; /* Purple - Refunded */
+  --status-processing: #3b82f6; /* Blue - Processing */
+  --status-onhold: #f97316; /* Orange - On Hold */
+  
+  /* Inventory Status */
+  --stock-instock: #059669; /* Green - In Stock */
+  --stock-lowstock: #f59e0b; /* Amber - Low Stock */
+  --stock-outstock: #ef4444; /* Red - Out of Stock */
+  --stock-preorder: #8b5cf6; /* Purple - Pre-order */
+  
+  /* Payment Method Colors */
+  --payment-cash: #10b981; /* Green */
+  --payment-card: #3b82f6; /* Blue */
+  --payment-digital: #8b5cf6; /* Purple */
+  --payment-credit: #f59e0b; /* Amber */
+  --payment-cod: #f97316; /* Orange */
+  
+  /* Customer Status Colors */
+  --customer-regular: #3b82f6; /* Blue - Regular Customer */
+  --customer-vip: #8b5cf6; /* Purple - VIP */
+  --customer-new: #10b981; /* Green - New Customer */
+  --customer-loyal: #f59e0b; /* Amber - Loyal Customer */
+  
+  /* Accent Colors */
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #1d4ed8;
+  --accent-blue-light: #dbeafe;
+  --accent-blue-dark: #1e40af;
+  
+  --accent-green: #059669;
+  --accent-green-hover: #047857;
+  --accent-green-light: #d1fae5;
+  --accent-green-dark: #065f46;
+  
+  --accent-amber: #f59e0b;
+  --accent-amber-hover: #d97706;
+  --accent-amber-light: #fef3c7;
+  --accent-amber-dark: #92400e;
+  
+  --accent-red: #ef4444;
+  --accent-red-hover: #dc2626;
+  --accent-red-light: #fee2e2;
+  --accent-red-dark: #b91c1c;
+  
+  --accent-purple: #8b5cf6;
+  --accent-purple-hover: #7c3aed;
+  --accent-purple-light: #ede9fe;
+  --accent-purple-dark: #5b21b6;
+  
+  /* Status Backgrounds */
+  --status-completed-bg: rgba(5, 150, 105, 0.1);
+  --status-pending-bg: rgba(245, 158, 11, 0.1);
+  --status-cancelled-bg: rgba(239, 68, 68, 0.1);
+  --status-refunded-bg: rgba(139, 92, 246, 0.1);
+  --status-processing-bg: rgba(59, 130, 246, 0.1);
+  --status-onhold-bg: rgba(249, 115, 22, 0.1);
+  
+  /* Stock Status Backgrounds */
+  --stock-instock-bg: rgba(5, 150, 105, 0.1);
+  --stock-lowstock-bg: rgba(245, 158, 11, 0.1);
+  --stock-outstock-bg: rgba(239, 68, 68, 0.1);
+  --stock-preorder-bg: rgba(139, 92, 246, 0.1);
+  
+  /* Button Colors for POS */
+  --btn-primary-bg: var(--accent-blue);
+  --btn-primary-hover: var(--accent-blue-hover);
+  --btn-primary-text: #ffffff;
+  
+  --btn-success-bg: var(--accent-green);
+  --btn-success-hover: var(--accent-green-hover);
+  --btn-success-text: #ffffff;
+  
+  --btn-danger-bg: var(--accent-red);
+  --btn-danger-hover: var(--accent-red-hover);
+  --btn-danger-text: #ffffff;
+  
+  --btn-warning-bg: var(--accent-amber);
+  --btn-warning-hover: var(--accent-amber-hover);
+  --btn-warning-text: #ffffff;
+  
+  --btn-checkout-bg: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --btn-checkout-hover: linear-gradient(135deg, #047857 0%, #059669 100%);
+  --btn-checkout-text: #ffffff;
+  
+  --btn-payment-bg: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  --btn-payment-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  --btn-payment-text: #ffffff;
+  
+  /* Receipt & Invoice Colors */
+  --receipt-bg: #ffffff;
+  --receipt-border: #cbd5e1;
+  --receipt-header: #f8fafc;
+  --receipt-total: #f1f5f9;
+  
+  /* Transaction Table */
+  --table-header-bg: #f1f5f9;
+  --table-row-even: #ffffff;
+  --table-row-odd: #f8fafc;
+  --table-row-hover: #e2e8f0;
+  --table-border: #e2e8f0;
+  
+  /* POS Interface Elements */
+  --pos-keyboard-bg: #f1f5f9;
+  --pos-keyboard-key: #ffffff;
+  --pos-keyboard-key-hover: #e2e8f0;
+  --pos-screen-bg: #ffffff;
+  --pos-screen-border: #cbd5e1;
+  
+  /* Cart & Order Summary */
+  --cart-bg: #ffffff;
+  --cart-header: #f1f5f9;
+  --cart-item-hover: #f8fafc;
+  --cart-total-bg: #f1f5f9;
+  
+  /* Product Cards */
+  --product-card-bg: #ffffff;
+  --product-card-border: #e2e8f0;
+  --product-card-hover: #f8fafc;
+  --product-sale: #ef4444;
+  
+  /* Notification Colors */
+  --notification-success: rgba(16, 185, 129, 0.1);
+  --notification-warning: rgba(245, 158, 11, 0.1);
+  --notification-error: rgba(239, 68, 68, 0.1);
+  --notification-info: rgba(59, 130, 246, 0.1);
+  
+  /* Gradient Colors */
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  --gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --gradient-sales: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  
+  /* Form Colors */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-focus: var(--accent-blue);
+  --select-option-bg: #ffffff;
+  --select-option-hover: #f1f5f9;
+  
+  /* Override existing variables */
+  --topbar-bg: #1e293b;
+  --topbar-border: #334155;
+  --topbar-hover: #3b82f6;
+  --topbar-search-bg: #334155;
+  --topbar-search-border: #475569;
+}
+
+/* POS Specific Components */
+.transaction-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.transaction-card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+}
+
+/* Status Badges */
+.status-badge-completed {
+  background-color: var(--status-completed-bg);
+  color: var(--status-completed);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.status-badge-pending {
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.status-badge-cancelled {
+  background-color: var(--status-cancelled-bg);
+  color: var(--status-cancelled);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-badge-processing {
+  background-color: var(--status-processing-bg);
+  color: var(--status-processing);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.status-badge-refunded {
+  background-color: var(--status-refunded-bg);
+  color: var(--status-refunded);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Stock Status Badges */
+.stock-badge-instock {
+  background-color: var(--stock-instock-bg);
+  color: var(--stock-instock);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.stock-badge-lowstock {
+  background-color: var(--stock-lowstock-bg);
+  color: var(--stock-lowstock);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.stock-badge-outstock {
+  background-color: var(--stock-outstock-bg);
+  color: var(--stock-outstock);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Payment Method Badges */
+.payment-badge-cash {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--payment-cash);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.payment-badge-card {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payment-card);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.payment-badge-digital {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payment-digital);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Product Cards */
+.product-card {
+  background: var(--product-card-bg);
+  border: 1px solid var(--product-card-border);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.product-sale-badge {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+/* Cart Items */
+.cart-item {
+  background: var(--cart-bg);
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+  background-color: var(--cart-item-hover);
+}
+
+.cart-item-removing {
+  background-color: var(--status-cancelled-bg);
+  animation: fade-out 0.3s ease;
+}
+
+/* Transaction Table */
+.transaction-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.transaction-table thead {
+  background-color: var(--table-header-bg);
+}
+
+.transaction-table th {
+  border-bottom: 2px solid var(--table-border);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.transaction-table tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.transaction-table tr:nth-child(odd) {
+  background-color: var(--table-row-odd);
+}
+
+.transaction-table tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+/* POS Keyboard */
+.pos-keyboard {
+  background-color: var(--pos-keyboard-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--size-md);
+}
+
+.pos-keyboard-key {
+  background-color: var(--pos-keyboard-key);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pos-keyboard-key:hover {
+  background-color: var(--pos-keyboard-key-hover);
+  border-color: var(--accent-blue);
+}
+
+.pos-keyboard-key:active {
+  transform: scale(0.98);
+}
+
+/* Checkout Button */
+.btn-checkout {
+  background: var(--btn-checkout-bg);
+  color: var(--btn-checkout-text);
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-checkout:hover {
+  background: var(--btn-checkout-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+}
+
+.btn-checkout:active {
+  transform: translateY(0);
+}
+
+/* Payment Button */
+.btn-payment {
+  background: var(--btn-payment-bg);
+  color: var(--btn-payment-text);
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-payment:hover {
+  background: var(--btn-payment-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+/* Receipt Styling */
+.receipt {
+  background-color: var(--receipt-bg);
+  border: 1px solid var(--receipt-border);
+  border-radius: var(--radius-md);
+  font-family: 'Courier New', monospace;
+}
+
+.receipt-header {
+  background-color: var(--receipt-header);
+  border-bottom: 2px dashed var(--receipt-border);
+}
+
+.receipt-total {
+  background-color: var(--receipt-total);
+  border-top: 2px solid var(--receipt-border);
+  font-weight: 700;
+}
+
+/* Customer Card */
+.customer-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.customer-card-regular {
+  border-left: 4px solid var(--customer-regular);
+}
+
+.customer-card-vip {
+  border-left: 4px solid var(--customer-vip);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.customer-card-new {
+  border-left: 4px solid var(--customer-new);
+}
+
+/* Sales Chart Styling */
+.sales-chart {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+/* Cash Drawer Animation */
+@keyframes cash-drawer-open {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cash-drawer {
+  animation: cash-drawer-open 0.5s ease-out;
+}
+
+/* Barcode Scanner Effect */
+@keyframes scan-line {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanner-active {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanner-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: scan-line 1.5s linear infinite;
+}
+
+/* Transaction Complete Animation */
+@keyframes transaction-complete {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.transaction-complete {
+  animation: transaction-complete 0.5s ease-out;
+}
+
+/* Low Stock Warning */
+.low-stock-warning {
+  border-left: 4px solid var(--stock-lowstock);
+  background-color: var(--stock-lowstock-bg);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Quick Actions */
+.quick-action-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Inventory Grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--size-md);
+}
+
+/* Dashboard Stats Cards */
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+}
+
+.stat-card-sales {
+  border-top: 4px solid var(--accent-blue);
+}
+
+.stat-card-transactions {
+  border-top: 4px solid var(--accent-green);
+}
+
+.stat-card-customers {
+  border-top: 4px solid var(--accent-purple);
+}
+
+.stat-card-inventory {
+  border-top: 4px solid var(--accent-amber);
+}
+
+/* Responsive Adjustments for POS */
+@media (max-width: 1024px) {
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .pos-keyboard {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .transaction-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* Print Styles for Receipts */
+@media print {
+  .receipt {
+    border: none;
+    box-shadow: none;
+    width: 80mm;
+    font-size: 12px;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Custom Scrollbar for POS */
+.pos-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pos-scrollbar::-webkit-scrollbar-track {
+  background: var(--border-light);
+}
+
+.pos-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+  border-radius: 3px;
+}
+
+.pos-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}

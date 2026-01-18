@@ -1,0 +1,1 @@
+// SaleView.tsx placeholder

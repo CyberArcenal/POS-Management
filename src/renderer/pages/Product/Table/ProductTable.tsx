@@ -1,0 +1,1 @@
+// ProductTable.tsx placeholder

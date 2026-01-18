@@ -1,0 +1,1 @@
+// useIPC.ts placeholder

@@ -1,0 +1,457 @@
+// components/Sidebar.tsx
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { version } from "../../../../package.json"
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Users,
+  CreditCard,
+  BarChart3,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  TrendingUp,
+  Bell,
+  LogOut,
+  HelpCircle,
+  Wallet,
+  Calculator,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Home,
+  ListChecks,
+  Layers,
+  CalendarDays,
+  CalendarCheck,
+  UserCog,
+  Phone,
+  MessageSquare,
+  Zap,
+  CalendarClock,
+  CheckSquare,
+  XSquare,
+  Clock4,
+  Users2,
+  BarChart,
+  PieChart,
+  Download,
+  Activity,
+  Mail,
+  Lock,
+  KeyRound,
+  FileCheck,
+  User2,
+  UserCircle,
+  CalendarCheck2,
+  Store,
+  Receipt,
+  Tag,
+  BarChart2,
+  ShoppingBag,
+  Truck,
+  DollarSign,
+  Percent,
+  FileBarChart,
+  ClipboardList,
+  Archive,
+  QrCode,
+  Scan,
+  Gift,
+  Trophy,
+  Coins,
+  Smartphone,
+} from "lucide-react";
+import { useSystemInfo } from "../../contexts/SystemInfoContext";
+import { dialogs } from "../../utils/dialogs";
+import { posAuthStore } from "../../lib/authStore";
+
+
+interface SidebarProps {
+  isOpen: boolean;
+}
+
+interface MenuItem {
+  path: string;
+  name: string;
+  icon: React.ComponentType<any>;
+  category?: string;
+  children?: MenuItem[];
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+  const location = useLocation();
+  const {systemInfo} = useSystemInfo()
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
+    // Core POS Modules
+    { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
+
+    {
+      path: "/pos",
+      name: "Point of Sale",
+      icon: ShoppingCart,
+      category: "core",
+      children: [
+        { path: "/pos/cashier", name: "Cashier", icon: Calculator },
+        { path: "/pos/transactions", name: "Transactions", icon: Receipt },
+        { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
+        { path: "/pos/invoices", name: "Invoices", icon: FileText },
+        { path: "/pos/cart", name: "Current Cart", icon: ShoppingCart },
+      ],
+    },
+
+    {
+      path: "/products",
+      name: "Products",
+      icon: Package,
+      category: "core",
+      children: [
+        { path: "/products/list", name: "Product Catalog", icon: ListChecks },
+        { path: "/products/categories", name: "Categories", icon: Layers },
+        { path: "/products/inventory", name: "Inventory", icon: Archive },
+        { path: "/products/pricing", name: "Pricing", icon: Tag },
+        { path: "/products/barcode", name: "Barcode Manager", icon: QrCode },
+      ],
+    },
+
+    {
+      path: "/customers",
+      name: "Customers",
+      icon: Users,
+      category: "core",
+      children: [
+        { path: "/customers/list", name: "Customer Directory", icon: Users2 },
+        { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
+        { path: "/customers/groups", name: "Customer Groups", icon: Users },
+        { path: "/customers/credit", name: "Credit Accounts", icon: CreditCard },
+        { path: "/customers/feedback", name: "Customer Feedback", icon: MessageSquare },
+      ],
+    },
+
+    {
+      path: "/suppliers",
+      name: "Suppliers",
+      icon: Truck,
+      category: "core",
+      children: [
+        { path: "/suppliers/list", name: "Supplier List", icon: ClipboardList },
+        { path: "/suppliers/orders", name: "Purchase Orders", icon: ShoppingBag },
+        { path: "/suppliers/payments", name: "Supplier Payments", icon: DollarSign },
+        { path: "/suppliers/returns", name: "Supplier Returns", icon: Truck },
+      ],
+    },
+
+    {
+      path: "/sales",
+      name: "Sales Management",
+      icon: TrendingUp,
+      category: "core",
+      children: [
+        { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
+        { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
+        { path: "/sales/orders", name: "Order Management", icon: ShoppingBag },
+        { path: "/sales/discounts", name: "Discounts & Promos", icon: Percent },
+        { path: "/sales/quotations", name: "Quotations", icon: FileText },
+      ],
+    },
+
+    // Analytics
+    {
+      path: "/analytics",
+      name: "Analytics & Reports",
+      icon: BarChart3,
+      category: "analytics",
+      children: [
+        { path: "/analytics/sales", name: "Sales Analytics", icon: Activity },
+        { path: "/analytics/inventory", name: "Inventory Reports", icon: PieChart },
+        { path: "/analytics/customers", name: "Customer Insights", icon: Users },
+        { path: "/analytics/financial", name: "Financial Reports", icon: DollarSign },
+        { path: "/analytics/export", name: "Export Data", icon: Download },
+      ],
+    },
+
+    // System
+    {
+      path: "/system",
+      name: "System",
+      icon: Settings,
+      category: "system",
+      children: [
+        {path: "/users", name: "User Management", icon: User2},
+        { path: "/settings/general", name: "General Settings", icon: Settings },
+        { path: "/settings/payments", name: "Payment Methods", icon: CreditCard },
+        { path: "/settings/tax", name: "Tax Settings", icon: Percent },
+        { path: "/settings/receipt", name: "Receipt Settings", icon: Receipt },
+        { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
+        {path: "/notification-logs", name: "Notification Logs", icon: Bell},
+        { path: "/system/backup", name: "Backup & Restore", icon: Download },
+      ],
+    },
+  ]);
+
+  const filteredMenu = menuItems
+    .map((item) => {
+      // If a parent has children, filter its children array
+      if (item.children) {
+        const children = item.children.filter(
+          (child) => !(child.path === "/users")
+        );
+        return { ...item, children };
+      }
+      return item;
+    })
+    // Remove any parent with no visible route & no children
+    .filter(
+      (item) =>
+        item.path !== "/users" && // top-level Users
+        (item.children ? item.children.length > 0 : true)
+    );
+
+  const toggleDropdown = (name: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
+  const isActivePath = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const isDropdownActive = (items: MenuItem[] = []) => {
+    return items.some((item) => isActivePath(item.path));
+  };
+
+  // Auto-open dropdown if current path matches a child
+  useEffect(() => {
+    filteredMenu.forEach((item) => {
+      if (item.children && isDropdownActive(item.children)) {
+        setOpenDropdowns((prev) => ({ ...prev, [item.name]: true }));
+      }
+    });
+  }, [location.pathname]);
+
+  const renderMenuItems = (items: MenuItem[]) => {
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const is_active = hasChildren
+        ? isDropdownActive(item.children)
+        : isActivePath(item.path);
+      const isOpen = openDropdowns[item.name];
+
+      return (
+        <li key={item.path || item.name} className="mb-1">
+          {hasChildren ? (
+            <>
+              <div
+                onClick={() => toggleDropdown(item.name)}
+                className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer
+            ${is_active
+                    ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+                    : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"}
+          `}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon
+                    className={`w-5 h-5 ${is_active
+                      ? "text-white"
+                      : "text-[var(--sidebar-text)] group-hover:text-white"
+                      }`}
+                  />
+                  <span className="font-medium">{item.name}</span>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                    } ${is_active
+                      ? "text-white"
+                      : "text-[var(--sidebar-text)] group-hover:text-white"}`}
+                />
+              </div>
+
+              {isOpen && (
+                <ul
+                  className="ml-4 mt-1 space-y-1 border-l-2 pl-3"
+                  style={{ borderColor: "var(--accent-blue)" }}
+                >
+                  {item.children?.map((child) => {
+                    const isChildActive = isActivePath(child.path);
+                    return (
+                      <li key={child.path} className="mb-1">
+                        <Link
+                          to={child.path}
+                          className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm
+                      ${isChildActive
+                              ? "text-white bg-[var(--accent-blue)]/20 font-semibold border-l-2 border-[var(--accent-blue)] pl-2"
+                              : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+                            }
+                    `}
+                        >
+                          <child.icon className="w-4 h-4" />
+                          <span>{child.name}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
+          ) : (
+            <Link
+              to={item.path}
+              className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200
+          ${is_active
+                  ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+                  : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"}
+        `}
+            >
+              <div className="flex items-center gap-3">
+                <item.icon
+                  className={`w-5 h-5 ${is_active
+                    ? "text-white"
+                    : "text-[var(--sidebar-text)] group-hover:text-white"
+                    }`}
+                />
+                <span className="font-medium">{item.name}</span>
+              </div>
+              <ChevronRight
+                className={`w-4 h-4 transition-opacity duration-200 ${is_active
+                  ? "opacity-100 text-white"
+                  : "opacity-0 group-hover:opacity-50 text-[var(--sidebar-text)]"
+                  }`}
+              />
+            </Link>
+          )}
+        </li>
+      );
+    });
+  };
+
+  const categories = [
+    { id: "core", name: "Core Modules" },
+    { id: "analytics", name: "Analytics & Reports" },
+    { id: "system", name: "System" },
+  ];
+
+  const handleLogOut = async (event: any) => {
+    const confirm = await dialogs.confirm({ title: "Log-out?", message: "Are you sure do you want to logout?" });
+    if (!confirm) return;
+    posAuthStore.logout()
+  }
+
+  return (
+    <div
+      className={`fixed md:relative inset-y-0 left-0 w-64
+        bg-gradient-to-b from-[var(--sidebar-bg)] to-[#1e293b] border-r border-[var(--sidebar-border)]
+        transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0 transition-all duration-300 ease-in-out
+        z-30 flex flex-col h-screen shadow-xl`}
+    >
+      {/* Header - Fixed height */}
+      <div className="flex-shrink-0 border-b border-[var(--sidebar-border)] bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b] p-6">
+        <div className="flex items-center gap-3">
+          {/* Logo container */}
+          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-blue)] to-[#3b82f6] flex items-center justify-center overflow-hidden shadow-lg">
+            <div className="flex items-center justify-center w-full h-full">
+              <ShoppingCart className="w-6 h-6 text-white" />
+            </div>
+          </div>
+
+          {/* Business info */}
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-bold text-white">
+              {systemInfo? systemInfo.site_name : `POS Management`}
+            </h2>
+            <p className="text-xs text-[var(--text-tertiary)]">Point of Sale System</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation - Scrollable area */}
+      <nav className="flex-1 overflow-y-auto pos-scrollbar p-4">
+        {categories.map((category) => {
+          const categoryItems = menuItems.filter(
+            (item) => item.category === category.id
+          );
+          if (categoryItems.length === 0) return null;
+
+          return (
+            <div key={category.id} className="mb-6">
+              <h6 className="px-4 py-2 text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider bg-[#334155]/50 rounded-lg">
+                {category.name}
+              </h6>
+              <ul className="space-y-1 mt-2">{renderMenuItems(categoryItems)}</ul>
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* Quick Status Indicators */}
+      <div className="p-4 border-t border-[var(--border-color)] bg-[#334155]/30">
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="bg-[var(--status-completed-bg)] text-[var(--status-completed)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
+            <div className="font-bold text-sm">₱0.00</div>
+            <div className="text-[10px]">Today's Sales</div>
+          </div>
+          <div className="bg-[var(--status-pending-bg)] text-[var(--status-pending)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
+            <div className="font-bold text-sm">0</div>
+            <div className="text-[10px]">Pending Orders</div>
+          </div>
+          <div className="bg-[var(--stock-lowstock-bg)] text-[var(--stock-lowstock)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
+            <div className="font-bold text-sm">0</div>
+            <div className="text-[10px]">Low Stock</div>
+          </div>
+          <div className="bg-[rgba(37,99,235,0.1)] text-[#2563eb] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
+            <div className="font-bold text-sm">0</div>
+            <div className="text-[10px]">Transactions</div>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <Link
+            to="/pos/cashier"
+            className="w-full bg-gradient-to-r from-[var(--accent-blue)] to-[#3b82f6] text-white text-sm py-2 px-4 rounded-lg text-center hover:from-[var(--accent-blue-hover)] hover:to-[#2563eb] transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            New Sale
+          </Link>
+        </div>
+      </div>
+
+      {/* Footer - Fixed height */}
+      <div className="p-4 border-t border-[var(--border-color)] text-center flex-shrink-0 bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b]">
+        <p className="text-xs text-[var(--text-tertiary)] mb-2">
+          v{version} • © {new Date().getFullYear()} POS System
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            className="text-[var(--text-tertiary)] hover:text-[var(--accent-green)] hover:bg-[var(--accent-green)]/10 p-1.5 rounded-full transition-colors duration-200"
+            title="Help"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          <Link
+            to="/settings/general"
+            className="text-[var(--text-tertiary)] hover:text-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/10 p-1.5 rounded-full transition-colors duration-200"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+          <button onClick={handleLogOut}
+            className="text-[var(--text-tertiary)] hover:text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 p-1.5 rounded-full transition-colors duration-200"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

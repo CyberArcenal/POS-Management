@@ -1,0 +1,1 @@
+// receiptService.js placeholder
