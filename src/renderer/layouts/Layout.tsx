@@ -24,14 +24,14 @@ const Layout: React.FC = () => {
   }
 
   return (
-    <div className={`flex h-screen`}>
+    <div className="flex h-screen">
       {/* Sidebar component */}
       <Sidebar isOpen={sidebarOpen} />
 
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-20 md:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -39,13 +39,11 @@ const Layout: React.FC = () => {
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* TopBar component */}
-        <TopBar
-          toggleSidebar={toggleSidebar}
-        />
+        <TopBar toggleSidebar={toggleSidebar} />
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-2 bg-background text-foreground">
-          <Outlet /> {/* Dito lalabas ang content ng bawat page */}
+        {/* Page content - NO PADDING */}
+        <main className="flex-1 overflow-y-auto bg-[var(--background-color)]">
+          <Outlet />
         </main>
       </div>
     </div>

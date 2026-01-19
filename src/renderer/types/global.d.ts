@@ -31,14 +31,20 @@ declare global {
       dashboard: (payload: any) => Promise<any>;
 
       // 🪟 Window controls
-      windowControl: (payload: any) => Promise<any>;
-      onAppReady: (callback: (...args: any[]) => void) => () => void;
-
-      // Window controls
-      minimizeApp: () => Promise<any>;
-      maximizeApp: () => Promise<any>;
-      closeApp: () => Promise<any>;
-      quitApp: () => Promise<any>;
+      windowControl?: (payload: {
+        method: string;
+        params?: Record<string, any>;
+      }) => Promise<{
+        status: boolean;
+        message: string;
+        data?: any;
+      }>;
+      onWindowMaximized?: (callback: () => void) => void;
+      onWindowRestored?: (callback: () => void) => void;
+      onWindowMinimized?: (callback: () => void) => void;
+      onWindowClosed?: (callback: () => void) => void;
+      onWindowResized?: (callback: (bounds: any) => void) => void;
+      onWindowMoved?: (callback: (position: any) => void) => void;
 
       // Other utilities
       showAbout: () => Promise<any>;

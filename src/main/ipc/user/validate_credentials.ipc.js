@@ -1,98 +1,100 @@
-//@ts-check
-const bcrypt = require("bcrypt");
+// @ts-check
+const bcrypt = require("bcryptjs");
 const User = require("../../../entities/User");
+const UserActivity = require("../../../entities/UserActivity");
 const { AppDataSource } = require("../../db/dataSource");
 const { log_audit } = require("../../../utils/auditLogger");
 
 /**
- * Validate user credentials
+ * Validate user credentials with transactional UserActivity logging
  * @param {string} username
  * @param {string} password
- * @param {number} userId
+ * @param {number} actorId
  */
-// @ts-ignore
-async function validateUserCredentials(username, password, userId) {
+async function validateUserCredentials(username, password, actorId) {
+  const queryRunner = AppDataSource.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
+
   try {
     if (!username || !password) {
-      return {
-        status: false,
-        message: "Username and password are required",
-        data: null
-      };
+      return { status: false, message: "Username and password are required", data: null };
     }
 
-    const userRepo = AppDataSource.getRepository(User);
-    
-    const user = await userRepo.findOne({
-      where: { username: username }
-    });
+    const userRepo = queryRunner.manager.getRepository(User);
+    const activityRepo = queryRunner.manager.getRepository(UserActivity);
+
+    const user = await userRepo.findOne({ where: { username } });
 
     if (!user) {
-      await log_audit("login_attempt", "User", 0, 0, {
-        username: username,
-        result: "user_not_found"
-      });
+      // Audit trail (always recorded)
+      await log_audit("login_attempt", "User", 0, actorId, { username, result: "user_not_found" });
 
-      return {
-        status: false,
-        message: "Invalid credentials",
-        data: null
-      };
+      // UserActivity (transactional)
+      await activityRepo.save(activityRepo.create({
+        user_id: actorId,
+        action: "login_attempt",
+        description: `Login failed: user '${username}' not found`,
+        ip_address: "127.0.0.1",
+        user_agent: "POS-Management-System",
+      }));
+
+      await queryRunner.commitTransaction();
+      return { status: false, message: "Invalid credentials", data: null };
     }
 
     if (!user.is_active) {
-      // @ts-ignore
-      await log_audit("login_attempt", "User", user.id, 0, {
-        username: username,
-        result: "account_inactive"
-      });
+      await log_audit("login_attempt", "User", user.id, actorId, { username, result: "account_inactive" });
 
-      return {
-        status: false,
-        message: "Account is inactive",
-        data: null
-      };
+      await activityRepo.save(activityRepo.create({
+        user_id: user.id,
+        action: "login_attempt",
+        description: `Login failed: account inactive for '${username}'`,
+        ip_address: "127.0.0.1",
+        user_agent: "POS-Management-System",
+      }));
+
+      await queryRunner.commitTransaction();
+      return { status: false, message: "Account is inactive", data: null };
     }
 
-    // Verify password
-    // @ts-ignore
-    const isValidPassword = await bcrypt.compare(password, user.password || '');
-
+    const isValidPassword = await bcrypt.compare(password, user.password || "");
     if (!isValidPassword) {
-      // @ts-ignore
-      await log_audit("login_attempt", "User", user.id, 0, {
-        username: username,
-        result: "invalid_password"
-      });
+      await log_audit("login_attempt", "User", user.id, actorId, { username, result: "invalid_password" });
 
-      return {
-        status: false,
-        message: "Invalid credentials",
-        data: null
-      };
+      await activityRepo.save(activityRepo.create({
+        user_id: user.id,
+        action: "login_attempt",
+        description: `Login failed: invalid password for '${username}'`,
+        ip_address: "127.0.0.1",
+        user_agent: "POS-Management-System",
+      }));
+
+      await queryRunner.commitTransaction();
+      return { status: false, message: "Invalid credentials", data: null };
     }
 
-    // Remove password from response
     const { password: _, ...userData } = user;
 
-    // @ts-ignore
-    await log_audit("login_success", "User", user.id, user.id, {
-      username: username,
-      role: user.role
-    });
+    await log_audit("login_success", "User", user.id, actorId, { username, role: user.role });
 
-    return {
-      status: true,
-      message: "Credentials validated successfully",
-      data: userData
-    };
+    await activityRepo.save(activityRepo.create({
+      user_id: user.id,
+      action: "login_success",
+      description: `Login successful for '${username}'`,
+      ip_address: "127.0.0.1",
+      user_agent: "POS-Management-System",
+    }));
+
+    await queryRunner.commitTransaction();
+
+    return { status: true, message: "Credentials validated successfully", data: {valid: true, user: userData} };
   } catch (error) {
-    return {
-      status: false,
-      // @ts-ignore
-      message: error.message,
-      data: null
-    };
+    await queryRunner.rollbackTransaction();
+    console.error("validateUserCredentials error:", error);
+    return { status: false, message: "Internal server error", data: {valid: false, user: null} };
+  } finally {
+    await queryRunner.release();
   }
 }
 

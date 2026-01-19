@@ -1,29 +1,28 @@
 //@ts-check
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const User = require("../../../../entities/User");
 const { log_audit } = require("../../../../utils/auditLogger");
 
 /**
- * Create a new user
- * @param {Object} params
- * @param {import("typeorm").QueryRunner} queryRunner
+ * @param {{ username: any; password: any; role: any; first_name: any; last_name: any; email: any; employee_id: any; department: any; can_manage_products: any; can_adjust_inventory: any; can_view_reports: any; _userId: any; }} params
+ * @param {{ manager: { getRepository: (arg0: any) => any; }; }} queryRunner
  */
 async function createUser(params, queryRunner) {
-  const { 
+  const {
     // @ts-ignore
-    username, 
+    username,
     // @ts-ignore
-    password, 
+    password,
     // @ts-ignore
-    role, 
+    role,
     // @ts-ignore
-    first_name, 
+    first_name,
     // @ts-ignore
-    last_name, 
+    last_name,
     // @ts-ignore
-    email, 
+    email,
     // @ts-ignore
-    employee_id, 
+    employee_id,
     // @ts-ignore
     department,
     // @ts-ignore
@@ -33,7 +32,7 @@ async function createUser(params, queryRunner) {
     // @ts-ignore
     can_view_reports,
     // @ts-ignore
-    _userId 
+    _userId,
   } = params;
 
   try {
@@ -41,7 +40,7 @@ async function createUser(params, queryRunner) {
       return {
         status: false,
         message: "Username, password, and role are required",
-        data: null
+        data: null,
       };
     }
 
@@ -53,7 +52,7 @@ async function createUser(params, queryRunner) {
       return {
         status: false,
         message: "Username already exists",
-        data: null
+        data: null,
       };
     }
 
@@ -75,7 +74,7 @@ async function createUser(params, queryRunner) {
       can_manage_products: can_manage_products || false,
       can_adjust_inventory: can_adjust_inventory || false,
       can_view_reports: can_view_reports !== false, // Default to true
-      is_active: true
+      is_active: true,
     });
 
     const savedUser = await userRepo.save(newUser);
@@ -90,13 +89,13 @@ async function createUser(params, queryRunner) {
       // @ts-ignore
       username: savedUser.username,
       // @ts-ignore
-      role: savedUser.role
+      role: savedUser.role,
     });
 
     return {
       status: true,
       message: "User created successfully",
-      data: userData
+      data: userData,
     };
   } catch (error) {
     console.error("createUser error:", error);
@@ -104,7 +103,7 @@ async function createUser(params, queryRunner) {
       status: false,
       // @ts-ignore
       message: `Failed to create user: ${error.message}`,
-      data: null
+      data: null,
     };
   }
 }

@@ -5,6 +5,8 @@ import ProtectedRoute from '../app/ProtectedRoute';
 import { useEffect, useState } from 'react';
 import userAPI from '../api/user';
 import POSLogin from '../pages/Login';
+import DashboardPage from '../pages/dashboard';
+import FirstRunSetup from '../pages/Setup';
 
 
 function App() {
@@ -18,6 +20,7 @@ function App() {
   const checkSetup = async () => {
     try {
       const response = await userAPI.getAllUsers();
+      console.log(response)
       const hasUsers = response.data && response.data.length > 0;
       setSetupRequired(!hasUsers);
     } catch (error) {
@@ -55,9 +58,9 @@ function App() {
   return (
     <Routes>
       {/* Setup route - only accessible when no users exist */}
-      {/* {setupRequired && (
+      {setupRequired && (
         <Route path="*" element={<FirstRunSetup />} />
-      )} */}
+      )}
 
       {!setupRequired && (
         <>
@@ -71,7 +74,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<div>Dashboard</div>} />
+            <Route path="dashboard" element={<DashboardPage/>} />
             <Route path="products" element={<div>Products</div>} />
             <Route path="orders" element={<div>Orders</div>} />
             <Route path="customers" element={<div>Customers</div>} />

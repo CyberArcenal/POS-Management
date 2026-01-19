@@ -1,15 +1,14 @@
 //@ts-check
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const User = require("../../../entities/User");
 const { log_audit } = require("../../../utils/auditLogger");
 
 /**
- * Reset user password (admin function)
- * @param {Object} params
- * @param {import("typeorm").QueryRunner} queryRunner
+ * @param {{ id: any; new_password: any; temporary_password?: true | undefined; _userId: any; }} params
+ * @param {{ manager: { getRepository: (arg0: any) => any; }; }} queryRunner
  */
 async function resetUserPassword(params, queryRunner) {
-  const { 
+  const {
     // @ts-ignore
     id,
     // @ts-ignore
@@ -17,7 +16,7 @@ async function resetUserPassword(params, queryRunner) {
     // @ts-ignore
     temporary_password = true,
     // @ts-ignore
-    _userId 
+    _userId,
   } = params;
 
   try {
@@ -25,7 +24,7 @@ async function resetUserPassword(params, queryRunner) {
       return {
         status: false,
         message: "User ID is required",
-        data: null
+        data: null,
       };
     }
 
@@ -33,7 +32,7 @@ async function resetUserPassword(params, queryRunner) {
       return {
         status: false,
         message: "New password is required",
-        data: null
+        data: null,
       };
     }
 
@@ -41,7 +40,7 @@ async function resetUserPassword(params, queryRunner) {
       return {
         status: false,
         message: "Password must be at least 6 characters",
-        data: null
+        data: null,
       };
     }
 
@@ -53,7 +52,7 @@ async function resetUserPassword(params, queryRunner) {
       return {
         status: false,
         message: "User not found",
-        data: null
+        data: null,
       };
     }
 
@@ -72,19 +71,19 @@ async function resetUserPassword(params, queryRunner) {
     await log_audit("password_reset", "User", id, _userId, {
       reset_by: "admin",
       temporary_password: temporary_password,
-      username: existingUser.username
+      username: existingUser.username,
     });
 
     return {
       status: true,
-      message: temporary_password ? 
-        "Temporary password set successfully. User should change it on next login." :
-        "Password reset successfully",
+      message: temporary_password
+        ? "Temporary password set successfully. User should change it on next login."
+        : "Password reset successfully",
       data: {
         id: id,
         username: existingUser.username,
-        temporary_password: temporary_password
-      }
+        temporary_password: temporary_password,
+      },
     };
   } catch (error) {
     console.error("resetUserPassword error:", error);
@@ -92,7 +91,7 @@ async function resetUserPassword(params, queryRunner) {
       status: false,
       // @ts-ignore
       message: `Failed to reset password: ${error.message}`,
-      data: null
+      data: null,
     };
   }
 }

@@ -7,59 +7,65 @@ import {
   Search,
   RefreshCw,
   ArrowLeft,
-  Compass,
-  Calendar,
+  ShoppingCart,
+  Package,
   Users,
-  DoorOpen,
   BarChart3,
-  CalendarCheck,
-  Clock,
-  CalendarDays,
-  User,
   Settings,
-  LogOut
+  LogOut,
+  Store,
+  Receipt,
+  CreditCard,
+  DollarSign
 } from 'lucide-react';
 import { posAuthStore } from '../../lib/authStore';
 
 const PageNotFound: React.FC = () => {
   const userInfo = posAuthStore.getUserDisplayInfo();
   
-  // Common navigation paths for HR Booking Management
+  // Common navigation paths for POS Management
   const quickLinks = [
     { 
-      path: '/dashboard', 
+      path: '/', 
       label: 'Dashboard', 
       icon: Home, 
-      color: 'var(--accent-indigo)',
-      permission: () => true // Everyone can access dashboard
+      color: 'var(--accent-blue)',
+      permission: () => true
     },
     { 
-      path: '/appointments/daily', 
-      label: 'Daily Schedule', 
-      icon: CalendarDays, 
+      path: '/pos/cashier', 
+      label: 'Point of Sale', 
+      icon: ShoppingCart, 
+      color: 'var(--accent-green)',
+      permission: () => posAuthStore.canAccessModule('pos')
+    },
+    { 
+      path: '/products/list', 
+      label: 'Products', 
+      icon: Package, 
       color: 'var(--accent-purple)',
-      permission: () => posAuthStore.canAccessModule('bookings')
+      permission: () => posAuthStore.canAccessModule('products')
     },
     { 
-      path: '/employees/list', 
-      label: 'Employee Directory', 
+      path: '/customers/list', 
+      label: 'Customers', 
       icon: Users, 
-      color: 'var(--accent-emerald)',
-      permission: () => posAuthStore.canAccessModule('employees')
+      color: 'var(--accent-amber)',
+      permission: () => posAuthStore.canAccessModule('customers')
     },
     { 
-      path: '/resources/rooms', 
-      label: 'Meeting Rooms', 
-      icon: DoorOpen, 
-      color: 'var(--accent-cyan)',
-      permission: () => posAuthStore.canAccessModule('rooms')
-    },
-    { 
-      path: '/analytics/usage', 
+      path: '/analytics/sales', 
       label: 'Analytics', 
       icon: BarChart3, 
-      color: 'var(--accent-purple)',
+      color: 'var(--accent-blue)',
       permission: () => posAuthStore.canAccessModule('reports')
+    },
+    { 
+      path: '/settings/general', 
+      label: 'Settings', 
+      icon: Settings, 
+      color: 'var(--accent-red)',
+      permission: () => posAuthStore.canAccessModule('settings')
     },
   ];
 
@@ -72,84 +78,61 @@ const PageNotFound: React.FC = () => {
 
   // Get user role for personalized message
   const getUserRoleMessage = () => {
-    const role = posAuthStore.getRole().toLowerCase();
     if (posAuthStore.isAdmin()) return 'administrator';
     if (posAuthStore.isManager()) return 'manager';
-    return 'user';
+    return 'cashier';
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: 'var(--background-color)' }}>
-      {/* Animated Background with Booking Theme */}
-      <div className="absolute inset-0 overflow-hidden opacity-10">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full" style={{ background: 'var(--accent-indigo)', filter: 'blur(60px)' }}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full" style={{ background: 'var(--accent-purple)', filter: 'blur(60px)' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full" style={{ background: 'var(--accent-emerald)', filter: 'blur(60px)' }}></div>
-      </div>
-
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--background-color)]">
       {/* Main Content */}
       <div className="relative z-10 max-w-4xl w-full">
         {/* Error Code Display */}
         <div className="text-center mb-8">
           <div className="relative inline-block">
-            <div className="text-9xl font-bold tracking-tighter" style={{ color: 'var(--primary-color)' }}>
+            <div className="text-9xl font-bold tracking-tighter text-[var(--primary-color)]">
               4<span className="relative">
                 0
-                <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full animate-ping" style={{ background: 'var(--accent-amber)' }}></div>
+                <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full animate-ping bg-[var(--accent-amber)]"></div>
               </span>4
             </div>
             <div className="absolute -top-6 -right-6 animate-bounce">
-              <AlertTriangle className="w-12 h-12" style={{ color: 'var(--accent-amber)' }} />
+              <AlertTriangle className="w-12 h-12 text-[var(--accent-amber)]" />
             </div>
           </div>
-          <div className="mt-2 text-lg font-semibold tracking-widest uppercase letter-spacing-2" style={{ color: 'var(--text-secondary)' }}>
-            Booking Page Not Found
+          <div className="mt-2 text-lg font-semibold tracking-widest uppercase text-[var(--text-secondary)]">
+            Page Not Found
           </div>
         </div>
 
         {/* Error Message Card */}
-        <div className="compact-card rounded-2xl p-8 mb-8 text-center transition-all duration-300 ease-in-out transform hover:scale-[1.01] hover:shadow-2xl" style={{
-          background: 'var(--card-bg)',
-          border: '1px solid var(--border-color)',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <Compass className="w-16 h-16 mx-auto mb-6" style={{ color: 'var(--primary-color)' }} />
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl p-8 mb-8 text-center shadow-sm">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--accent-blue-light)] flex items-center justify-center">
+            <Store className="w-10 h-10 text-[var(--accent-blue)]" />
+          </div>
 
-          <h1 className="text-2xl font-bold mb-4" style={{ color: 'var(--sidebar-text)' }}>
-            Oops! This Booking Page Has Gone Missing
+          <h1 className="text-2xl font-bold mb-4 text-[var(--text-primary)]">
+            Page Not Found in POS System
           </h1>
 
-          <p className="text-base mb-6 max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            The scheduling page you're looking for seems to have slipped out of our calendar. 
-            It might have been rescheduled, removed, or perhaps it never existed in our HR booking system.
+          <p className="text-base mb-6 max-w-2xl mx-auto text-[var(--text-secondary)]">
+            The page you're looking for could not be found in our POS Management System. 
+            It might have been moved, deleted, or you might have entered an incorrect URL.
             As a {getUserRoleMessage()}, you can try one of the available pages below.
           </p>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{
-            background: 'var(--card-secondary-bg)',
-            border: '1px solid var(--border-color)',
-            fontFamily: 'monospace'
-          }}>
-            <Search className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-            <code className="text-sm font-mono" style={{ color: 'var(--sidebar-text)' }}>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 bg-[var(--card-secondary-bg)] border border-[var(--border-color)] font-mono">
+            <Search className="w-4 h-4 text-[var(--text-secondary)]" />
+            <code className="text-sm font-mono text-[var(--text-primary)]">
               {window.location.pathname}
             </code>
-            <Clock className="w-4 h-4 ml-2" style={{ color: 'var(--text-tertiary)' }} />
-            <span className="text-xs text-[var(--text-tertiary)]">
-              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
           </div>
         </div>
 
         {/* Quick Navigation */}
-        <div className="compact-card rounded-2xl p-6 mb-8 transition-all duration-300 ease-in-out" style={{
-          background: 'var(--card-bg)',
-          border: '1px solid var(--border-color)'
-        }}>
-          <h2 className="text-lg font-semibold mb-6 text-center flex items-center justify-center gap-2" style={{ color: 'var(--sidebar-text)' }}>
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--accent-emerald)' }}></div>
-            Quick Booking Navigation
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--accent-emerald)' }}></div>
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl p-6 mb-8 shadow-sm">
+          <h2 className="text-lg font-semibold mb-6 text-center text-[var(--text-primary)]">
+            Quick Navigation
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -159,16 +142,12 @@ const PageNotFound: React.FC = () => {
                 <Link
                   key={index}
                   to={link.path}
-                  className="group flex flex-col items-center p-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
-                  style={{
-                    background: 'var(--card-secondary-bg)',
-                    border: '1px solid var(--border-color)'
-                  }}
+                  className="group flex flex-col items-center p-4 rounded-lg bg-[var(--card-secondary-bg)] border border-[var(--border-color)] hover:border-[var(--accent-blue)] transition-all duration-200"
                 >
-                  <div className="p-3 rounded-full mb-3 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-12" style={{ background: link.color + '20' }}>
+                  <div className="p-3 rounded-full mb-3 bg-opacity-20" style={{ backgroundColor: link.color + '20' }}>
                     <Icon className="w-6 h-6" style={{ color: link.color }} />
                   </div>
-                  <span className="text-sm font-medium text-center" style={{ color: 'var(--sidebar-text)' }}>{link.label}</span>
+                  <span className="text-sm font-medium text-center text-[var(--text-primary)]">{link.label}</span>
                 </Link>
               );
             })}
@@ -177,39 +156,26 @@ const PageNotFound: React.FC = () => {
 
         {/* User Info Card (if logged in) */}
         {userInfo && (
-          <div className="compact-card rounded-2xl p-6 mb-8 transition-all duration-300 ease-in-out" style={{
-            background: 'var(--card-secondary-bg)',
-            border: '1px solid var(--border-color)'
-          }}>
+          <div className="bg-[var(--card-secondary-bg)] border border-[var(--border-color)] rounded-xl p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
-                  style={{ 
-                    background: userInfo.colorScheme.bg,
-                    color: userInfo.colorScheme.text
-                  }}
+                  className="w-12 h-12 rounded-full bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] flex items-center justify-center text-white font-semibold"
                 >
-                  {userInfo.initials}
+                  {userInfo.initials || 'CU'}
                 </div>
                 <div>
-                  <div className="font-medium" style={{ color: 'var(--sidebar-text)' }}>{userInfo.name}</div>
-                  <div className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{userInfo.role}</div>
-                  <div className="text-xs mt-1 px-2 py-1 rounded-full inline-block" 
-                    style={{ 
-                      backgroundColor: userInfo.colorScheme.bg.includes('linear-gradient') 
-                        ? 'var(--accent-indigo)' 
-                        : 'var(--card-hover-bg)',
-                      color: 'var(--sidebar-text)'
-                    }}>
-                    HR Booking System
+                  <div className="font-medium text-[var(--text-primary)]">{userInfo.name || 'Cashier User'}</div>
+                  <div className="text-sm text-[var(--text-secondary)]">{userInfo.role || 'Cashier'}</div>
+                  <div className="text-xs mt-1 px-2 py-1 rounded-full inline-block bg-[var(--card-hover-bg)] text-[var(--text-secondary)]">
+                    POS Management System
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Session Active</div>
-                <div className="text-xs flex items-center gap-1" style={{ color: 'var(--accent-emerald)' }}>
-                  <div className="w-2 h-2 rounded-full bg-[var(--accent-emerald)]"></div>
+                <div className="text-sm text-[var(--text-secondary)]">Session Active</div>
+                <div className="text-xs flex items-center gap-1 text-[var(--accent-green)]">
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-green)]"></div>
                   Authenticated
                 </div>
               </div>
@@ -221,88 +187,63 @@ const PageNotFound: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handleGoBack}
-            className="btn btn-secondary px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg group"
-            style={{
-              background: 'var(--card-secondary-bg)',
-              border: '1px solid var(--border-color)'
-            }}
+            className="px-6 py-3 rounded-lg flex items-center justify-center gap-2 bg-[var(--card-secondary-bg)] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" style={{ color: 'var(--sidebar-text)' }} />
-            <span style={{ color: 'var(--sidebar-text)' }}>Go Back</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Go Back</span>
           </button>
 
           <Link
-            to="/dashboard"
-            className="btn btn-primary px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg group"
-            style={{
-              background: 'var(--gradient-primary)',
-              border: '1px solid var(--border-color)'
-            }}
+            to="/"
+            className="px-6 py-3 rounded-lg flex items-center justify-center gap-2 bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white hover:opacity-90 transition-opacity"
           >
-            <Home className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" style={{ color: 'var(--sidebar-text)' }} />
-            <span style={{ color: 'var(--sidebar-text)' }}>Go to Dashboard</span>
+            <Home className="w-4 h-4" />
+            <span>Go to Dashboard</span>
           </Link>
 
           <button
             onClick={() => window.location.reload()}
-            className="btn btn-outline px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg group"
-            style={{
-              background: 'var(--card-secondary-bg)',
-              border: '1px solid var(--border-color)'
-            }}
+            className="px-6 py-3 rounded-lg flex items-center justify-center gap-2 bg-[var(--card-secondary-bg)] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
           >
-            <RefreshCw className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" style={{ color: 'var(--sidebar-text)' }} />
-            <span style={{ color: 'var(--sidebar-text)' }}>Refresh Page</span>
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh Page</span>
           </button>
 
           {posAuthStore.isAuthenticated() && (
             <button
               onClick={() => posAuthStore.logout()}
-              className="btn btn-danger px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg group"
-              style={{
-                background: 'var(--danger-color)',
-                border: '1px solid var(--border-color)',
-                color: 'white'
-              }}
+              className="px-6 py-3 rounded-lg flex items-center justify-center gap-2 bg-[var(--accent-red)] text-white hover:opacity-90 transition-opacity"
             >
-              <LogOut className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
+              <LogOut className="w-4 h-4" />
               <span>Logout</span>
             </button>
           )}
         </div>
 
-        {/* Help Text */}
+        {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-            Need help? Contact your HR system administrator if you believe this is an error
+          <p className="text-sm mb-2 text-[var(--text-secondary)]">
+            Need assistance? Contact your system administrator if you believe this is an error.
           </p>
-          <div className="flex items-center justify-center gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
+          <div className="flex items-center justify-center gap-4 text-xs text-[var(--text-secondary)]">
             <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--accent-emerald)' }}></div>
-              Error Code: 404
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-green)]"></div>
+              POS Management System
             </span>
-            <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--accent-indigo)' }}></div>
-              System: HR Booking Management
-            </span>
-            <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--accent-cyan)' }}></div>
-              Time: {new Date().toLocaleTimeString()}
-            </span>
+            <span>•</span>
+            <span>Error Code: 404</span>
+            <span>•</span>
+            <span>{new Date().toLocaleDateString()}</span>
           </div>
         </div>
 
         {/* System Status */}
         <div className="mt-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{
-            background: 'var(--card-secondary-bg)',
-            border: '1px solid var(--border-color)'
-          }}>
-            <div className="w-2 h-2 rounded-full bg-[var(--accent-emerald)] animate-pulse"></div>
-            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              HR Booking System • v2.1.0 • {new Date().getFullYear()}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--card-secondary-bg)] border border-[var(--border-color)]">
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-green)] animate-pulse"></div>
+            <span className="text-xs text-[var(--text-secondary)]">
+              POS Management System • v1.0 • {new Date().getFullYear()}
             </span>
-            <Calendar className="w-3 h-3 ml-1" style={{ color: 'var(--text-tertiary)' }} />
           </div>
         </div>
       </div>

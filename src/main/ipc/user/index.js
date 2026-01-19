@@ -16,34 +16,34 @@ class UserHandler {
 
   initializeHandlers() {
     // 👥 READ-ONLY HANDLERS ONLY
-    this.getAllUsers = this.importHandler("./get/all.ipc");
-    this.findPage = this.importHandler("./find_page.ipc");
-    this.getUserById = this.importHandler("./get/by_id.ipc");
-    this.getUserByUsername = this.importHandler("./get/by_username.ipc");
-    this.getUsersByRole = this.importHandler("./get/by_role.ipc");
-    this.getActiveUsers = this.importHandler("./get/active.ipc");
-    this.getUserStats = this.importHandler("./get/stats.ipc");
-    this.searchUsers = this.importHandler("./search.ipc");
-    this.getUserActivityLogs = this.importHandler("./get/activity_logs.ipc");
-    this.getUserPermissions = this.importHandler("./get/permissions.ipc");
-    this.validateUserCredentials = this.importHandler("./validate_credentials.ipc");
-    this.checkUsernameAvailability = this.importHandler("./check_username_availability.ipc");
-    this.getUserSalesReport = this.importHandler("./get/sales_report.ipc");
-    this.getUserLoginHistory = this.importHandler("./get/login_history.ipc");
-    this.getUsersByDepartment = this.importHandler("./get/by_department.ipc");
-    this.getUserShiftInfo = this.importHandler("./get/shift_info.ipc");
+    this.getAllUsers = require("./get/all.ipc");
+    this.findPage = require("./find_page.ipc");
+    this.getUserById = require("./get/by_id.ipc");
+    this.getUserByUsername = require("./get/by_username.ipc");
+    this.getUsersByRole = require("./get/by_role.ipc");
+    this.getActiveUsers = require("./get/active.ipc");
+    this.getUserStats = require("./get/stats.ipc");
+    this.searchUsers = require("./search.ipc");
+    this.getUserActivityLogs = require("./get/activity_logs.ipc");
+    this.getUserPermissions = require("./get/permissions.ipc");
+    this.validateUserCredentials = require("./validate_credentials.ipc");
+    this.checkUsernameAvailability = require("./check_username_availability.ipc");
+    this.getUserSalesReport = require("./get/sales_report.ipc");
+    this.getUserLoginHistory = require("./get/login_history.ipc");
+    this.getUsersByDepartment = require("./get/by_department.ipc");
+    this.getUserShiftInfo = require("./get/shift_info.ipc");
     
     // ✏️ USER MANAGEMENT OPERATIONS (with transactions)
-    this.createUser = this.importHandler("./create/user.ipc.js");
-    this.updateUser = this.importHandler("./update/user.ipc.js");
-    this.deleteUser = this.importHandler("./delete/user.ipc.js");
-    this.updateUserPassword = this.importHandler("./update/password.ipc.js");
-    this.updateUserPermissions = this.importHandler("./update/permissions.ipc.js");
-    this.updateUserRole = this.importHandler("./update/role.ipc.js");
-    this.toggleUserStatus = this.importHandler("./toggle_status.ipc.js");
-    this.resetUserPassword = this.importHandler("./reset_password.ipc.js");
-    this.logUserLogin = this.importHandler("./log_login.ipc.js");
-    this.logUserLogout = this.importHandler("./log_logout.ipc.js");
+    this.createUser = require("./create/user.ipc.js");
+    this.updateUser = require("./update/user.ipc.js");
+    this.deleteUser = require("./delete/user.ipc.js");
+    this.updateUserPassword = require("./update/password.ipc.js");
+    this.updateUserPermissions = require("./update/permissions.ipc.js");
+    this.updateUserRole = require("./update/role.ipc.js");
+    this.toggleUserStatus = require("./toggle_status.ipc.js");
+    this.resetUserPassword = require("./reset_password.ipc.js");
+    this.logUserLogin = require("./log_login.ipc.js");
+    this.logUserLogout = require("./log_logout.ipc.js");
   }
 
   /**
@@ -213,9 +213,9 @@ class UserHandler {
     }
   }
 
+
   /**
-   * Wrap critical operations in a database transaction
-   * @param {(arg0: any, arg1: import("typeorm").QueryRunner) => any} handler
+   * @param {(arg0: any, arg1: any) => any} handler
    * @param {{ _userId: any; }} params
    */
   async handleWithTransaction(handler, params) {

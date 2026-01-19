@@ -28,112 +28,130 @@ const POSLogin: React.FC = () => {
 
     const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-        try {
-            // Validate inputs
-            if (!username.trim()) {
-                setError('Please enter your username');
-                setLoading(false);
-                return;
-            }
-
-            if (!password.trim()) {
-                setError('Please enter your password');
-                setLoading(false);
-                return;
-            }
-
-            // Call the userAPI for authentication
-            const response = await userAPI.validateUserCredentials(
-                username.trim(),
-                password.trim()
-            );
-
-            if (response.status && response.data?.valid && response.data.user) {
-                const user = response.data.user;
-
-                // Get user permissions for POS
-                const permissionsResponse = await userAPI.getUserPermissions(user.id);
-
-                // Extract permissions
-                const permissions = permissionsResponse.data?.permissions || {};
-
-                // Map API response to auth store format for POS
-                const posUser = {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email || `${user.username}@pos.local`,
-                    role: user.role,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    display_name: user.display_name || user.username,
-                    employee_id: user.employee_id,
-                    department: user.department,
-                    is_active: user.is_active,
-                    // Convert permissions object to array of keys with true values
-                    permissions: Object.entries(permissions)
-                        .filter(([_, value]) => value === true)
-                        .map(([key]) => key),
-                    can_manage_products: permissions['can_manage_products'] || false,
-                    can_adjust_inventory: permissions['can_adjust_inventory'] || false,
-                    can_view_reports: permissions['can_view_reports'] || false,
-                    last_login_at: new Date().toISOString(),
-                    created_at: user.created_at || new Date().toISOString(),
-                    updated_at: user.updated_at || new Date().toISOString()
-                };
-
-                // Generate token for offline mode (in real app, this would come from API)
-                const token = `pos_token_${Date.now()}_${user.id}`;
-
-                // Save to auth store (offline mode)
-                posAuthStore.setAuthData({
-                    user: posUser,
-                    token: token,
-                    expiresIn: 8 * 60 * 60 // 8 hours shift
-                });
-
-                // Log the login activity
-                await userAPI.logUserLogin({
-                    user_id: user.id,
-                    username: user.username,
-                    ip_address: '127.0.0.1',
-                    user_agent: navigator.userAgent
-                });
-
-                // Check if first user/admin
-                const usersResponse = await userAPI.getAllUsers();
-                const userCount = usersResponse.data?.length || 0;
-
-                if (userCount === 1 && user.role.toLowerCase() === 'admin') {
-                    await dialogs.info('Welcome! You are the first administrator of POS Management System.');
-                }
-
-                // Navigate to POS dashboard
-                navigate('/pos/dashboard');
-            } else {
-                setError(response.message || 'Invalid username or password');
-            }
-
-        } catch (err: any) {
-            // Handle specific error cases
-            if (err.message === "Electron API not available") {
-                setError('Application backend is not available. Please restart the application.');
-            } else if (err.message?.includes('network')) {
-                setError('Network error. Please check your connection.');
-            } else if (err.message?.includes('Login failed')) {
-                setError('Invalid username or password');
-            } else {
-                setError(err.message || 'An unexpected error occurred during login');
-            }
-            console.error('Login error:', err);
-        } finally {
+    try {
+        // Validate inputs
+        if (!username.trim()) {
+            setError('Please enter your username');
             setLoading(false);
+            return;
         }
-    };
+
+        if (!password.trim()) {
+            setError('Please enter your password');
+            setLoading(false);
+            return;
+        }
+
+        // Call the userAPI for authentication
+        const response = await userAPI.validateUserCredentials(
+            username.trim(),
+            password.trim()
+        );
+        console.log('Login response:', response);
+
+        // FIXED: Check if response is successful and contains user data
+        if (response.status === true && response.data && response.data.user) {
+            const user = response.data.user;
+
+            // Get user permissions for POS
+            const permissionsResponse = await userAPI.getUserPermissions(user.id);
+
+            // Extract permissions - adjust based on actual API response
+            const permissions = permissionsResponse.data?.permissions || {};
+            
+            // If permissions response has direct boolean fields, use them
+            // Otherwise, check the structure from the user response
+            const canManageProducts = permissions['can_manage_products'] !== undefined 
+                ? permissions['can_manage_products']
+                : user.can_manage_products || false;
+                
+            const canAdjustInventory = permissions['can_adjust_inventory'] !== undefined
+                ? permissions['can_adjust_inventory']
+                : user.can_adjust_inventory || false;
+                
+            const canViewReports = permissions['can_view_reports'] !== undefined
+                ? permissions['can_view_reports']
+                : user.can_view_reports || false;
+
+            // Map API response to auth store format for POS
+            const posUser = {
+                id: user.id,
+                username: user.username,
+                email: user.email || `${user.username}@pos.local`,
+                role: user.role,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                display_name: user.display_name || user.username,
+                employee_id: user.employee_id,
+                department: user.department,
+                is_active: user.is_active,
+                // Convert permissions object to array of keys with true values
+                permissions: Object.entries(permissions)
+                    .filter(([_, value]) => value === true)
+                    .map(([key]) => key),
+                can_manage_products: canManageProducts,
+                can_adjust_inventory: canAdjustInventory,
+                can_view_reports: canViewReports,
+                last_login_at: new Date().toISOString(),
+                created_at: user.created_at || new Date().toISOString(),
+                updated_at: user.updated_at || new Date().toISOString()
+            };
+
+            // Generate token for offline mode
+            const token = `pos_token_${Date.now()}_${user.id}`;
+
+            // Save to auth store (offline mode)
+            posAuthStore.setAuthData({
+                user: posUser,
+                token: token,
+                expiresIn: 8 * 60 * 60 // 8 hours shift
+            });
+
+            // Log the login activity
+            await userAPI.logUserLogin({
+                user_id: user.id,
+                username: user.username,
+                ip_address: '127.0.0.1',
+                user_agent: navigator.userAgent
+            });
+
+            // Check if first user/admin
+            const usersResponse = await userAPI.getAllUsers();
+            const userCount = usersResponse.data?.length || 0;
+
+            if (userCount === 1 && user.role.toLowerCase().includes('admin')) {
+                await dialogs.info('Welcome! You are the first administrator of POS Management System.');
+            }
+
+            // Navigate to POS dashboard
+            navigate('/dashboard');
+        } else {
+            // FIXED: Use response.message if available, otherwise default message
+            setError(response.message || 'Invalid username or password');
+            console.log('Login failed:', response);
+        }
+
+    } catch (err: any) {
+        // Handle specific error cases
+        if (err.message === "Electron API not available") {
+            setError('Application backend is not available. Please restart the application.');
+        } else if (err.message?.includes('network')) {
+            setError('Network error. Please check your connection.');
+        } else if (err.message?.includes('Login failed')) {
+            setError('Invalid username or password');
+        } else {
+            setError(err.message || 'An unexpected error occurred during login');
+        }
+        console.error('Login error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div style={{

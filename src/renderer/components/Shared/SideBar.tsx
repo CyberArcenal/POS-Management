@@ -1,7 +1,7 @@
 // components/Sidebar.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { version } from "../../../../package.json"
+import { version } from "../../../../package.json";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -16,59 +16,24 @@ import {
   TrendingUp,
   Bell,
   LogOut,
-  HelpCircle,
-  Wallet,
-  Calculator,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Home,
-  ListChecks,
+  HelpCircle, Calculator, ListChecks,
   Layers,
-  CalendarDays,
-  CalendarCheck,
-  UserCog,
-  Phone,
-  MessageSquare,
-  Zap,
-  CalendarClock,
-  CheckSquare,
-  XSquare,
-  Clock4,
-  Users2,
-  BarChart,
-  PieChart,
+  CalendarDays, MessageSquare, Users2, PieChart,
   Download,
-  Activity,
-  Mail,
-  Lock,
-  KeyRound,
-  FileCheck,
-  User2,
-  UserCircle,
-  CalendarCheck2,
-  Store,
-  Receipt,
+  Activity, FileCheck,
+  User2, Receipt,
   Tag,
   BarChart2,
   ShoppingBag,
   Truck,
   DollarSign,
-  Percent,
-  FileBarChart,
-  ClipboardList,
+  Percent, ClipboardList,
   Archive,
-  QrCode,
-  Scan,
-  Gift,
-  Trophy,
-  Coins,
-  Smartphone,
+  QrCode, Trophy
 } from "lucide-react";
 import { useSystemInfo } from "../../contexts/SystemInfoContext";
 import { dialogs } from "../../utils/dialogs";
 import { posAuthStore } from "../../lib/authStore";
-
 
 interface SidebarProps {
   isOpen: boolean;
@@ -84,9 +49,9 @@ interface MenuItem {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const location = useLocation();
-  const {systemInfo} = useSystemInfo()
+  const { systemInfo } = useSystemInfo();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
@@ -130,8 +95,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { path: "/customers/list", name: "Customer Directory", icon: Users2 },
         { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
         { path: "/customers/groups", name: "Customer Groups", icon: Users },
-        { path: "/customers/credit", name: "Credit Accounts", icon: CreditCard },
-        { path: "/customers/feedback", name: "Customer Feedback", icon: MessageSquare },
+        {
+          path: "/customers/credit",
+          name: "Credit Accounts",
+          icon: CreditCard,
+        },
+        {
+          path: "/customers/feedback",
+          name: "Customer Feedback",
+          icon: MessageSquare,
+        },
       ],
     },
 
@@ -142,8 +115,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       category: "core",
       children: [
         { path: "/suppliers/list", name: "Supplier List", icon: ClipboardList },
-        { path: "/suppliers/orders", name: "Purchase Orders", icon: ShoppingBag },
-        { path: "/suppliers/payments", name: "Supplier Payments", icon: DollarSign },
+        {
+          path: "/suppliers/orders",
+          name: "Purchase Orders",
+          icon: ShoppingBag,
+        },
+        {
+          path: "/suppliers/payments",
+          name: "Supplier Payments",
+          icon: DollarSign,
+        },
         { path: "/suppliers/returns", name: "Supplier Returns", icon: Truck },
       ],
     },
@@ -170,9 +151,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       category: "analytics",
       children: [
         { path: "/analytics/sales", name: "Sales Analytics", icon: Activity },
-        { path: "/analytics/inventory", name: "Inventory Reports", icon: PieChart },
-        { path: "/analytics/customers", name: "Customer Insights", icon: Users },
-        { path: "/analytics/financial", name: "Financial Reports", icon: DollarSign },
+        {
+          path: "/analytics/inventory",
+          name: "Inventory Reports",
+          icon: PieChart,
+        },
+        {
+          path: "/analytics/customers",
+          name: "Customer Insights",
+          icon: Users,
+        },
+        {
+          path: "/analytics/financial",
+          name: "Financial Reports",
+          icon: DollarSign,
+        },
         { path: "/analytics/export", name: "Export Data", icon: Download },
       ],
     },
@@ -184,13 +177,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: Settings,
       category: "system",
       children: [
-        {path: "/users", name: "User Management", icon: User2},
+        { path: "/users", name: "User Management", icon: User2 },
         { path: "/settings/general", name: "General Settings", icon: Settings },
-        { path: "/settings/payments", name: "Payment Methods", icon: CreditCard },
+        {
+          path: "/settings/payments",
+          name: "Payment Methods",
+          icon: CreditCard,
+        },
         { path: "/settings/tax", name: "Tax Settings", icon: Percent },
         { path: "/settings/receipt", name: "Receipt Settings", icon: Receipt },
         { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
-        {path: "/notification-logs", name: "Notification Logs", icon: Bell},
+        { path: "/notification-logs", name: "Notification Logs", icon: Bell },
         { path: "/system/backup", name: "Backup & Restore", icon: Download },
       ],
     },
@@ -201,7 +198,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       // If a parent has children, filter its children array
       if (item.children) {
         const children = item.children.filter(
-          (child) => !(child.path === "/users")
+          (child) => !(child.path === "/users"),
         );
         return { ...item, children };
       }
@@ -211,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     .filter(
       (item) =>
         item.path !== "/users" && // top-level Users
-        (item.children ? item.children.length > 0 : true)
+        (item.children ? item.children.length > 0 : true),
     );
 
   const toggleDropdown = (name: string) => {
@@ -253,25 +250,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <div
                 onClick={() => toggleDropdown(item.name)}
                 className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer
-            ${is_active
-                    ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
-                    : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"}
+            ${
+              is_active
+                ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+                : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+            }
           `}
               >
                 <div className="flex items-center gap-3">
                   <item.icon
-                    className={`w-5 h-5 ${is_active
-                      ? "text-white"
-                      : "text-[var(--sidebar-text)] group-hover:text-white"
-                      }`}
+                    className={`w-5 h-5 ${
+                      is_active
+                        ? "text-white"
+                        : "text-[var(--sidebar-text)] group-hover:text-white"
+                    }`}
                   />
                   <span className="font-medium">{item.name}</span>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                    } ${is_active
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  } ${
+                    is_active
                       ? "text-white"
-                      : "text-[var(--sidebar-text)] group-hover:text-white"}`}
+                      : "text-[var(--sidebar-text)] group-hover:text-white"
+                  }`}
                 />
               </div>
 
@@ -287,10 +290,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <Link
                           to={child.path}
                           className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm
-                      ${isChildActive
-                              ? "text-white bg-[var(--accent-blue)]/20 font-semibold border-l-2 border-[var(--accent-blue)] pl-2"
-                              : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
-                            }
+                      ${
+                        isChildActive
+                          ? "text-white bg-[var(--accent-blue)]/20 font-semibold border-l-2 border-[var(--accent-blue)] pl-2"
+                          : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+                      }
                     `}
                         >
                           <child.icon className="w-4 h-4" />
@@ -306,25 +310,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             <Link
               to={item.path}
               className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200
-          ${is_active
-                  ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
-                  : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"}
+          ${
+            is_active
+              ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+              : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+          }
         `}
             >
               <div className="flex items-center gap-3">
                 <item.icon
-                  className={`w-5 h-5 ${is_active
-                    ? "text-white"
-                    : "text-[var(--sidebar-text)] group-hover:text-white"
-                    }`}
+                  className={`w-5 h-5 ${
+                    is_active
+                      ? "text-white"
+                      : "text-[var(--sidebar-text)] group-hover:text-white"
+                  }`}
                 />
                 <span className="font-medium">{item.name}</span>
               </div>
               <ChevronRight
-                className={`w-4 h-4 transition-opacity duration-200 ${is_active
-                  ? "opacity-100 text-white"
-                  : "opacity-0 group-hover:opacity-50 text-[var(--sidebar-text)]"
-                  }`}
+                className={`w-4 h-4 transition-opacity duration-200 ${
+                  is_active
+                    ? "opacity-100 text-white"
+                    : "opacity-0 group-hover:opacity-50 text-[var(--sidebar-text)]"
+                }`}
               />
             </Link>
           )}
@@ -340,10 +348,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   ];
 
   const handleLogOut = async (event: any) => {
-    const confirm = await dialogs.confirm({ title: "Log-out?", message: "Are you sure do you want to logout?" });
+    const confirm = await dialogs.confirm({
+      title: "Log-out?",
+      message: "Are you sure do you want to logout?",
+    });
     if (!confirm) return;
-    posAuthStore.logout()
-  }
+    posAuthStore.logout();
+  };
 
   return (
     <div
@@ -366,9 +377,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           {/* Business info */}
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-white">
-              {systemInfo? systemInfo.site_name : `POS Management`}
+              {systemInfo ? systemInfo.site_name : `POS Management`}
             </h2>
-            <p className="text-xs text-[var(--text-tertiary)]">Point of Sale System</p>
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Point of Sale System
+            </p>
           </div>
         </div>
       </div>
@@ -377,7 +390,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       <nav className="flex-1 overflow-y-auto pos-scrollbar p-4">
         {categories.map((category) => {
           const categoryItems = menuItems.filter(
-            (item) => item.category === category.id
+            (item) => item.category === category.id,
           );
           if (categoryItems.length === 0) return null;
 
@@ -386,7 +399,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <h6 className="px-4 py-2 text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider bg-[#334155]/50 rounded-lg">
                 {category.name}
               </h6>
-              <ul className="space-y-1 mt-2">{renderMenuItems(categoryItems)}</ul>
+              <ul className="space-y-1 mt-2">
+                {renderMenuItems(categoryItems)}
+              </ul>
             </div>
           );
         })}
@@ -442,7 +457,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           >
             <Settings className="w-4 h-4" />
           </Link>
-          <button onClick={handleLogOut}
+          <button
+            onClick={handleLogOut}
             className="text-[var(--text-tertiary)] hover:text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 p-1.5 rounded-full transition-colors duration-200"
             title="Logout"
           >

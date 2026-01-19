@@ -9,7 +9,10 @@ require("reflect-metadata");
 const User = require("../entities/User");
 const { AppDataSource } = require("./db/dataSource");
 const MigrationManager = require("../utils/migrationManager");
-const { registerIpcHandlers, registerSyncIpcHandlers } = require("./reg.handler");
+const {
+  registerIpcHandlers,
+  registerSyncIpcHandlers,
+} = require("./reg.handler");
 // @ts-ignore
 const { remindersEnabled, auditLogEnabled } = require("../utils/system");
 const AuditTrailCleanupScheduler = require("../scheduler/auditTrailCleanupScheduler");
@@ -21,6 +24,7 @@ const syncRetryService = require("../services/inventory_sync/syncRetryService");
 const SyncManager = require("../services/inventory_sync/syncManager"); // NEW IMPORT
 const syncDataManager = require("../services/inventory_sync/syncDataManager"); // NEW IMPORT
 const saleCompletionHandler = require("../services/inventory_sync/saleCompletionHandler"); // NEW IMPORT
+const { registerWindowControlHandlers } = require("./ipc/windows_control.ipc");
 
 // ===================== REMOVE THESE UNUSED IMPORTS =====================
 // DELETE THESE LINES (if they exist):
@@ -59,7 +63,7 @@ function safeCloseDB() {
     dbClosed = true;
     AppDataSource.destroy()
       .then(() => log("INFO", "Database connection closed"))
-      .catch((err) => log("ERROR", "Error closing DB: " + err));
+      .catch((/** @type {string} */ err) => log("ERROR", "Error closing DB: " + err));
   }
 }
 
@@ -602,8 +606,6 @@ async function startSyncServices() {
   }
 }
 
-
-
 // ===================== MAIN STARTUP FLOW =====================
 app.on("ready", async () => {
   try {
@@ -655,6 +657,7 @@ app.on("ready", async () => {
 
     // 3. Register IPC handlers and signals
     registerIpcHandlers();
+    registerWindowControlHandlers();
 
     // 4. Register migration-related IPC handlers
     registerMigrationIpcHandlers();

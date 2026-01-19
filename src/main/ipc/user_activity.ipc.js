@@ -26,7 +26,7 @@ class UserActivityHandler {
   async handleRequest(event, payload) {
     try {
       await this.initializeRepositories();
-      
+
       const method = payload.method;
       const params = payload.params || {};
       // @ts-ignore
@@ -36,10 +36,12 @@ class UserActivityHandler {
       // Log the request
       if (logger) {
         // @ts-ignore
-        logger.info(`UserActivityHandler: ${method}`, { 
-          method, 
+        logger.info(`UserActivityHandler: ${method}`, {
+          method,
           userId,
-          params: Object.keys(params).filter(key => key !== 'password' && key !== 'token')
+          params: Object.keys(params).filter(
+            (key) => key !== "password" && key !== "token",
+          ),
         });
       }
 
@@ -54,7 +56,7 @@ class UserActivityHandler {
             enrichedParams.page,
             // @ts-ignore
             enrichedParams.limit,
-            userId
+            userId,
           );
 
         case "getActivitiesByUser":
@@ -63,7 +65,7 @@ class UserActivityHandler {
             enrichedParams.targetUserId,
             // @ts-ignore
             enrichedParams.limit,
-            userId
+            userId,
           );
 
         case "getActivitiesByAction":
@@ -72,7 +74,7 @@ class UserActivityHandler {
             enrichedParams.action,
             // @ts-ignore
             enrichedParams.limit,
-            userId
+            userId,
           );
 
         case "getActivitiesByEntity":
@@ -83,21 +85,21 @@ class UserActivityHandler {
             enrichedParams.entityId,
             // @ts-ignore
             enrichedParams.limit,
-            userId
+            userId,
           );
 
         case "getRecentActivities":
           return await this.getRecentActivities(
             // @ts-ignore
             enrichedParams.limit,
-            userId
+            userId,
           );
 
         case "getActivityStats":
           return await this.getActivityStats(
             // @ts-ignore
             enrichedParams.dateRange,
-            userId
+            userId,
           );
 
         case "searchActivities":
@@ -106,7 +108,7 @@ class UserActivityHandler {
             enrichedParams.query,
             // @ts-ignore
             enrichedParams.filters,
-            userId
+            userId,
           );
 
         case "getActivityTimeline":
@@ -117,7 +119,7 @@ class UserActivityHandler {
             enrichedParams.endDate,
             // @ts-ignore
             enrichedParams.groupBy,
-            userId
+            userId,
           );
 
         case "getUserActivitySummary":
@@ -126,7 +128,7 @@ class UserActivityHandler {
             enrichedParams.targetUserId,
             // @ts-ignore
             enrichedParams.days,
-            userId
+            userId,
           );
 
         case "getSystemAuditLog":
@@ -137,7 +139,7 @@ class UserActivityHandler {
             enrichedParams.endDate,
             // @ts-ignore
             enrichedParams.actions,
-            userId
+            userId,
           );
 
         default:
@@ -164,16 +166,16 @@ class UserActivityHandler {
 
   /**
    * Get user activities with pagination and filters
-   * @param {object} filters 
-   * @param {number} page 
-   * @param {number} limit 
-   * @param {number} userId 
+   * @param {object} filters
+   * @param {number} page
+   * @param {number} limit
+   * @param {number} userId
    */
   // @ts-ignore
   async getUserActivities(filters = {}, page = 1, limit = 50, userId) {
     try {
       const skip = (page - 1) * limit;
-      
+
       // @ts-ignore
       const queryBuilder = this.userActivityRepo
         .createQueryBuilder("activity")
@@ -184,50 +186,63 @@ class UserActivityHandler {
       // @ts-ignore
       if (filters.userId) {
         // @ts-ignore
-        queryBuilder.andWhere("activity.user_id = :userId", { userId: filters.userId });
+        queryBuilder.andWhere("activity.user_id = :userId", {
+          userId: filters.userId,
+        });
       }
 
       // @ts-ignore
       if (filters.action) {
         // @ts-ignore
-        queryBuilder.andWhere("activity.action LIKE :action", { action: `%${filters.action}%` });
+        queryBuilder.andWhere("activity.action LIKE :action", {
+          action: `%${filters.action}%`,
+        });
       }
 
       // @ts-ignore
       if (filters.entity) {
         // @ts-ignore
-        queryBuilder.andWhere("activity.entity = :entity", { entity: filters.entity });
+        queryBuilder.andWhere("activity.entity = :entity", {
+          entity: filters.entity,
+        });
       }
 
       // @ts-ignore
       if (filters.startDate && filters.endDate) {
-        queryBuilder.andWhere("activity.created_at BETWEEN :startDate AND :endDate", {
-          // @ts-ignore
-          startDate: filters.startDate,
-          // @ts-ignore
-          endDate: filters.endDate,
-        });
-      // @ts-ignore
+        queryBuilder.andWhere(
+          "activity.created_at BETWEEN :startDate AND :endDate",
+          {
+            // @ts-ignore
+            startDate: filters.startDate,
+            // @ts-ignore
+            endDate: filters.endDate,
+          },
+        );
+        // @ts-ignore
       } else if (filters.startDate) {
         // @ts-ignore
-        queryBuilder.andWhere("activity.created_at >= :startDate", { startDate: filters.startDate });
-      // @ts-ignore
+        queryBuilder.andWhere("activity.created_at >= :startDate", {
+          startDate: filters.startDate,
+        });
+        // @ts-ignore
       } else if (filters.endDate) {
         // @ts-ignore
-        queryBuilder.andWhere("activity.created_at <= :endDate", { endDate: filters.endDate });
+        queryBuilder.andWhere("activity.created_at <= :endDate", {
+          endDate: filters.endDate,
+        });
       }
 
       // @ts-ignore
       if (filters.ipAddress) {
-        queryBuilder.andWhere("activity.ip_address LIKE :ipAddress", { 
+        queryBuilder.andWhere("activity.ip_address LIKE :ipAddress", {
           // @ts-ignore
-          ipAddress: `%${filters.ipAddress}%` 
+          ipAddress: `%${filters.ipAddress}%`,
         });
       }
 
       // Get total count for pagination
       const total = await queryBuilder.getCount();
-      
+
       // Apply pagination
       queryBuilder.skip(skip).take(limit);
 
@@ -254,9 +269,9 @@ class UserActivityHandler {
 
   /**
    * Get activities for a specific user
-   * @param {number} targetUserId 
-   * @param {number} limit 
-   * @param {number} userId 
+   * @param {number} targetUserId
+   * @param {number} limit
+   * @param {number} userId
    */
   // @ts-ignore
   async getActivitiesByUser(targetUserId, limit = 30, userId) {
@@ -286,9 +301,9 @@ class UserActivityHandler {
 
   /**
    * Get activities by action type
-   * @param {string} action 
-   * @param {number} limit 
-   * @param {number} userId 
+   * @param {string} action
+   * @param {number} limit
+   * @param {number} userId
    */
   // @ts-ignore
   async getActivitiesByAction(action, limit = 50, userId) {
@@ -318,10 +333,10 @@ class UserActivityHandler {
 
   /**
    * Get activities for a specific entity
-   * @param {string} entity 
-   * @param {number} entityId 
-   * @param {number} limit 
-   * @param {number} userId 
+   * @param {string} entity
+   * @param {number} entityId
+   * @param {number} limit
+   * @param {number} userId
    */
   // @ts-ignore
   async getActivitiesByEntity(entity, entityId = null, limit = 30, userId) {
@@ -347,7 +362,7 @@ class UserActivityHandler {
 
       return {
         status: true,
-        message: `Activities for ${entity}${entityId ? ` ID ${entityId}` : ''} retrieved successfully`,
+        message: `Activities for ${entity}${entityId ? ` ID ${entityId}` : ""} retrieved successfully`,
         data: activities,
       };
     } catch (error) {
@@ -357,8 +372,8 @@ class UserActivityHandler {
 
   /**
    * Get most recent activities
-   * @param {number} limit 
-   * @param {number} userId 
+   * @param {number} limit
+   * @param {number} userId
    */
   // @ts-ignore
   async getRecentActivities(limit = 20, userId) {
@@ -383,15 +398,15 @@ class UserActivityHandler {
 
   /**
    * Get activity statistics
-   * @param {object} dateRange 
-   * @param {number} userId 
+   * @param {object} dateRange
+   * @param {number} userId
    */
   // @ts-ignore
   async getActivityStats(dateRange = {}, userId) {
     try {
       // @ts-ignore
       const { startDate, endDate } = dateRange;
-      
+
       // @ts-ignore
       const queryBuilder = this.userActivityRepo
         .createQueryBuilder("activity")
@@ -404,10 +419,13 @@ class UserActivityHandler {
 
       // Apply date range if provided
       if (startDate && endDate) {
-        queryBuilder.where("activity.created_at BETWEEN :startDate AND :endDate", {
-          startDate,
-          endDate,
-        });
+        queryBuilder.where(
+          "activity.created_at BETWEEN :startDate AND :endDate",
+          {
+            startDate,
+            endDate,
+          },
+        );
       } else if (startDate) {
         queryBuilder.where("activity.created_at >= :startDate", { startDate });
       } else if (endDate) {
@@ -433,7 +451,7 @@ class UserActivityHandler {
         .select([
           "activity.user_id",
           "user.username",
-          "COUNT(activity.id) as activity_count"
+          "COUNT(activity.id) as activity_count",
         ])
         .leftJoin("activity.user", "user")
         .groupBy("activity.user_id, user.username")
@@ -457,23 +475,23 @@ class UserActivityHandler {
 
   /**
    * Search activities by text query
-   * @param {string} query 
-   * @param {object} filters 
-   * @param {number} userId 
+   * @param {string} query
+   * @param {object} filters
+   * @param {number} userId
    */
   // @ts-ignore
   async searchActivities(query, filters = {}, userId) {
     try {
       if (!query || query.trim().length < 2) {
-        return { 
-          status: false, 
-          message: "Search query must be at least 2 characters", 
-          data: null 
+        return {
+          status: false,
+          message: "Search query must be at least 2 characters",
+          data: null,
         };
       }
 
       const searchQuery = `%${query}%`;
-      
+
       // @ts-ignore
       const queryBuilder = this.userActivityRepo
         .createQueryBuilder("activity")
@@ -489,17 +507,17 @@ class UserActivityHandler {
       // Apply additional filters
       // @ts-ignore
       if (filters.startDate) {
-        queryBuilder.andWhere("activity.created_at >= :startDate", { 
+        queryBuilder.andWhere("activity.created_at >= :startDate", {
           // @ts-ignore
-          startDate: filters.startDate 
+          startDate: filters.startDate,
         });
       }
 
       // @ts-ignore
       if (filters.endDate) {
-        queryBuilder.andWhere("activity.created_at <= :endDate", { 
+        queryBuilder.andWhere("activity.created_at <= :endDate", {
           // @ts-ignore
-          endDate: filters.endDate 
+          endDate: filters.endDate,
         });
       }
 
@@ -521,19 +539,19 @@ class UserActivityHandler {
 
   /**
    * Get activity timeline grouped by date
-   * @param {string} startDate 
-   * @param {string} endDate 
+   * @param {string} startDate
+   * @param {string} endDate
    * @param {string} groupBy - day, week, month
-   * @param {number} userId 
+   * @param {number} userId
    */
   // @ts-ignore
-  async getActivityTimeline(startDate, endDate, groupBy = 'day', userId) {
+  async getActivityTimeline(startDate, endDate, groupBy = "day", userId) {
     try {
       if (!startDate || !endDate) {
-        return { 
-          status: false, 
-          message: "Start date and end date are required", 
-          data: null 
+        return {
+          status: false,
+          message: "Start date and end date are required",
+          data: null,
         };
       }
 
@@ -541,21 +559,27 @@ class UserActivityHandler {
       let groupByClause;
 
       switch (groupBy) {
-        case 'day':
-          dateFormat = '%Y-%m-%d';
-          groupByClause = 'DATE(activity.created_at)';
+        case "day":
+          // daily grouping
+          dateFormat = "%Y-%m-%d";
+          groupByClause = `strftime('%Y-%m-%d', activity.created_at)`;
           break;
-        case 'week':
-          dateFormat = '%Y-%W';
-          groupByClause = 'YEARWEEK(activity.created_at, 3)';
+
+        case "week":
+          // weekly grouping (ISO week number)
+          dateFormat = "%Y-%W";
+          groupByClause = `strftime('%Y-%W', activity.created_at)`;
           break;
-        case 'month':
-          dateFormat = '%Y-%m';
-          groupByClause = 'DATE_FORMAT(activity.created_at, "%Y-%m")';
+
+        case "month":
+          // monthly grouping
+          dateFormat = "%Y-%m";
+          groupByClause = `strftime('%Y-%m', activity.created_at)`;
           break;
+
         default:
-          dateFormat = '%Y-%m-%d';
-          groupByClause = 'DATE(activity.created_at)';
+          dateFormat = "%Y-%m-%d";
+          groupByClause = `strftime('%Y-%m-%d', activity.created_at)`;
       }
 
       // @ts-ignore
@@ -563,8 +587,8 @@ class UserActivityHandler {
         .createQueryBuilder("activity")
         .select([
           `${groupByClause} as period`,
-          'COUNT(activity.id) as activity_count',
-          'COUNT(DISTINCT activity.user_id) as user_count',
+          "COUNT(activity.id) as activity_count",
+          "COUNT(DISTINCT activity.user_id) as user_count",
         ])
         .where("activity.created_at BETWEEN :startDate AND :endDate", {
           startDate,
@@ -591,9 +615,9 @@ class UserActivityHandler {
 
   /**
    * Get summary of user activities
-   * @param {number} targetUserId 
-   * @param {number} days 
-   * @param {number} userId 
+   * @param {number} targetUserId
+   * @param {number} days
+   * @param {number} userId
    */
   // @ts-ignore
   async getUserActivitySummary(targetUserId, days = 30, userId) {
@@ -611,7 +635,7 @@ class UserActivityHandler {
         .select([
           "activity.action",
           "COUNT(activity.id) as count",
-          "MAX(activity.created_at) as last_activity"
+          "MAX(activity.created_at) as last_activity",
         ])
         .where("activity.user_id = :targetUserId", { targetUserId })
         .andWhere("activity.created_at >= :startDate", { startDate })
@@ -633,7 +657,7 @@ class UserActivityHandler {
         .createQueryBuilder("activity")
         .select([
           "DATE(activity.created_at) as date",
-          "COUNT(activity.id) as count"
+          "COUNT(activity.id) as count",
         ])
         .where("activity.user_id = :targetUserId", { targetUserId })
         .andWhere("activity.created_at >= :startDate", { startDate })
@@ -660,32 +684,42 @@ class UserActivityHandler {
 
   /**
    * Get system audit log (for security/audit purposes)
-   * @param {string} startDate 
-   * @param {string} endDate 
+   * @param {string} startDate
+   * @param {string} endDate
    * @param {string[]} actions - specific actions to filter
-   * @param {number} userId 
+   * @param {number} userId
    */
   // @ts-ignore
   async getSystemAuditLog(startDate, endDate, actions = [], userId) {
     try {
       // Define audit-relevant actions (modify as needed)
       const auditActions = [
-        'LOGIN', 'LOGOUT', 'USER_CREATE', 'USER_UPDATE', 'USER_DELETE',
-        'ROLE_CHANGE', 'PERMISSION_CHANGE', 'SYSTEM_SETTINGS_CHANGE',
-        'DATA_EXPORT', 'DATA_IMPORT', 'SECURITY_SETTINGS_CHANGE'
+        "LOGIN",
+        "LOGOUT",
+        "USER_CREATE",
+        "USER_UPDATE",
+        "USER_DELETE",
+        "ROLE_CHANGE",
+        "PERMISSION_CHANGE",
+        "SYSTEM_SETTINGS_CHANGE",
+        "DATA_EXPORT",
+        "DATA_IMPORT",
+        "SECURITY_SETTINGS_CHANGE",
       ];
 
       // @ts-ignore
       const queryBuilder = this.userActivityRepo
         .createQueryBuilder("activity")
         .leftJoinAndSelect("activity.user", "user")
-        .where("activity.action IN (:...actions)", { 
-          actions: actions.length > 0 ? actions : auditActions 
+        .where("activity.action IN (:...actions)", {
+          actions: actions.length > 0 ? actions : auditActions,
         })
         .orderBy("activity.created_at", "DESC");
 
       if (startDate) {
-        queryBuilder.andWhere("activity.created_at >= :startDate", { startDate });
+        queryBuilder.andWhere("activity.created_at >= :startDate", {
+          startDate,
+        });
       }
 
       if (endDate) {
@@ -719,8 +753,8 @@ ipcMain.handle(
   withErrorHandling(
     // @ts-ignore
     userActivityHandler.handleRequest.bind(userActivityHandler),
-    "IPC:userActivity"
-  )
+    "IPC:userActivity",
+  ),
 );
 
 module.exports = { UserActivityHandler, userActivityHandler };

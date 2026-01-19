@@ -1,106 +1,106 @@
-/* POS MANAGEMENT THEME */
+/* POS MANAGEMENT THEME - DARK THEME */
 @import "tailwindcss";
 
 :root {
   /* Primary Color Palette - Professional & Transaction-focused */
-  --primary-color: #2563eb; /* Blue - Trust, Professionalism, Reliability */
-  --primary-hover: #1d4ed8; /* Darker Blue */
-  --secondary-color: #059669; /* Green - Success, Growth, Money */
-  --success-color: #10b981; /* Emerald Green - Successful Transaction */
-  --warning-color: #f59e0b; /* Amber - Warning, Attention Needed */
-  --danger-color: #ef4444; /* Red - Error, Failed Transaction */
-  --info-color: #3b82f6; /* Blue - Information, Details */
+  --primary-color: #3b82f6; /* Brighter Blue for dark theme */
+  --primary-hover: #2563eb; /* Darker Blue */
+  --secondary-color: #10b981; /* Emerald Green - Success */
+  --success-color: #10b981; /* Emerald Green */
+  --warning-color: #f59e0b; /* Amber */
+  --danger-color: #ef4444; /* Red */
+  --info-color: #60a5fa; /* Brighter Blue for info */
   
-  /* Background Colors - Light & Clean for POS */
-  --background-color: #f8fafc; /* Light Gray-Blue */
-  --sidebar-bg: #1e293b; /* Dark Slate Blue */
+  /* Background Colors - Dark Theme */
+  --background-color: #0f172a; /* Dark Slate 900 - Main background */
+  --sidebar-bg: #1e293b; /* Dark Slate 800 - Sidebar */
   --sidebar-border: #334155; /* Slate 700 */
-  --sidebar-text: #f1f5f9;
-  --header-bg: #ffffff;
+  --sidebar-text: #f1f5f9; /* Light text */
+  --header-bg: #1e293b; /* Dark header */
   
-  /* Text Colors */
-  --text-primary: #0f172a; /* Dark Slate for readability */
-  --text-secondary: #475569; /* Slate 600 */
-  --text-tertiary: #64748b; /* Slate 500 */
+  /* Text Colors for Dark Theme */
+  --text-primary: #f1f5f9; /* Light for readability */
+  --text-secondary: #cbd5e1; /* Slate 300 */
+  --text-tertiary: #94a3b8; /* Slate 400 */
   
-  /* Card Backgrounds */
-  --card-bg: #ffffff; /* White */
-  --card-secondary-bg: #f1f5f9; /* Slate 50 */
-  --card-hover-bg: #e2e8f0; /* Slate 100 */
+  /* Card Backgrounds - Dark Theme */
+  --card-bg: #1e293b; /* Dark Slate 800 */
+  --card-secondary-bg: #0f172a; /* Slate 900 */
+  --card-hover-bg: #334155; /* Slate 700 */
   
   /* Border Colors */
-  --border-color: #cbd5e1; /* Slate 300 */
-  --border-light: #e2e8f0; /* Slate 100 */
-  --border-dark: #94a3b8; /* Slate 400 */
+  --border-color: #334155; /* Slate 700 */
+  --border-light: #1e293b; /* Slate 800 */
+  --border-dark: #475569; /* Slate 600 */
   
   /* Transaction Status Colors */
-  --status-completed: #059669; /* Green - Completed Transaction */
-  --status-pending: #f59e0b; /* Amber - Pending Payment */
-  --status-cancelled: #ef4444; /* Red - Cancelled Transaction */
-  --status-refunded: #8b5cf6; /* Purple - Refunded */
-  --status-processing: #3b82f6; /* Blue - Processing */
-  --status-onhold: #f97316; /* Orange - On Hold */
+  --status-completed: #10b981; /* Green */
+  --status-pending: #f59e0b; /* Amber */
+  --status-cancelled: #ef4444; /* Red */
+  --status-refunded: #a78bfa; /* Purple */
+  --status-processing: #60a5fa; /* Blue */
+  --status-onhold: #fb923c; /* Orange */
   
   /* Inventory Status */
-  --stock-instock: #059669; /* Green - In Stock */
-  --stock-lowstock: #f59e0b; /* Amber - Low Stock */
-  --stock-outstock: #ef4444; /* Red - Out of Stock */
-  --stock-preorder: #8b5cf6; /* Purple - Pre-order */
+  --stock-instock: #10b981; /* Green */
+  --stock-lowstock: #f59e0b; /* Amber */
+  --stock-outstock: #ef4444; /* Red */
+  --stock-preorder: #a78bfa; /* Purple */
   
   /* Payment Method Colors */
   --payment-cash: #10b981; /* Green */
-  --payment-card: #3b82f6; /* Blue */
-  --payment-digital: #8b5cf6; /* Purple */
+  --payment-card: #60a5fa; /* Blue */
+  --payment-digital: #a78bfa; /* Purple */
   --payment-credit: #f59e0b; /* Amber */
-  --payment-cod: #f97316; /* Orange */
+  --payment-cod: #fb923c; /* Orange */
   
   /* Customer Status Colors */
-  --customer-regular: #3b82f6; /* Blue - Regular Customer */
-  --customer-vip: #8b5cf6; /* Purple - VIP */
-  --customer-new: #10b981; /* Green - New Customer */
-  --customer-loyal: #f59e0b; /* Amber - Loyal Customer */
+  --customer-regular: #60a5fa; /* Blue */
+  --customer-vip: #a78bfa; /* Purple */
+  --customer-new: #10b981; /* Green */
+  --customer-loyal: #f59e0b; /* Amber */
   
-  /* Accent Colors */
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #1d4ed8;
-  --accent-blue-light: #dbeafe;
-  --accent-blue-dark: #1e40af;
+  /* Accent Colors - Dark Theme */
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #2563eb;
+  --accent-blue-light: rgba(59, 130, 246, 0.1);
+  --accent-blue-dark: #1d4ed8;
   
-  --accent-green: #059669;
-  --accent-green-hover: #047857;
-  --accent-green-light: #d1fae5;
-  --accent-green-dark: #065f46;
+  --accent-green: #10b981;
+  --accent-green-hover: #059669;
+  --accent-green-light: rgba(16, 185, 129, 0.1);
+  --accent-green-dark: #047857;
   
   --accent-amber: #f59e0b;
   --accent-amber-hover: #d97706;
-  --accent-amber-light: #fef3c7;
-  --accent-amber-dark: #92400e;
+  --accent-amber-light: rgba(245, 158, 11, 0.1);
+  --accent-amber-dark: #b45309;
   
   --accent-red: #ef4444;
   --accent-red-hover: #dc2626;
-  --accent-red-light: #fee2e2;
+  --accent-red-light: rgba(239, 68, 68, 0.1);
   --accent-red-dark: #b91c1c;
   
   --accent-purple: #8b5cf6;
   --accent-purple-hover: #7c3aed;
-  --accent-purple-light: #ede9fe;
-  --accent-purple-dark: #5b21b6;
+  --accent-purple-light: rgba(139, 92, 246, 0.1);
+  --accent-purple-dark: #6d28d9;
   
-  /* Status Backgrounds */
-  --status-completed-bg: rgba(5, 150, 105, 0.1);
-  --status-pending-bg: rgba(245, 158, 11, 0.1);
-  --status-cancelled-bg: rgba(239, 68, 68, 0.1);
-  --status-refunded-bg: rgba(139, 92, 246, 0.1);
-  --status-processing-bg: rgba(59, 130, 246, 0.1);
-  --status-onhold-bg: rgba(249, 115, 22, 0.1);
+  /* Status Backgrounds - Dark Theme */
+  --status-completed-bg: rgba(16, 185, 129, 0.15);
+  --status-pending-bg: rgba(245, 158, 11, 0.15);
+  --status-cancelled-bg: rgba(239, 68, 68, 0.15);
+  --status-refunded-bg: rgba(168, 139, 250, 0.15);
+  --status-processing-bg: rgba(96, 165, 250, 0.15);
+  --status-onhold-bg: rgba(251, 146, 60, 0.15);
   
   /* Stock Status Backgrounds */
-  --stock-instock-bg: rgba(5, 150, 105, 0.1);
-  --stock-lowstock-bg: rgba(245, 158, 11, 0.1);
-  --stock-outstock-bg: rgba(239, 68, 68, 0.1);
-  --stock-preorder-bg: rgba(139, 92, 246, 0.1);
+  --stock-instock-bg: rgba(16, 185, 129, 0.15);
+  --stock-lowstock-bg: rgba(245, 158, 11, 0.15);
+  --stock-outstock-bg: rgba(239, 68, 68, 0.15);
+  --stock-preorder-bg: rgba(168, 139, 250, 0.15);
   
-  /* Button Colors for POS */
+  /* Button Colors for POS - Dark Theme */
   --btn-primary-bg: var(--accent-blue);
   --btn-primary-hover: var(--accent-blue-hover);
   --btn-primary-text: #ffffff;
@@ -117,167 +117,167 @@
   --btn-warning-hover: var(--accent-amber-hover);
   --btn-warning-text: #ffffff;
   
-  --btn-checkout-bg: linear-gradient(135deg, #059669 0%, #10b981 100%);
-  --btn-checkout-hover: linear-gradient(135deg, #047857 0%, #059669 100%);
+  --btn-checkout-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --btn-checkout-hover: linear-gradient(135deg, #059669 0%, #047857 100%);
   --btn-checkout-text: #ffffff;
   
-  --btn-payment-bg: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  --btn-payment-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  --btn-payment-bg: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --btn-payment-hover: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   --btn-payment-text: #ffffff;
   
   /* Receipt & Invoice Colors */
-  --receipt-bg: #ffffff;
-  --receipt-border: #cbd5e1;
-  --receipt-header: #f8fafc;
-  --receipt-total: #f1f5f9;
+  --receipt-bg: #1e293b;
+  --receipt-border: #334155;
+  --receipt-header: #0f172a;
+  --receipt-total: #334155;
   
-  /* Transaction Table */
-  --table-header-bg: #f1f5f9;
-  --table-row-even: #ffffff;
-  --table-row-odd: #f8fafc;
-  --table-row-hover: #e2e8f0;
-  --table-border: #e2e8f0;
+  /* Transaction Table - Dark Theme */
+  --table-header-bg: #0f172a;
+  --table-row-even: #1e293b;
+  --table-row-odd: #0f172a;
+  --table-row-hover: #334155;
+  --table-border: #334155;
   
   /* POS Interface Elements */
-  --pos-keyboard-bg: #f1f5f9;
-  --pos-keyboard-key: #ffffff;
-  --pos-keyboard-key-hover: #e2e8f0;
-  --pos-screen-bg: #ffffff;
-  --pos-screen-border: #cbd5e1;
+  --pos-keyboard-bg: #0f172a;
+  --pos-keyboard-key: #1e293b;
+  --pos-keyboard-key-hover: #334155;
+  --pos-screen-bg: #1e293b;
+  --pos-screen-border: #334155;
   
   /* Cart & Order Summary */
-  --cart-bg: #ffffff;
-  --cart-header: #f1f5f9;
-  --cart-item-hover: #f8fafc;
-  --cart-total-bg: #f1f5f9;
+  --cart-bg: #1e293b;
+  --cart-header: #0f172a;
+  --cart-item-hover: #334155;
+  --cart-total-bg: #0f172a;
   
   /* Product Cards */
-  --product-card-bg: #ffffff;
-  --product-card-border: #e2e8f0;
-  --product-card-hover: #f8fafc;
-  --product-sale: #ef4444;
+  --product-card-bg: #1e293b;
+  --product-card-border: #334155;
+  --product-card-hover: #334155;
+  --product-sale: #f87171; /* Lighter red for dark theme */
   
   /* Notification Colors */
-  --notification-success: rgba(16, 185, 129, 0.1);
-  --notification-warning: rgba(245, 158, 11, 0.1);
-  --notification-error: rgba(239, 68, 68, 0.1);
-  --notification-info: rgba(59, 130, 246, 0.1);
+  --notification-success: rgba(16, 185, 129, 0.15);
+  --notification-warning: rgba(245, 158, 11, 0.15);
+  --notification-error: rgba(239, 68, 68, 0.15);
+  --notification-info: rgba(96, 165, 250, 0.15);
   
-  /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  --gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
-  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-  --gradient-sales: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  /* Gradient Colors - Dark Theme */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-sales: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
   
-  /* Form Colors */
-  --input-bg: #ffffff;
-  --input-border: #cbd5e1;
+  /* Form Colors - Dark Theme */
+  --input-bg: #0f172a;
+  --input-border: #334155;
   --input-focus: var(--accent-blue);
-  --select-option-bg: #ffffff;
-  --select-option-hover: #f1f5f9;
+  --select-option-bg: #1e293b;
+  --select-option-hover: #334155;
   
-  /* Override existing variables */
+  /* Topbar Colors - Dark Theme */
   --topbar-bg: #1e293b;
   --topbar-border: #334155;
   --topbar-hover: #3b82f6;
-  --topbar-search-bg: #334155;
-  --topbar-search-border: #475569;
+  --topbar-search-bg: #0f172a;
+  --topbar-search-border: #334155;
 }
 
-/* POS Specific Components */
+/* POS Specific Components - Dark Theme */
 .transaction-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
 
 .transaction-card:hover {
   border-color: var(--accent-blue);
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
 }
 
-/* Status Badges */
+/* Status Badges - Dark Theme */
 .status-badge-completed {
   background-color: var(--status-completed-bg);
   color: var(--status-completed);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .status-badge-pending {
   background-color: var(--status-pending-bg);
   color: var(--status-pending);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .status-badge-cancelled {
   background-color: var(--status-cancelled-bg);
   color: var(--status-cancelled);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .status-badge-processing {
   background-color: var(--status-processing-bg);
   color: var(--status-processing);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
 .status-badge-refunded {
   background-color: var(--status-refunded-bg);
   color: var(--status-refunded);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(168, 139, 250, 0.3);
 }
 
 /* Stock Status Badges */
 .stock-badge-instock {
   background-color: var(--stock-instock-bg);
   color: var(--stock-instock);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .stock-badge-lowstock {
   background-color: var(--stock-lowstock-bg);
   color: var(--stock-lowstock);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .stock-badge-outstock {
   background-color: var(--stock-outstock-bg);
   color: var(--stock-outstock);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* Payment Method Badges */
 .payment-badge-cash {
-  background-color: rgba(16, 185, 129, 0.1);
+  background-color: var(--status-completed-bg);
   color: var(--payment-cash);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .payment-badge-card {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--status-processing-bg);
   color: var(--payment-card);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
 .payment-badge-digital {
-  background-color: rgba(139, 92, 246, 0.1);
+  background-color: var(--status-refunded-bg);
   color: var(--payment-digital);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(168, 139, 250, 0.3);
 }
 
 /* Product Cards */
 .product-card {
   background: var(--product-card-bg);
   border: 1px solid var(--product-card-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
 
 .product-card:hover {
   transform: translateY(-2px);
   border-color: var(--accent-blue);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .product-sale-badge {
@@ -288,7 +288,7 @@
 /* Cart Items */
 .cart-item {
   background: var(--cart-bg);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s ease;
 }
 
@@ -316,6 +316,12 @@
   border-bottom: 2px solid var(--table-border);
   font-weight: 600;
   color: var(--text-secondary);
+  padding: 0.75rem 1rem;
+}
+
+.transaction-table td {
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
 }
 
 .transaction-table tr:nth-child(even) {
@@ -333,15 +339,16 @@
 /* POS Keyboard */
 .pos-keyboard {
   background-color: var(--pos-keyboard-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--size-md);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .pos-keyboard-key {
   background-color: var(--pos-keyboard-key);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   font-weight: 500;
+  color: var(--text-primary);
   transition: all 0.2s ease;
 }
 
@@ -366,7 +373,7 @@
 .btn-checkout:hover {
   background: var(--btn-checkout-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
 }
 
 .btn-checkout:active {
@@ -385,15 +392,16 @@
 .btn-payment:hover {
   background: var(--btn-payment-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 /* Receipt Styling */
 .receipt {
   background-color: var(--receipt-bg);
   border: 1px solid var(--receipt-border);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   font-family: 'Courier New', monospace;
+  color: var(--text-primary);
 }
 
 .receipt-header {
@@ -411,7 +419,7 @@
 .customer-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
 
@@ -432,7 +440,7 @@
 .sales-chart {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
 }
 
 /* Cash Drawer Animation */
@@ -516,7 +524,8 @@
 .quick-action-btn {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
   transition: all 0.2s ease;
 }
 
@@ -525,27 +534,28 @@
   color: white;
   border-color: transparent;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 /* Inventory Grid */
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--size-md);
+  gap: 1rem;
 }
 
 /* Dashboard Stats Cards */
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
   transition: all 0.3s ease;
 }
 
 .stat-card:hover {
   border-color: var(--accent-blue);
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
 }
 
 .stat-card-sales {
@@ -562,6 +572,19 @@
 
 .stat-card-inventory {
   border-top: 4px solid var(--accent-amber);
+}
+
+/* Form Elements - Dark Theme */
+input, select, textarea {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--input-focus) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Responsive Adjustments for POS */
@@ -593,6 +616,8 @@
     box-shadow: none;
     width: 80mm;
     font-size: 12px;
+    background: white !important;
+    color: black !important;
   }
   
   .no-print {
@@ -600,13 +625,13 @@
   }
 }
 
-/* Custom Scrollbar for POS */
+/* Custom Scrollbar for POS - Dark Theme */
 .pos-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
 .pos-scrollbar::-webkit-scrollbar-track {
-  background: var(--border-light);
+  background: var(--border-color);
 }
 
 .pos-scrollbar::-webkit-scrollbar-thumb {

@@ -2,11 +2,12 @@
 
 const User = require("../../../entities/User");
 const UserActivity = require("../../../entities/UserActivity");
+const { AppDataSource } = require("../../db/dataSource");
+
 
 /**
- * Log user login
- * @param {Object} params
- * @param {import("typeorm").QueryRunner} queryRunner
+ * @param {{ user_id: any; username: any; ip_address: any; user_agent: any; _userId: any; }} params
+ * @param {{ manager: { getRepository: (arg0: any) => any; }; }} queryRunner
  */
 async function logUserLogin(params, queryRunner) {
   const { 
@@ -35,14 +36,14 @@ async function logUserLogin(params, queryRunner) {
     
     // If username is provided but not user_id, look up the user
     if (!user_id && username) {
-      const userRepo = queryRunner.manager.getRepository(User);
+      const userRepo = queryRunner.manager? queryRunner.manager.getRepository(User) : AppDataSource.getRepository(User);
       const user = await userRepo.findOne({ where: { username } });
       if (user) {
         userId = user.id;
       }
     }
 
-    const activityRepo = queryRunner.manager.getRepository(UserActivity);
+    const activityRepo = queryRunner.manager? queryRunner.manager.getRepository(UserActivity) : AppDataSource.getRepository(UserActivity);
 
     const activity = activityRepo.create({
       user_id: userId,

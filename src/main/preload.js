@@ -28,10 +28,19 @@ contextBridge.exposeInMainWorld("backendAPI", {
     return () => ipcRenderer.removeListener(event, callback);
   },
 
-  minimizeApp: () => ipcRenderer.send("window-minimize"),
-  maximizeApp: () => ipcRenderer.send("window-maximize"),
-  closeApp: () => ipcRenderer.send("window-close"),
-  quitApp: () => ipcRenderer.send("app-quit"),
+  windowControl: (payload) => ipcRenderer.invoke("window-control", payload),
+  onWindowMaximized: (callback) =>
+    ipcRenderer.on("window:maximized", () => callback()),
+  onWindowRestored: (callback) =>
+    ipcRenderer.on("window:restored", () => callback()),
+  onWindowMinimized: (callback) =>
+    ipcRenderer.on("window:minimized", () => callback()),
+  onWindowClosed: (callback) =>
+    ipcRenderer.on("window:closed", () => callback()),
+  onWindowResized: (callback) =>
+    ipcRenderer.on("window:resized", (event, bounds) => callback(bounds)),
+  onWindowMoved: (callback) =>
+    ipcRenderer.on("window:moved", (event, position) => callback(position)),
 
   // Other utilities
   showAbout: () => ipcRenderer.send("show-about"),

@@ -13,21 +13,21 @@ class AuditTrailHandler {
 
   initializeHandlers() {
     // 📋 READ-ONLY HANDLERS
-    this.getAuditTrailById = this.importHandler("./get/by_id.ipc");
-    this.getAuditTrailsByEntity = this.importHandler("./get/by_entity.ipc");
-    this.getAuditTrailsByUser = this.importHandler("./get/by_user.ipc");
-    this.getAuditTrailsByDateRange = this.importHandler("./get/by_date_range.ipc");
-    this.getAuditTrailsByAction = this.importHandler("./get/by_action.ipc");
-    this.searchAuditTrails = this.importHandler("./search.ipc");
+    this.getAuditTrailById = require("./get/by_id.ipc");
+    this.getAuditTrailsByEntity = require("./get/by_entity.ipc");
+    this.getAuditTrailsByUser = require("./get/by_user.ipc");
+    this.getAuditTrailsByDateRange = require("./get/by_date_range.ipc");
+    this.getAuditTrailsByAction = require("./get/by_action.ipc");
+    this.searchAuditTrails = require("./search.ipc");
     
     // 📊 REPORTING & ANALYTICS
-    this.getAuditStatistics = this.importHandler("./reports/statistics.ipc");
-    this.getAuditActivityReport = this.importHandler("./reports/activity.ipc");
-    this.getAuditComplianceReport = this.importHandler("./reports/compliance.ipc");
+    this.getAuditStatistics = require("./reports/statistics.ipc");
+    this.getAuditActivityReport = require("./reports/activity.ipc");
+    // this.getAuditComplianceReport = require("./reports/compliance.ipc");
     
     // 🔒 SECURITY & MONITORING
-    this.getSuspiciousActivities = this.importHandler("./monitoring/suspicious.ipc");
-    this.getAuditSummary = this.importHandler("./monitoring/summary.ipc");
+    this.getSuspiciousActivities = require("./monitoring/suspicious.ipc");
+    // this.getAuditSummary = require("./monitoring/summary.ipc");
   }
 
   /**

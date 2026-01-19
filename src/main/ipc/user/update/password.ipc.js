@@ -1,12 +1,12 @@
 //@ts-check
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const User = require("../../../../entities/User");
 const { log_audit } = require("../../../../utils/auditLogger");
 
+
 /**
- * Update user password
- * @param {Object} params
- * @param {import("typeorm").QueryRunner} queryRunner
+ * @param {{ id: any; current_password: any; new_password: any; confirm_password: any; force_reset?: false | undefined; _userId: any; }} params
+ * @param {{ manager: { getRepository: (arg0: any) => any; }; }} queryRunner
  */
 async function updateUserPassword(params, queryRunner) {
   const { 

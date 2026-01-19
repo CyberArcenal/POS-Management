@@ -48,17 +48,18 @@ async function getAllUsers(filters = {}, userId) {
     }
 
     // @ts-ignore
-    if (filters.exclude_self && userId) {
-      queryBuilder.andWhere("user.id != :userId", { userId });
-    }
+    // if (filters.exclude_self && userId) {
+    //   queryBuilder.andWhere("user.id != :userId", { userId });
+    // }
 
     // Sort
     queryBuilder.orderBy("user.username", "ASC");
 
     const users = await queryBuilder.getMany();
+    console.log(users)
 
     // Remove sensitive data
-    const sanitizedUsers = users.map(user => {
+    const sanitizedUsers = users.map((/** @type {{ [x: string]: any; }} */ user) => {
       const { ...userData } = user;
       delete userData.password;
       return userData;

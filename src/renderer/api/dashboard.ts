@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 // dashboardAPI.ts - SIMILAR STRUCTURE TO activation.ts
 export interface SalesOverviewData {
   overview: {
@@ -193,6 +195,8 @@ export interface LiveDashboardData {
     type: 'warning' | 'danger' | 'info' | 'success';
     message: string;
     icon: string;
+    priority: number;
+    link: string;
   }>;
 }
 
@@ -271,75 +275,6 @@ export type LiveDashboardResponse = DashboardResponse<LiveDashboardData>;
 export type MobileDashboardResponse = DashboardResponse<MobileDashboardData>;
 export type QuickStatsResponse = DashboardResponse<QuickStatsData>;
 
-// Placeholder interfaces for other methods (to be expanded as needed)
-export interface RevenueMetricsData {
-  // Define based on your implementation
-}
-
-export interface ProfitAnalysisData {
-  // Define based on your implementation
-}
-
-export interface AverageTransactionValueData {
-  // Define based on your implementation
-}
-
-export interface DiscountAnalysisData {
-  // Define based on your implementation
-}
-
-export interface StockMovementData {
-  // Define based on your implementation
-}
-
-export interface InventoryTurnoverData {
-  // Define based on your implementation
-}
-
-export interface ExpiringProductsData {
-  // Define based on your implementation
-}
-
-export interface InventoryValueData {
-  // Define based on your implementation
-}
-
-export interface CashierPerformanceData {
-  // Define based on your implementation
-}
-
-export interface UserActivitySummaryData {
-  // Define based on your implementation
-}
-
-export interface SalesComparisonData {
-  // Define based on your implementation
-}
-
-export interface RealTimeSalesData {
-  // Define based on your implementation
-}
-
-export interface CurrentQueueData {
-  // Define based on your implementation
-}
-
-export interface SyncStatusData {
-  // Define based on your implementation
-}
-
-export interface SystemHealthData {
-  // Define based on your implementation
-}
-
-export interface AuditSummaryData {
-  // Define based on your implementation
-}
-
-export interface RecentActivitiesData {
-  // Define based on your implementation
-}
-
 class DashboardAPI {
   private async callDashboardAPI<T>(method: string, params?: Record<string, any>): Promise<DashboardResponse<T>> {
     try {
@@ -400,8 +335,8 @@ class DashboardAPI {
     return this.callDashboardAPI<HourlySalesPatternData>("getHourlySalesPattern", params);
   }
 
-  async getSalesComparison(params?: Record<string, any>): Promise<DashboardResponse<SalesComparisonData>> {
-    return this.callDashboardAPI<SalesComparisonData>("getSalesComparison", params);
+  async getSalesComparison(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getSalesComparison", params);
   }
 
   // 📦 INVENTORY ANALYTICS METHODS
@@ -415,20 +350,20 @@ class DashboardAPI {
     return this.callDashboardAPI<LowStockAlertsData>("getLowStockAlerts", params);
   }
 
-  async getStockMovement(params?: Record<string, any>): Promise<DashboardResponse<StockMovementData>> {
-    return this.callDashboardAPI<StockMovementData>("getStockMovement", params);
+  async getStockMovement(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getStockMovement", params);
   }
 
-  async getInventoryTurnover(params?: Record<string, any>): Promise<DashboardResponse<InventoryTurnoverData>> {
-    return this.callDashboardAPI<InventoryTurnoverData>("getInventoryTurnover", params);
+  async getInventoryTurnover(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getInventoryTurnover", params);
   }
 
-  async getExpiringProducts(params?: Record<string, any>): Promise<DashboardResponse<ExpiringProductsData>> {
-    return this.callDashboardAPI<ExpiringProductsData>("getExpiringProducts", params);
+  async getExpiringProducts(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getExpiringProducts", params);
   }
 
-  async getInventoryValue(params?: Record<string, any>): Promise<DashboardResponse<InventoryValueData>> {
-    return this.callDashboardAPI<InventoryValueData>("getInventoryValue", params);
+  async getInventoryValue(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getInventoryValue", params);
   }
 
   // 👤 PERFORMANCE ANALYTICS METHODS
@@ -439,29 +374,29 @@ class DashboardAPI {
     return this.callDashboardAPI<StaffPerformanceData>("getStaffPerformance", params);
   }
 
-  async getCashierPerformance(params?: Record<string, any>): Promise<DashboardResponse<CashierPerformanceData>> {
-    return this.callDashboardAPI<CashierPerformanceData>("getCashierPerformance", params);
+  async getCashierPerformance(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getCashierPerformance", params);
   }
 
-  async getUserActivitySummary(params?: Record<string, any>): Promise<DashboardResponse<UserActivitySummaryData>> {
-    return this.callDashboardAPI<UserActivitySummaryData>("getUserActivitySummary", params);
+  async getUserActivitySummary(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getUserActivitySummary", params);
   }
 
   // 💰 FINANCIAL METRICS METHODS
-  async getRevenueMetrics(params?: Record<string, any>): Promise<DashboardResponse<RevenueMetricsData>> {
-    return this.callDashboardAPI<RevenueMetricsData>("getRevenueMetrics", params);
+  async getRevenueMetrics(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getRevenueMetrics", params);
   }
 
-  async getProfitAnalysis(params?: Record<string, any>): Promise<DashboardResponse<ProfitAnalysisData>> {
-    return this.callDashboardAPI<ProfitAnalysisData>("getProfitAnalysis", params);
+  async getProfitAnalysis(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getProfitAnalysis", params);
   }
 
-  async getAverageTransactionValue(params?: Record<string, any>): Promise<DashboardResponse<AverageTransactionValueData>> {
-    return this.callDashboardAPI<AverageTransactionValueData>("getAverageTransactionValue", params);
+  async getAverageTransactionValue(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getAverageTransactionValue", params);
   }
 
-  async getDiscountAnalysis(params?: Record<string, any>): Promise<DashboardResponse<DiscountAnalysisData>> {
-    return this.callDashboardAPI<DiscountAnalysisData>("getDiscountAnalysis", params);
+  async getDiscountAnalysis(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getDiscountAnalysis", params);
   }
 
   // 📈 REAL-TIME DASHBOARD METHODS
@@ -473,29 +408,29 @@ class DashboardAPI {
     return this.callDashboardAPI<any>("getTodayStats", params);
   }
 
-  async getRealTimeSales(params?: Record<string, any>): Promise<DashboardResponse<RealTimeSalesData>> {
-    return this.callDashboardAPI<RealTimeSalesData>("getRealTimeSales", params);
+  async getRealTimeSales(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getRealTimeSales", params);
   }
 
-  async getCurrentQueue(params?: Record<string, any>): Promise<DashboardResponse<CurrentQueueData>> {
-    return this.callDashboardAPI<CurrentQueueData>("getCurrentQueue", params);
+  async getCurrentQueue(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getCurrentQueue", params);
   }
 
   // 🔄 SYNC & SYSTEM HEALTH METHODS
-  async getSyncStatus(params?: Record<string, any>): Promise<DashboardResponse<SyncStatusData>> {
-    return this.callDashboardAPI<SyncStatusData>("getSyncStatus", params);
+  async getSyncStatus(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getSyncStatus", params);
   }
 
-  async getSystemHealth(params?: Record<string, any>): Promise<DashboardResponse<SystemHealthData>> {
-    return this.callDashboardAPI<SystemHealthData>("getSystemHealth", params);
+  async getSystemHealth(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getSystemHealth", params);
   }
 
-  async getAuditSummary(params?: Record<string, any>): Promise<DashboardResponse<AuditSummaryData>> {
-    return this.callDashboardAPI<AuditSummaryData>("getAuditSummary", params);
+  async getAuditSummary(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getAuditSummary", params);
   }
 
-  async getRecentActivities(params?: Record<string, any>): Promise<DashboardResponse<RecentActivitiesData>> {
-    return this.callDashboardAPI<RecentActivitiesData>("getRecentActivities", params);
+  async getRecentActivities(params?: Record<string, any>): Promise<DashboardResponse<any>> {
+    return this.callDashboardAPI<any>("getRecentActivities", params);
   }
 
   // 📱 MOBILE DASHBOARD METHODS
@@ -566,7 +501,7 @@ class DashboardAPI {
         salesOverview: salesOverview.data,
         inventoryOverview: inventoryOverview.data
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to refresh dashboard data: ${error.message}`);
     }
   }
@@ -612,7 +547,7 @@ class DashboardAPI {
         salesByCategory: salesByCategory.data,
         hourlyPattern: hourlyPattern.data
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to get charts data: ${error.message}`);
     }
   }
@@ -666,7 +601,7 @@ class DashboardAPI {
         format: 'json',
         timestamp: new Date().toISOString()
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to export dashboard data: ${error.message}`);
     }
   }
@@ -677,7 +612,7 @@ class DashboardAPI {
     const header = Object.keys(data);
     const csv = [
       header.join(','),
-      ...data.map((row: any) => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
+      ...Object.values(data).map((row: any) => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
     ].join('\r\n');
 
     return csv;
@@ -685,8 +620,8 @@ class DashboardAPI {
 
   // Event listeners (if your dashboard supports events)
   onDashboardUpdate(callback: (data: LiveDashboardData) => void) {
-    if (window.backendAPI && window.backendAPI.onDashboardUpdate) {
-      window.backendAPI.onDashboardUpdate(callback);
+    if (window.backendAPI && (window.backendAPI as any).onDashboardUpdate) {
+      (window.backendAPI as any).onDashboardUpdate(callback);
     } else {
       // Fallback to polling
       console.warn("Dashboard update events not available, using polling instead");
@@ -695,14 +630,14 @@ class DashboardAPI {
   }
 
   onStockAlert(callback: (alert: any) => void) {
-    if (window.backendAPI && window.backendAPI.onStockAlert) {
-      window.backendAPI.onStockAlert(callback);
+    if (window.backendAPI && (window.backendAPI as any).onStockAlert) {
+      (window.backendAPI as any).onStockAlert(callback);
     }
   }
 
   onSalesUpdate(callback: (sale: any) => void) {
-    if (window.backendAPI && window.backendAPI.onSalesUpdate) {
-      window.backendAPI.onSalesUpdate(callback);
+    if (window.backendAPI && (window.backendAPI as any).onSalesUpdate) {
+      (window.backendAPI as any).onSalesUpdate(callback);
     }
   }
 }

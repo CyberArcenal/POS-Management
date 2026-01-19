@@ -101,7 +101,7 @@ async function findPage(filters = {}, userId, page = 1, pageSize = 10) {
       .getMany();
 
     // Remove sensitive data
-    const sanitizedUsers = users.map(user => {
+    const sanitizedUsers = users.map((/** @type {{ [x: string]: any; }} */ user) => {
       const { ...userData } = user;
       // Remove password field if it exists
       // @ts-ignore
