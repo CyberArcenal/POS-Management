@@ -642,3 +642,85 @@ input:focus, select:focus, textarea:focus {
 .pos-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+
+
+
+
+/* src/styles/pos-desktop.css */
+.pos-desktop {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Custom scrollbar for desktop POS */
+.pos-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+.pos-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pos-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+.pos-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.pos-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* POS Keyboard Keys */
+.pos-keyboard-key {
+  background: #374151;
+  color: white;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  transition: all 0.1s ease;
+}
+
+.pos-keyboard-key:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+.pos-keyboard-key:active {
+  background: #6b7280;
+  transform: translateY(0);
+}
+
+/* Receipt styling */
+.receipt {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.receipt-header {
+  border-bottom: 2px dashed #000;
+}
+
+.receipt-total {
+  border-top: 3px double #000;
+}
+
+/* Desktop focus styles */
+.focus-ring {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Disable text selection in POS areas */
+.pos-no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

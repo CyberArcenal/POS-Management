@@ -1,4 +1,3 @@
-// SyncData.js - UPDATED VERSION
 const { EntitySchema } = require("typeorm");
 
 const SyncData = new EntitySchema({
@@ -11,7 +10,7 @@ const SyncData = new EntitySchema({
     entityType: { 
       type: "varchar", 
       nullable: false 
-    }, // 'Product', 'Sale', 'SaleItem', 'StockItem'
+    }, // 'Product', 'Sale', 'SaleItem', 'ProductBatch', 'System'
     entityId: { 
       type: "varchar", 
       nullable: false 
@@ -58,22 +57,8 @@ const SyncData = new EntitySchema({
     updatedAt: { type: "datetime", updateDate: true },
   },
   
-  relations: {
-    product: {
-      type: "many-to-one",
-      target: "Product",
-      joinColumn: { name: "entityId", referencedColumnName: "id" },
-      nullable: true,
-      onDelete: "CASCADE",
-    },
-    sale: {
-      type: "many-to-one",
-      target: "Sale",
-      joinColumn: { name: "entityId", referencedColumnName: "id" },
-      nullable: true,
-      onDelete: "CASCADE",
-    },
-  },
+  // TANGGALIN ANG RELATIONS PARA WALANG FOREIGN KEY CONSTRAINT
+  // Ang SyncData ay para lang sa logging, hindi kailangan ng FK
   
   indices: [
     { columns: ["entityType", "entityId"] },

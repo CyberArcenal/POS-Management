@@ -21,6 +21,8 @@ function registerIpcHandlers(){
   require("./ipc/user_activity.ipc");
   require("./ipc/price_history.ipc");
   require("./ipc/dashboard/index");
+  require("./ipc/customers/index.ipc");
+  require("./ipc/loyalty/index.ipc");
 }
 
 /**

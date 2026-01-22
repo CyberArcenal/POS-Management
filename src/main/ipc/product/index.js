@@ -1,4 +1,4 @@
-// index.ipc.js - Unified Product Handler (Refactored)
+// index.ipc.js - Updated with Warehouse Support
 //@ts-check
 const { ipcMain } = require("electron");
 
@@ -36,6 +36,11 @@ class ProductHandler {
     this.getProductInventory = this.importHandler("./get/inventory.ipc");
     this.getProductsByBarcode = this.importHandler("./get/by_barcode.ipc");
 
+    // 🏬 WAREHOUSE-RELATED HANDLERS (NEW)
+    this.getWarehouseProducts = this.importHandler(
+      "./get_warehouse_products.ipc",
+    );
+
     // 🛒 SALE-RELATED STOCK UPDATES ONLY (with transactions)
     this.updateProductStockForSale = this.importHandler(
       "./update_stock_for_sale.ipc.js",
@@ -44,12 +49,13 @@ class ProductHandler {
       "./adjust_inventory_for_return.ipc.js",
     );
     this.syncProductsFromInventory = this.importHandler(
-      "./sync_from_inventory.ipc.js",
+      "./sync_from_inventory.ipc.js", // This is now the WAREHOUSE-REQUIRED version
     );
     this.updateInventoryStock = this.importHandler(
       "./update_inventory_stock.ipc.js",
     );
 
+    // 🔧 INVENTORY CONFIGURATION HANDLERS
     this.checkInventoryConnection = this.importHandler(
       "./check_inventory_connection.ipc.js",
     );
@@ -60,6 +66,14 @@ class ProductHandler {
       "./update_inventory_config.ipc.js",
     );
     this.manageSyncData = this.importHandler("./manage_sync_data.ipc.js");
+
+    // 🏭 WAREHOUSE MANAGEMENT HANDLERS (NEW)
+    this.getAvailableWarehouses = this.importHandler(
+      "./get_available_warehouses.ipc.js",
+    );
+    this.getWarehouseSyncStatus = this.importHandler(
+      "./get_warehouse_sync_status.ipc.js",
+    );
   }
 
   /**
@@ -123,7 +137,6 @@ class ProductHandler {
           return await this.getProductsByCategory(
             // @ts-ignore
             enrichedParams.category_id,
-
             // @ts-ignore
             enrichedParams.filters,
             userId,
@@ -133,7 +146,6 @@ class ProductHandler {
           return await this.getProductsBySupplier(
             // @ts-ignore
             enrichedParams.supplier_id,
-
             // @ts-ignore
             enrichedParams.filters,
             userId,
@@ -172,7 +184,6 @@ class ProductHandler {
           return await this.getProductSalesReport(
             // @ts-ignore
             enrichedParams.product_id,
-
             // @ts-ignore
             enrichedParams.date_range,
             userId,
@@ -182,7 +193,6 @@ class ProductHandler {
           return await this.checkProductAvailability(
             // @ts-ignore
             enrichedParams.product_id,
-
             // @ts-ignore
             enrichedParams.quantity,
             userId,
@@ -210,6 +220,16 @@ class ProductHandler {
             userId,
           );
 
+        // 🏬 WAREHOUSE-RELATED OPERATIONS (NEW)
+        case "getWarehouseProducts":
+          return await this.getWarehouseProducts(enrichedParams);
+
+        case "getAvailableWarehouses":
+          return await this.getAvailableWarehouses(enrichedParams);
+
+        case "getWarehouseSyncStatus":
+          return await this.getWarehouseSyncStatus(enrichedParams);
+
         // 🛒 SALE-RELATED STOCK OPERATIONS
         case "updateProductStockForSale":
           return await this.handleWithTransaction(
@@ -224,6 +244,7 @@ class ProductHandler {
           );
 
         case "syncProductsFromInventory":
+          // NOTE: This now REQUIRES warehouseId parameter
           return await this.handleWithTransaction(
             this.syncProductsFromInventory,
             enrichedParams,
@@ -235,6 +256,7 @@ class ProductHandler {
             enrichedParams,
           );
 
+        // 🔧 INVENTORY CONFIGURATION
         case "checkInventoryConnection":
           return await this.checkInventoryConnection(enrichedParams);
 
@@ -262,7 +284,6 @@ class ProductHandler {
       }
       return {
         status: false,
-
         // @ts-ignore
         message: error.message || "Internal server error",
         data: null,

@@ -14,6 +14,15 @@ const PriceHistory = require("../../entities/PriceHistory");
 const { SystemSetting } = require("../../entities/systemSettings");
 const UserActivity = require("../../entities/UserActivity");
 const LicenseCache = require("../../entities/LicenseCache");
+const {Customer} = require("../../entities/Customer");
+const { LoyaltyProgram } = require("../../entities/LoyaltyProgram");
+const { LoyaltyCustomer } = require("../../entities/LoyaltyCustomer");
+const { PointsTransaction } = require("../../entities/PointsTransaction");
+const { RewardItem } = require("../../entities/RewardItem");
+const { RedemptionHistory } = require("../../entities/RedemptionHistory");
+const { PointsEarningRule } = require("../../entities/PointsEarningRule");
+const { CustomerContact } = require("../../entities/CustomerContact");
+const { CustomerTransaction } = require("../../entities/CustomerTransaction");
 
 const config = getDatabaseConfig();
 
@@ -29,6 +38,16 @@ const entities = [
   SystemSetting,
   UserActivity,
   LicenseCache,
+  
+  CustomerContact,
+  CustomerTransaction,
+  LoyaltyProgram,
+  LoyaltyCustomer,
+  PointsTransaction,
+  RewardItem,
+  RedemptionHistory,
+  PointsEarningRule,
+  Customer,
 ];
 
 // @ts-ignore

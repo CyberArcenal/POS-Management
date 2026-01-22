@@ -16,22 +16,28 @@ class SyncDataManager {
    * @param {object} payload
    * @param {object} userInfo
    */
+  // I-update ang recordSyncStart function
   async recordSyncStart(
-    entityType, 
-    entityId, 
-    direction = 'inbound', 
-    syncType = 'auto',
+    entityType,
+    entityId,
+    direction = "inbound",
+    syncType = "auto",
     // @ts-ignore
     payload = null,
     // @ts-ignore
-    userInfo = null
+    userInfo = null,
   ) {
+    // Gumamit ng string entityId para maiwasan ang FK constraint
+    const syncEntityId =
+      // @ts-ignore
+      typeof entityId === "number" ? entityId.toString() : entityId;
+
     const syncData = this.syncDataRepo.create({
       entityType,
-      entityId,
+      entityId: syncEntityId,
       syncDirection: direction,
       syncType,
-      status: 'processing',
+      status: "processing",
       payload: payload ? JSON.stringify(payload) : null,
       startedAt: new Date(),
       // @ts-ignore
@@ -53,7 +59,7 @@ class SyncDataManager {
   // @ts-ignore
   async recordSyncSuccess(syncDataId, result = null, stats = {}) {
     return await this.syncDataRepo.update(syncDataId, {
-      status: 'success',
+      status: "success",
       completedAt: new Date(),
       lastSyncedAt: new Date(),
       // @ts-ignore
@@ -91,7 +97,7 @@ class SyncDataManager {
     const shouldRetry = retryCount < maxRetries;
 
     const updateData = {
-      status: shouldRetry ? 'pending' : 'failed',
+      status: shouldRetry ? "pending" : "failed",
       completedAt: new Date(),
       errorMessage: error.message,
       // @ts-ignore
@@ -123,13 +129,21 @@ class SyncDataManager {
    * @param {object} userInfo
    */
   // @ts-ignore
-  async recordPartialSync(entityType, entityId, direction, result, stats, userInfo = null) {
+  async recordPartialSync(
+    entityType,
+    entityId,
+    direction,
+    result,
+    stats,
+    // @ts-ignore
+    userInfo = null,
+  ) {
     const syncData = this.syncDataRepo.create({
       entityType,
       entityId,
       syncDirection: direction,
-      syncType: 'auto',
-      status: 'partial',
+      syncType: "auto",
+      status: "partial",
       payload: JSON.stringify(result),
       startedAt: new Date(),
       completedAt: new Date(),
@@ -145,7 +159,12 @@ class SyncDataManager {
       // @ts-ignore
       performedByUsername: userInfo?.username || null,
       // @ts-ignore
-      errorMessage: stats.itemsFailed > 0 ? `${stats.itemsFailed} items failed to sync` : null,
+      errorMessage:
+        // @ts-ignore
+        stats.itemsFailed > 0
+          // @ts-ignore
+          ? `${stats.itemsFailed} items failed to sync`
+          : null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -180,11 +199,11 @@ class SyncDataManager {
   // @ts-ignore
   async getSyncHistory(entityType = null, entityId = null, limit = 50) {
     const where = {};
-    
+
     if (entityType) {
       where.entityType = entityType;
     }
-    
+
     if (entityId) {
       where.entityId = entityId;
     }
@@ -196,21 +215,21 @@ class SyncDataManager {
     });
   }
 
-  async getSyncStats(timeRange = 'day') {
+  async getSyncStats(timeRange = "day") {
     const date = new Date();
     let startDate;
-    
-    switch(timeRange) {
-      case 'hour':
+
+    switch (timeRange) {
+      case "hour":
         startDate = new Date(date.setHours(date.getHours() - 1));
         break;
-      case 'day':
+      case "day":
         startDate = new Date(date.setDate(date.getDate() - 1));
         break;
-      case 'week':
+      case "week":
         startDate = new Date(date.setDate(date.getDate() - 7));
         break;
-      case 'month':
+      case "month":
         startDate = new Date(date.setMonth(date.getMonth() - 1));
         break;
       default:
@@ -218,18 +237,18 @@ class SyncDataManager {
     }
 
     const stats = await this.syncDataRepo
-      .createQueryBuilder('sync')
+      .createQueryBuilder("sync")
       .select([
-        'COUNT(*) as total',
+        "COUNT(*) as total",
         'SUM(CASE WHEN status = "success" THEN 1 ELSE 0 END) as success',
         'SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as failed',
         'SUM(CASE WHEN status = "partial" THEN 1 ELSE 0 END) as partial',
         'SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending',
-        'syncDirection',
-        'entityType'
+        "syncDirection",
+        "entityType",
       ])
-      .where('sync.createdAt >= :startDate', { startDate })
-      .groupBy('syncDirection, entityType')
+      .where("sync.createdAt >= :startDate", { startDate })
+      .groupBy("syncDirection, entityType")
       .getRawMany();
 
     return {
@@ -242,7 +261,7 @@ class SyncDataManager {
         failed: stats.reduce((sum, item) => sum + parseInt(item.failed), 0),
         partial: stats.reduce((sum, item) => sum + parseInt(item.partial), 0),
         pending: stats.reduce((sum, item) => sum + parseInt(item.pending), 0),
-      }
+      },
     };
   }
 
@@ -261,15 +280,15 @@ class SyncDataManager {
   }
 
   async resetFailedSyncs(entityType = null) {
-    const where = { status: 'failed' };
-    
+    const where = { status: "failed" };
+
     if (entityType) {
       // @ts-ignore
       where.entityType = entityType;
     }
 
     return await this.syncDataRepo.update(where, {
-      status: 'pending',
+      status: "pending",
       nextRetryAt: new Date(),
       retryCount: 0,
       // @ts-ignore

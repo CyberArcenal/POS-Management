@@ -8,6 +8,7 @@ const { withErrorHandling } = require("../../../utils/errorHandler");
 const { logger } = require("../../../utils/logger");
 const { AppDataSource } = require("../../db/dataSource");
 const UserActivity = require("../../../entities/UserActivity");
+const WarehouseManager = require("../../../services/inventory_sync/warehouseManager");
 
 class SaleHandler {
   constructor() {
@@ -210,6 +211,9 @@ class SaleHandler {
             enrichedParams.filters,
             userId
           );
+        
+        case "getWarehouseSales":
+          return await this.getWarehouseSales(enrichedParams);
 
         // 🔄 INVENTORY INTEGRATION
         case "syncSaleWithInventory":
@@ -324,6 +328,68 @@ class SaleHandler {
         // @ts-ignore
         logger.warn("Failed to log sale activity:", error);
       }
+    }
+  }
+  /**
+   * Get sales for specific warehouse
+   * @param {{ _userId?: any; warehouse_id?: any; start_date?: any; end_date?: any; page?: any; limit?: any; }} params
+   */
+  async getWarehouseSales(params) {
+    try {
+      const { 
+        warehouse_id, 
+        start_date, 
+        end_date, 
+        page = 1, 
+        limit = 50 
+      } = params;
+
+      const saleRepo = AppDataSource.getRepository("Sale");
+      const skip = (page - 1) * limit;
+
+      const queryBuilder = saleRepo.createQueryBuilder("sale")
+        .where("sale.warehouse_id = :warehouseId", { warehouseId: warehouse_id })
+        .orderBy("sale.created_at", "DESC")
+        .skip(skip)
+        .take(limit)
+        .leftJoinAndSelect("sale.items", "items");
+
+      if (start_date) {
+        queryBuilder.andWhere("sale.created_at >= :startDate", { startDate: start_date });
+      }
+      if (end_date) {
+        queryBuilder.andWhere("sale.created_at <= :endDate", { endDate: end_date });
+      }
+
+      const [sales, total] = await queryBuilder.getManyAndCount();
+
+      // Get summary
+      const summary = await new WarehouseManager().getWarehouseSalesSummary(
+        warehouse_id, 
+        start_date, 
+        end_date
+      );
+
+      return {
+        status: true,
+        data: {
+          sales,
+          pagination: {
+            page,
+            limit,
+            total,
+            total_pages: Math.ceil(total / limit)
+          },
+          summary
+        }
+      };
+    } catch (error) {
+      return {
+        status: false,
+        // @ts-ignore
+        message: error.message,
+        data: null
+      };
     }
   }
 }

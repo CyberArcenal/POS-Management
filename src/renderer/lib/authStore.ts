@@ -249,6 +249,7 @@ export class POSAuthStore {
     if (!user) return null;
     
     return {
+      terminalId: user.id || '',
       name: user.display_name || user.username,
       username: user.username,
       email: user.email,

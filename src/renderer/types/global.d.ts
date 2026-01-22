@@ -29,7 +29,12 @@ declare global {
       userActivity: (payload: any) => Promise<any>;
       priceHistory: (payload: any) => Promise<any>;
       dashboard: (payload: any) => Promise<any>;
-
+      customer: (payload: any) => Promise<any>;
+      onCustomerCreated: (callback: (payload: any) => void) => void;
+      onCustomerUpdated: (callback: (payload: any) => void) => void;
+      onCustomerDeleted: (callback: (payload: any) => void) => void;
+      onCustomerBalanceUpdated: (callback: (payload: any) => void) => void;
+      loyalty: (payload: any) => Promise<any>;
       // 🪟 Window controls
       windowControl?: (payload: {
         method: string;

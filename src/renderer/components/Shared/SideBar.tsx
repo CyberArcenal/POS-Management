@@ -54,144 +54,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     {},
   );
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    // Core POS Modules
-    { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
+const [menuItems, setMenuItems] = useState<MenuItem[]>([
+  // Core POS
+  { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
 
-    {
-      path: "/pos",
-      name: "Point of Sale",
-      icon: ShoppingCart,
-      category: "core",
-      children: [
-        { path: "/pos/cashier", name: "Cashier", icon: Calculator },
-        { path: "/pos/transactions", name: "Transactions", icon: Receipt },
-        { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
-        { path: "/pos/invoices", name: "Invoices", icon: FileText },
-        { path: "/pos/cart", name: "Current Cart", icon: ShoppingCart },
-      ],
-    },
+  {
+    path: "/pos",
+    name: "Point of Sale",
+    icon: ShoppingCart,
+    category: "core",
+    children: [
+      { path: "/pos/cashier", name: "Cashier", icon: Calculator },
+      { path: "/pos/transactions", name: "Transactions", icon: Receipt },
+      { path: "/pos/products", name: "Products", icon: Package },
+      { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
+    ],
+  },
 
-    {
-      path: "/products",
-      name: "Products",
-      icon: Package,
-      category: "core",
-      children: [
-        { path: "/products/list", name: "Product Catalog", icon: ListChecks },
-        { path: "/products/categories", name: "Categories", icon: Layers },
-        { path: "/products/inventory", name: "Inventory", icon: Archive },
-        { path: "/products/pricing", name: "Pricing", icon: Tag },
-        { path: "/products/barcode", name: "Barcode Manager", icon: QrCode },
-      ],
-    },
+  {
+    path: "/customers",
+    name: "Customers",
+    icon: Users,
+    category: "core",
+    children: [
+      { path: "/customers/list", name: "Customer Directory", icon: Users2 },
+      { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
+    ],
+  },
 
-    {
-      path: "/customers",
-      name: "Customers",
-      icon: Users,
-      category: "core",
-      children: [
-        { path: "/customers/list", name: "Customer Directory", icon: Users2 },
-        { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
-        { path: "/customers/groups", name: "Customer Groups", icon: Users },
-        {
-          path: "/customers/credit",
-          name: "Credit Accounts",
-          icon: CreditCard,
-        },
-        {
-          path: "/customers/feedback",
-          name: "Customer Feedback",
-          icon: MessageSquare,
-        },
-      ],
-    },
+  {
+    path: "/sales",
+    name: "Sales",
+    icon: TrendingUp,
+    category: "core",
+    children: [
+      { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
+      { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
+    ],
+  },
 
-    {
-      path: "/suppliers",
-      name: "Suppliers",
-      icon: Truck,
-      category: "core",
-      children: [
-        { path: "/suppliers/list", name: "Supplier List", icon: ClipboardList },
-        {
-          path: "/suppliers/orders",
-          name: "Purchase Orders",
-          icon: ShoppingBag,
-        },
-        {
-          path: "/suppliers/payments",
-          name: "Supplier Payments",
-          icon: DollarSign,
-        },
-        { path: "/suppliers/returns", name: "Supplier Returns", icon: Truck },
-      ],
-    },
-
-    {
-      path: "/sales",
-      name: "Sales Management",
-      icon: TrendingUp,
-      category: "core",
-      children: [
-        { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
-        { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
-        { path: "/sales/orders", name: "Order Management", icon: ShoppingBag },
-        { path: "/sales/discounts", name: "Discounts & Promos", icon: Percent },
-        { path: "/sales/quotations", name: "Quotations", icon: FileText },
-      ],
-    },
-
-    // Analytics
-    {
-      path: "/analytics",
-      name: "Analytics & Reports",
-      icon: BarChart3,
-      category: "analytics",
-      children: [
-        { path: "/analytics/sales", name: "Sales Analytics", icon: Activity },
-        {
-          path: "/analytics/inventory",
-          name: "Inventory Reports",
-          icon: PieChart,
-        },
-        {
-          path: "/analytics/customers",
-          name: "Customer Insights",
-          icon: Users,
-        },
-        {
-          path: "/analytics/financial",
-          name: "Financial Reports",
-          icon: DollarSign,
-        },
-        { path: "/analytics/export", name: "Export Data", icon: Download },
-      ],
-    },
-
-    // System
-    {
-      path: "/system",
-      name: "System",
-      icon: Settings,
-      category: "system",
-      children: [
-        { path: "/users", name: "User Management", icon: User2 },
-        { path: "/settings/general", name: "General Settings", icon: Settings },
-        {
-          path: "/settings/payments",
-          name: "Payment Methods",
-          icon: CreditCard,
-        },
-        { path: "/settings/tax", name: "Tax Settings", icon: Percent },
-        { path: "/settings/receipt", name: "Receipt Settings", icon: Receipt },
-        { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
-        { path: "/notification-logs", name: "Notification Logs", icon: Bell },
-        { path: "/system/backup", name: "Backup & Restore", icon: Download },
-      ],
-    },
-  ]);
+  // System essentials
+  {
+    path: "/system",
+    name: "System",
+    icon: Settings,
+    category: "system",
+    children: [
+      { path: "/users", name: "User Management", icon: User2 },
+      { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
+      { path: "/notification-logs", name: "Notification Logs", icon: Bell },
+    ],
+  },
+]);
 
   const filteredMenu = menuItems
     .map((item) => {

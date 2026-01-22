@@ -18,6 +18,13 @@ contextBridge.exposeInMainWorld("backendAPI", {
   priceHistory: (payload) => ipcRenderer.invoke("price-history", payload),
   dashboard: (payload) => ipcRenderer.invoke("dashboard", payload),
 
+  customer: (payload) => ipcRenderer.invoke("customer", payload),
+  // onCustomerCreated: (callback: (payload: any) => void) => void;
+  // onCustomerUpdated: (callback: (payload: any) => void) => void;
+  // onCustomerDeleted: (callback: (payload: any) => void) => void;
+  // onCustomerBalanceUpdated: (callback: (payload: any) => void) => void;
+  loyalty: (payload) => ipcRenderer.invoke("loyalty", payload),
+
   // 🎯 Event listeners
   onAppReady: (callback) => {
     ipcRenderer.on("app-ready", callback);

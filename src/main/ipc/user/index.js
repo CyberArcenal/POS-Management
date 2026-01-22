@@ -186,10 +186,10 @@ class UserHandler {
           return await this.handleWithTransaction(this.resetUserPassword, enrichedParams);
         
         case "logUserLogin":
-          return await this.logUserLogin(enrichedParams);
+          return await this.handleWithTransaction(this.logUserLogin, enrichedParams);
         
         case "logUserLogout":
-          return await this.logUserLogout(enrichedParams);
+          return await this.handleWithTransaction(this.logUserLogout, enrichedParams);
 
         default:
           return {

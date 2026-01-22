@@ -4,11 +4,12 @@ const User = require("../../../entities/User");
 const UserActivity = require("../../../entities/UserActivity");
 const { AppDataSource } = require("../../db/dataSource");
 
+
 /**
- * Log user logout
- * @param {Object} params
+ * @param {{ user_id: any; username: any; ip_address: any; user_agent: any; _userId: any; }} params
+ * @param {any} qr
  */
-async function logUserLogout(params) {
+async function logUserLogout(params, qr) {
   const { 
     // @ts-ignore
     user_id,
