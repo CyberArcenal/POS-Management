@@ -41,6 +41,15 @@ A modern, feature-rich Point of Sale (POS) management system built with Electron
 - **Lucide React**: Modern icon library
 - **Reflect Metadata**: Runtime type metadata for TypeORM
 
+
+## 📸 Screenshots
+Here are sample displays of the system
+
+![Screenshot 3](https://github.com/CyberArcenal/POS-Management/blob/main/public/img3.png?raw=true)
+![Screenshot 2](https://github.com/CyberArcenal/POS-Management/blob/main/public/img2.png?raw=true)
+![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/public/img1.png?raw=true)
+
+
 ## 📁 Project Structure
 
 ```
