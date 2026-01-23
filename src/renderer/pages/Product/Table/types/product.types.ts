@@ -4,11 +4,33 @@ export interface Product {
   name: string;
   price: number;
   stock: number;
-  barcode: string | null;
+  min_stock: number;
+  stock_item_id: string | null;
   category_name: string | null;
   supplier_name: string | null;
+  barcode: string | null;
+  description: string | null;
+  cost_price: number | null;
   is_active: boolean;
+  reorder_quantity: number;
+  last_reorder_date: string | null;
   created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+  last_price_change: string | null;
+  original_price: number | null;
+  parent_product_id?: number | null;
+  parent_product?: Product | null;
+  
+  // Warehouse fields
+  warehouse_id?: string | null;
+  warehouse_name?: string | null;
+  sync_id?: string | null;
+  sync_status?: 'synced' | 'pending' | 'failed' | 'not_synced' | null;
+  last_sync_at?: string | null;
+  is_variant?: boolean;
+  variant_name?: string | null;
+  item_type?: string | null;
 }
 
 export interface PaginationMeta {
@@ -35,6 +57,23 @@ export interface SyncResponse {
     updated: number;
     skipped: number;
     errors: Array<{ product: string; error: string }>;
+    syncRecords: Array<{
+      productId: number | string;
+      syncId: number;
+      action: string;
+      success: boolean;
+      error?: string;
+    }>;
+    inventoryConnection: {
+      connected: boolean;
+      message?: string;
+    };
+    warehouseInfo?: {
+      id: string | number;
+      name: string;
+    } | null;
+    deactivated?: number;
+    masterSyncId?: number;
   };
 }
 
@@ -46,6 +85,10 @@ export interface ProductFilters {
   supplier_name?: string;
   in_stock_only?: boolean;
   low_stock_only?: boolean;
+  out_of_stock_only?: boolean;
+  has_stock_item_id?: boolean;
+  is_active?: boolean;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+  warehouse_id?: string | number;
 }

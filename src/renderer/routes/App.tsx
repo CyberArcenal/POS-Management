@@ -16,6 +16,9 @@ import { CustomerDirectoryPage } from '../pages/customer';
 import { LoyaltyProgramPage } from '../pages/Loyalty';
 import { UserProvider } from '../user/context/UserContext';
 import { UserManagementPage } from '../user';
+import SalesReportPage from '../pages/Analytics/SalesReport';
+import DailySalesPage from '../pages/Analytics/DailySales';
+import AuditTrailPage from '../pages/AuditTrail';
 
 
 function App() {
@@ -101,8 +104,8 @@ function App() {
             <Route path="products/barcode" element={<div>Barcode Manager</div>} />
 
             {/* Customers */}
-            <Route path="customers/list" element={<CustomerDirectoryPage/>} />
-            <Route path="customers/loyalty" element={<LoyaltyProgramPage/>} />
+            <Route path="customers/list" element={<CustomerDirectoryPage />} />
+            <Route path="customers/loyalty" element={<LoyaltyProgramPage />} />
             <Route path="customers/groups" element={<div>Customer Groups</div>} />
             <Route path="customers/credit" element={<div>Credit Accounts</div>} />
             <Route path="customers/feedback" element={<div>Customer Feedback</div>} />
@@ -114,8 +117,8 @@ function App() {
             <Route path="suppliers/returns" element={<div>Supplier Returns</div>} />
 
             {/* Sales */}
-            <Route path="sales/daily" element={<div>Daily Sales</div>} />
-            <Route path="sales/reports" element={<div>Sales Reports</div>} />
+            <Route path="sales/daily" element={<DailySalesPage />} />
+            <Route path="sales/reports" element={<SalesReportPage />} />
             <Route path="sales/orders" element={<div>Order Management</div>} />
             <Route path="sales/discounts" element={<div>Discounts & Promos</div>} />
             <Route path="sales/quotations" element={<div>Quotations</div>} />
@@ -133,7 +136,7 @@ function App() {
             <Route path="settings/payments" element={<div>Payment Methods</div>} />
             <Route path="settings/tax" element={<div>Tax Settings</div>} />
             <Route path="settings/receipt" element={<div>Receipt Settings</div>} />
-            <Route path="system/audit" element={<div>Audit Trail</div>} />
+            <Route path="system/audit" element={<AuditTrailPage />} />
             <Route path="notification-logs" element={<div>Notification Logs</div>} />
             <Route path="system/backup" element={<div>Backup & Restore</div>} />
 

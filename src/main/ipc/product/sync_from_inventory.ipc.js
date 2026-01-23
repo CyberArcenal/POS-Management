@@ -1,4 +1,4 @@
-// sync_from_inventory.ipc.js - REFACTORED WITH WAREHOUSE REQUIREMENT
+// sync_from_inventory.ipc.js - FIXED VERSION WITH WAREHOUSE CLEANUP
 //@ts-check
 const Product = require("../../../entities/Product");
 const syncDataManager = require("../../../services/inventory_sync/syncDataManager");
@@ -21,6 +21,8 @@ async function syncProductsFromInventory(params, queryRunner) {
     errors: [],
     syncRecords: [],
     warehouseInfo: null,
+    deletedOldProducts: 0,
+    barcodeConflicts: [],
   };
 
   try {
@@ -34,6 +36,8 @@ async function syncProductsFromInventory(params, queryRunner) {
       fullSync = false,
       // @ts-ignore
       incremental = false,
+      // @ts-ignore
+      cleanupBeforeSync = true, // New parameter to control cleanup
     } = params;
 
     // VALIDATION: Warehouse ID is REQUIRED
@@ -57,6 +61,7 @@ async function syncProductsFromInventory(params, queryRunner) {
         syncType: incremental ? "incremental" : "full",
         warehouseId,
         userId,
+        cleanupBeforeSync,
         timestamp: new Date().toISOString(),
       },
     );
@@ -92,14 +97,57 @@ async function syncProductsFromInventory(params, queryRunner) {
 
       results.warehouseInfo = warehouseInfo;
 
-      // 2. Get products FOR SPECIFIC WAREHOUSE
+      // 2. GET PRODUCTS FOR SPECIFIC WAREHOUSE FROM INVENTORY FIRST
       const inventoryProducts =
         await inventoryDB.getProductsByWarehouse(warehouseId);
       logger.info(
         `Found ${inventoryProducts.length} products in warehouse ${warehouseInfo.name}`,
       );
 
-      // 3. Sync products to POS database
+      // 3. GET EXISTING BARCODES FROM POS (ALL WAREHOUSES) FOR CONFLICT CHECK
+      const allExistingProducts = await productRepo.find({
+        select: ['id', 'barcode', 'name', 'warehouse_id']
+      });
+      
+      const barcodeMap = new Map();
+      const existingBarcodesInWarehouse = new Set();
+      
+      allExistingProducts.forEach(product => {
+        // @ts-ignore
+        if (product.barcode && product.barcode.trim() !== '') {
+          barcodeMap.set(product.barcode, {
+            id: product.id,
+            name: product.name,
+            warehouse_id: product.warehouse_id,
+          });
+          
+          // Track barcodes in current warehouse for cleanup check
+          if (product.warehouse_id == warehouseId) {
+            existingBarcodesInWarehouse.add(product.barcode);
+          }
+        }
+      });
+
+      // 4. DELETE ALL PRODUCTS FROM CURRENT WAREHOUSE BEFORE SYNC (if cleanup enabled)
+      if (cleanupBeforeSync) {
+        const deleteResult = await productRepo
+          .createQueryBuilder()
+          .delete()
+          .where("warehouse_id = :warehouseId", { warehouseId })
+          .execute();
+        
+        results.deletedOldProducts = deleteResult.affected || 0;
+        logger.info(`Deleted ${results.deletedOldProducts} old products from warehouse ${warehouseId}`);
+        
+        // Clear the barcode map entries for this warehouse
+        for (const [barcode, product] of barcodeMap.entries()) {
+          if (product.warehouse_id == warehouseId) {
+            barcodeMap.delete(barcode);
+          }
+        }
+      }
+
+      // 5. SYNC NEW PRODUCTS FROM INVENTORY
       for (const invProduct of inventoryProducts) {
         await processWarehouseProduct(
           invProduct,
@@ -111,18 +159,11 @@ async function syncProductsFromInventory(params, queryRunner) {
           fullSync,
           masterSyncRecord,
           results,
+          barcodeMap,
         );
       }
 
-      // 4. Deactivate POS products not in this warehouse
-      await deactivateMissingProducts(
-        warehouseId,
-        inventoryProducts,
-        productRepo,
-        results,
-      );
-
-      // 5. Update sync settings
+      // 6. Update sync settings
       await inventoryConfig.updateLastSync();
       await inventoryConfig.updateSetting(
         "inventory_connection_status",
@@ -139,6 +180,7 @@ async function syncProductsFromInventory(params, queryRunner) {
           summary: results,
           warehouse: warehouseInfo,
           totalProcessed: inventoryProducts.length,
+          barcodeConflicts: results.barcodeConflicts,
         },
       );
     } finally {
@@ -150,15 +192,17 @@ async function syncProductsFromInventory(params, queryRunner) {
       source: "inventory_system",
       warehouseId,
       sync_type: incremental ? "incremental" : "full",
+      cleanup: cleanupBeforeSync,
       results: results,
       masterSyncId: masterSyncRecord.id,
+      barcodeConflicts: results.barcodeConflicts,
       timestamp: new Date().toISOString(),
     });
 
     return {
       status: true,
       // @ts-ignore
-      message: `Products synced from warehouse ${results.warehouseInfo?.name}: ${results.created} created, ${results.updated} updated, ${results.skipped} skipped`,
+      message: `Products synced from warehouse ${results.warehouseInfo?.name}: ${results.created} created, ${results.updated} updated, ${results.skipped} skipped, ${results.deletedOldProducts} old products deleted`,
       data: {
         ...results,
         masterSyncId: masterSyncRecord.id,
@@ -185,8 +229,8 @@ async function syncProductsFromInventory(params, queryRunner) {
 }
 
 /**
- * Process product from specific warehouse
- * @param {{ inventory_id: { toString: () => any; }; name: any; warehouse_stock: number; }} invProduct
+ * Process product from specific warehouse - SIMPLIFIED VERSION
+ * @param {{ inventory_id: any; name: any; barcode: string; warehouse_stock: any; }} invProduct
  * @param {any} warehouseId
  * @param {any} warehouseName
  * @param {import("typeorm").Repository<{ id: unknown; sku: unknown; name: unknown; price: unknown; stock: unknown; min_stock: unknown; sync_id: unknown; warehouse_id: unknown; warehouse_name: unknown; is_variant: unknown; variant_name: unknown; parent_product_id: unknown; stock_item_id: unknown; item_type: unknown; sync_status: unknown; last_sync_at: unknown; category_name: unknown; supplier_name: unknown; barcode: unknown; description: unknown; cost_price: unknown; is_active: unknown; reorder_quantity: unknown; last_reorder_date: unknown; created_at: unknown; updated_at: unknown; is_deleted: unknown; last_price_change: unknown; original_price: unknown; }>} productRepo
@@ -194,7 +238,8 @@ async function syncProductsFromInventory(params, queryRunner) {
  * @param {any} userId
  * @param {any} fullSync
  * @param {{ id: unknown; entityType: unknown; entityId: unknown; syncType: unknown; syncDirection: unknown; status: unknown; itemsProcessed: unknown; itemsSucceeded: unknown; itemsFailed: unknown; startedAt: unknown; completedAt: unknown; lastSyncedAt: unknown; payload: unknown; errorMessage: unknown; retryCount: unknown; nextRetryAt: unknown; performedById: unknown; performedByUsername: unknown; createdAt: unknown; updatedAt: unknown; }} masterSyncRecord
- * @param {{ created: any; updated: any; skipped: any; errors: any; syncRecords: any; warehouseInfo?: null; }} results
+ * @param {{ created: any; updated?: number; skipped: any; errors: any; syncRecords: any; warehouseInfo?: null; deletedOldProducts?: number; barcodeConflicts: any; }} results
+ * @param {Map<any, any>} barcodeMap
  */
 async function processWarehouseProduct(
   invProduct,
@@ -203,11 +248,12 @@ async function processWarehouseProduct(
   productRepo,
   queryRunner,
   userId,
-  fullSync,
   // @ts-ignore
+  fullSync,
   // @ts-ignore
   masterSyncRecord,
   results,
+  barcodeMap,
 ) {
   let productSyncRecord = null;
 
@@ -215,130 +261,117 @@ async function processWarehouseProduct(
     // Generate unique sync ID that includes warehouse
     const syncId = `wh-${warehouseId}-${invProduct.inventory_id}`;
 
-    // Find existing product by sync_id (warehouse-specific)
-    let existingProduct = await productRepo.findOne({
-      where: {
-        sync_id: syncId,
-        warehouse_id: warehouseId,
-      },
-    });
-
-    // If not found by sync_id, check by stock_item_id AND warehouse
-    if (!existingProduct && invProduct.inventory_id) {
-      existingProduct = await productRepo.findOne({
-        where: {
-          stock_item_id: invProduct.inventory_id.toString(),
-          warehouse_id: warehouseId,
-        },
-      });
-    }
-
     // Create individual sync record
     productSyncRecord = await syncDataManager.recordSyncStart(
       "Product",
       // @ts-ignore
-      existingProduct ? existingProduct.id : 0,
+      0, // 0 for new product
       "inbound",
       {
         inventory_id: invProduct.inventory_id,
         product_name: invProduct.name,
         warehouse_id: warehouseId,
-        action: existingProduct ? "update" : "create",
+        action: "create", // Always create since we deleted old ones
       },
     );
 
-    if (existingProduct) {
-      // UPDATE EXISTING PRODUCT
-      // @ts-ignore
-      if (needsUpdate(existingProduct, invProduct, fullSync)) {
-        // @ts-ignore
-        const updateData = createWarehouseUpdateData(
-          // @ts-ignore
-          invProduct,
-          warehouseId,
-          warehouseName,
-        );
-        // @ts-ignore
-        await productRepo.update(existingProduct.id, updateData);
-        results.updated++;
-
-        // @ts-ignore
-        await syncDataManager.recordSyncSuccess(productSyncRecord.id, {
-          changes: {
-            stock: {
-              from: existingProduct.stock,
-              to: invProduct.warehouse_stock,
-            },
-            warehouse: warehouseName,
+    // CHECK FOR BARCODE CONFLICT WITH OTHER WAREHOUSES
+    if (invProduct.barcode && invProduct.barcode.trim() !== '') {
+      const existingBarcodeProduct = barcodeMap.get(invProduct.barcode);
+      
+      if (existingBarcodeProduct) {
+        // BARCODE CONFLICT: Same barcode exists in another warehouse
+        results.barcodeConflicts.push({
+          inventory_id: invProduct.inventory_id,
+          product_name: invProduct.name,
+          barcode: invProduct.barcode,
+          warehouse_id: warehouseId,
+          warehouse_name: warehouseName,
+          conflicting_with: {
+            product_id: existingBarcodeProduct.id,
+            product_name: existingBarcodeProduct.name,
+            warehouse_id: existingBarcodeProduct.warehouse_id,
           },
+          action_taken: 'skipped'
         });
 
-        // Log inventory transaction
-        await logWarehouseTransaction(
-          existingProduct.id,
-          "STOCK_SYNC",
-          // @ts-ignore
-          invProduct.warehouse_stock - existingProduct.stock,
-          // @ts-ignore
-          existingProduct.stock,
-          invProduct.warehouse_stock,
-          userId,
-          warehouseId,
-          `Synced from warehouse ${warehouseName}`,
-          queryRunner,
-        );
-      } else {
         results.skipped++;
-        // @ts-ignore
-        await syncDataManager.recordSyncSuccess(productSyncRecord.id, {
-          message: "No changes needed",
+        results.errors.push({
+          product: invProduct.name || invProduct.inventory_id,
+          error: `Barcode conflict: Barcode ${invProduct.barcode} already exists in warehouse ${existingBarcodeProduct.warehouse_id} for product "${existingBarcodeProduct.name}"`,
         });
-      }
-    } else {
-      // CREATE NEW PRODUCT FOR WAREHOUSE
-      // @ts-ignore
-      const newProductData = createWarehouseProductData(
+
         // @ts-ignore
-        invProduct,
-        warehouseId,
-        warehouseName,
-        syncId,
-      );
-      const newProduct = productRepo.create(newProductData);
-      await productRepo.save(newProduct);
-      results.created++;
+        await syncDataManager.recordSyncFailure(productSyncRecord.id, 
+          new Error(`Barcode conflict: ${invProduct.barcode} already exists in another warehouse`)
+        );
 
-      // @ts-ignore
-      await syncDataManager.recordSyncSuccess(productSyncRecord.id, {
-        newProductId: newProduct.id,
-      });
-
-      // Update sync record with actual product ID
-      // @ts-ignore
-      await syncDataManager.syncDataRepo.update(productSyncRecord.id, {
-        entityId: newProduct.id,
-      });
-
-      // Log inventory transaction
-      await logWarehouseTransaction(
-        newProduct.id,
-        "PRODUCT_CREATED",
-        invProduct.warehouse_stock,
-        0,
-        invProduct.warehouse_stock,
-        userId,
-        warehouseId,
-        `New product from warehouse ${warehouseName}`,
-        queryRunner,
-      );
+        return;
+      }
     }
 
+    // CREATE NEW PRODUCT
+    const newProductData = createWarehouseProductData(
+      // @ts-ignore
+      invProduct,
+      warehouseId,
+      warehouseName,
+      syncId,
+    );
+    
+    // Add barcode to map to prevent future conflicts in same sync
+    if (invProduct.barcode && invProduct.barcode.trim() !== '') {
+      barcodeMap.set(invProduct.barcode, {
+        id: 0, // Will be updated after save
+        name: invProduct.name,
+        warehouse_id: warehouseId,
+      });
+    }
+    
+    const newProduct = productRepo.create(newProductData);
+    await productRepo.save(newProduct);
+    results.created++;
+
+    // Update barcode map with actual product ID
+    if (invProduct.barcode && invProduct.barcode.trim() !== '') {
+      barcodeMap.set(invProduct.barcode, {
+        id: newProduct.id,
+        name: invProduct.name,
+        warehouse_id: warehouseId,
+      });
+    }
+
+    // @ts-ignore
+    await syncDataManager.recordSyncSuccess(productSyncRecord.id, {
+      newProductId: newProduct.id,
+    });
+
+    // Update sync record with actual product ID
+    // @ts-ignore
+    await syncDataManager.syncDataRepo.update(productSyncRecord.id, {
+      entityId: newProduct.id,
+    });
+
+    // Log inventory transaction
+    await logWarehouseTransaction(
+      newProduct.id,
+      "PRODUCT_SYNC",
+      invProduct.warehouse_stock || 0,
+      0,
+      invProduct.warehouse_stock || 0,
+      userId,
+      warehouseId,
+      `Synced from warehouse ${warehouseName}`,
+      queryRunner,
+    );
+
     results.syncRecords.push({
-      productId: existingProduct ? existingProduct.id : "new",
+      productId: newProduct.id,
       syncId: productSyncRecord.id,
-      action: existingProduct ? "updated" : "created",
+      action: "created",
       success: true,
     });
+    
   } catch (error) {
     results.skipped++;
     results.errors.push({
@@ -362,46 +395,8 @@ async function processWarehouseProduct(
 }
 
 /**
- * Deactivate products not present in current warehouse sync
- * @param {any} warehouseId
- * @param {any[]} inventoryProducts
- * @param {import("typeorm").Repository<{ id: unknown; sku: unknown; name: unknown; price: unknown; stock: unknown; min_stock: unknown; sync_id: unknown; warehouse_id: unknown; warehouse_name: unknown; is_variant: unknown; variant_name: unknown; parent_product_id: unknown; stock_item_id: unknown; item_type: unknown; sync_status: unknown; last_sync_at: unknown; category_name: unknown; supplier_name: unknown; barcode: unknown; description: unknown; cost_price: unknown; is_active: unknown; reorder_quantity: unknown; last_reorder_date: unknown; created_at: unknown; updated_at: unknown; is_deleted: unknown; last_price_change: unknown; original_price: unknown; }>} productRepo
- * @param {{ created?: number; updated?: number; skipped?: number; errors?: never[]; syncRecords?: never[]; warehouseInfo?: null; deactivated?: any; }} results
- */
-async function deactivateMissingProducts(
-  warehouseId,
-  inventoryProducts,
-  productRepo,
-  results,
-) {
-  const activeInventoryIds = inventoryProducts.map(
-    (/** @type {{ inventory_id: { toString: () => any; }; }} */ p) =>
-      p.inventory_id.toString(),
-  );
-
-  if (activeInventoryIds.length > 0) {
-    const deactivateResult = await productRepo
-      .createQueryBuilder()
-      .update()
-      .set({
-        is_active: false,
-        sync_status: "out_of_sync",
-        updated_at: new Date(),
-      })
-      .where("warehouse_id = :warehouseId", { warehouseId })
-      .andWhere("stock_item_id NOT IN (:...inventoryIds)", {
-        inventoryIds: activeInventoryIds,
-      })
-      .andWhere("is_active = :isActive", { isActive: true })
-      .execute();
-
-    results.deactivated = deactivateResult.affected || 0;
-  }
-}
-
-/**
  * Create warehouse-specific product data
- * @param {{ sku: any; inventory_id: any; name: any; price: any; warehouse_stock: any; min_stock: any; category_name: any; supplier_name: any; barcode: any; description: any; cost_price: any; item_type: string; variant_name: any; parent_product_id: any; is_active: any; }} invProduct
+ * @param {{ sku: any; inventory_id: any; name: any; price: any; warehouse_stock: any; min_stock: any; category_name: any; supplier_name: any; barcode: string; description: any; cost_price: any; item_type: string; variant_name: any; parent_product_id: any; is_active: any; }} invProduct
  * @param {any} warehouseId
  * @param {any} warehouseName
  * @param {string} syncId
@@ -412,9 +407,15 @@ function createWarehouseProductData(
   warehouseName,
   syncId,
 ) {
-  return {
+  // Generate a unique SKU if not provided
+  let sku = invProduct.sku;
+  if (!sku || sku.trim() === '') {
+    sku = `WH${warehouseId}-${invProduct.inventory_id}-${Date.now().toString().slice(-6)}`;
+  }
+
+  const productData = {
     sync_id: syncId,
-    sku: invProduct.sku || `WH-${warehouseId}-${invProduct.inventory_id}`,
+    sku: sku,
     name: invProduct.name,
     price: invProduct.price || 0,
     stock: invProduct.warehouse_stock || 0,
@@ -438,43 +439,20 @@ function createWarehouseProductData(
     updated_at: new Date(),
     is_deleted: false,
   };
-}
 
-/**
- * Create warehouse-specific update data
- * @param {{ name: any; price: any; warehouse_stock: any; min_stock: any; category_name: any; supplier_name: any; barcode: any; description: any; cost_price: any; item_type: string; variant_name: any; parent_product_id: any; is_active: any; }} invProduct
- * @param {any} warehouseId
- * @param {any} warehouseName
- */
-function createWarehouseUpdateData(invProduct, warehouseId, warehouseName) {
-  return {
-    name: invProduct.name,
-    price: invProduct.price || 0,
-    stock: invProduct.warehouse_stock || 0,
-    min_stock: invProduct.min_stock || 0,
-    warehouse_id: warehouseId,
-    warehouse_name: warehouseName,
-    category_name: invProduct.category_name || null,
-    supplier_name: invProduct.supplier_name || null,
-    barcode: invProduct.barcode || null,
-    description: invProduct.description || null,
-    cost_price: invProduct.cost_price || null,
-    is_variant: invProduct.item_type === "variant",
-    variant_name: invProduct.variant_name,
-    parent_product_id: invProduct.parent_product_id,
-    item_type: invProduct.item_type,
-    is_active: invProduct.is_active ? true : false,
-    sync_status: "synced",
-    last_sync_at: new Date(),
-    updated_at: new Date(),
-  };
+  // Only include barcode if it's not empty and unique
+  if (!invProduct.barcode || invProduct.barcode.trim() === '') {
+    productData.barcode = null;
+  }
+
+  return productData;
 }
 
 /**
  * Log warehouse-specific transaction
  * @param {any} productId
  * @param {string} action
- * @param {number} changeAmount
+ * @param {any} changeAmount
  * @param {number} quantityBefore
  * @param {any} quantityAfter
  * @param {any} userId
@@ -518,23 +496,13 @@ async function logWarehouseTransaction(
   }
 }
 
-// Helper functions (keep from original)
-/**
- * @param {{ inventory_id: any; name: any; price: undefined; }} invProduct
- */
-// @ts-ignore
-// @ts-ignore
-function validateProductData(invProduct) {
-  return (
-    invProduct.inventory_id && invProduct.name && invProduct.price !== undefined
-  );
-}
-
+// Helper function for incremental sync (kept for compatibility)
 /**
  * @param {{ stock: number; price: number; name: any; }} existingProduct
  * @param {{ warehouse_stock: any; price: any; name: any; }} invProduct
  * @param {any} fullSync
  */
+// @ts-ignore
 function needsUpdate(existingProduct, invProduct, fullSync) {
   if (fullSync) return true;
   const stockDiff = Math.abs(

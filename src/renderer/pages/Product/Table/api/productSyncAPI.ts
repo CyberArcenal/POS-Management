@@ -1,7 +1,6 @@
 import productAPI from "../../../../api/product";
 import type { ProductFilters, ProductsResponse, SyncResponse } from "../types/product.types";
 
-
 export class ProductSyncAPI {
   async getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {
     try {
@@ -24,10 +23,16 @@ export class ProductSyncAPI {
     }
   }
 
-  async syncFromInventory(): Promise<SyncResponse> {
+  async syncFromInventory(params?: {
+    warehouseId?: string | number;
+    fullSync?: boolean;
+    incremental?: boolean;
+  }): Promise<SyncResponse> {
     try {
       const response = await productAPI.syncProductsFromInventory({
-        fullSync: true
+        warehouseId: params?.warehouseId,
+        fullSync: params?.fullSync ?? true,
+        incremental: params?.incremental ?? false
       });
 
       return {
@@ -63,6 +68,47 @@ export class ProductSyncAPI {
       };
     } catch (error: any) {
       throw new Error(`Search failed: ${error.message}`);
+    }
+  }
+
+  async getWarehouseProducts(
+    warehouseId: string | number,
+    filters?: ProductFilters
+  ): Promise<ProductsResponse> {
+    try {
+      const response = await productAPI.getWarehouseProducts(warehouseId, filters);
+      
+      return {
+        status: response.status,
+        message: response.message,
+        pagination: {
+          count: response.data.total,
+          current_page: 1,
+          total_pages: Math.ceil(response.data.total / 20),
+          page_size: 20,
+          next: false,
+          previous: false
+        },
+        data: response.data.products
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to get warehouse products: ${error.message}`);
+    }
+  }
+
+  async getAvailableWarehouses() {
+    try {
+      return await productAPI.getAvailableWarehouses();
+    } catch (error: any) {
+      throw new Error(`Failed to get warehouses: ${error.message}`);
+    }
+  }
+
+  async setCurrentWarehouse(warehouseId: string | number, warehouseName: string) {
+    try {
+      return await productAPI.setCurrentWarehouse(warehouseId, warehouseName);
+    } catch (error: any) {
+      throw new Error(`Failed to set warehouse: ${error.message}`);
     }
   }
 }

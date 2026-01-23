@@ -155,6 +155,7 @@ class SyncRetryService {
       
       // Re-process the inventory update
       await SyncManager.updateInventoryStockFromSale(
+        // @ts-ignore
         sale, 
         // @ts-ignore
         { id: 'retry-service', username: 'system' }

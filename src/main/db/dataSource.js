@@ -23,6 +23,7 @@ const { RedemptionHistory } = require("../../entities/RedemptionHistory");
 const { PointsEarningRule } = require("../../entities/PointsEarningRule");
 const { CustomerContact } = require("../../entities/CustomerContact");
 const { CustomerTransaction } = require("../../entities/CustomerTransaction");
+const StockChange = require("../../entities/StockChange");
 
 const config = getDatabaseConfig();
 
@@ -48,6 +49,8 @@ const entities = [
   RedemptionHistory,
   PointsEarningRule,
   Customer,
+  StockChange,
+  
 ];
 
 // @ts-ignore

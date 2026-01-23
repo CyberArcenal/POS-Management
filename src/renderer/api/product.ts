@@ -22,6 +22,50 @@ export interface Product {
   original_price: number | null;
   parent_product_id?: number | null;
   parent_product?: Product | null;
+  // 🆕 NEW WAREHOUSE FIELDS
+  warehouse_id?: string | null;
+  warehouse_name?: string | null;
+  sync_id?: string | null;
+  sync_status?: string | null;
+  last_sync_at?: string | null;
+  is_variant?: boolean;
+  variant_name?: string | null;
+  item_type?: string | null;
+}
+
+export interface Warehouse {
+  id: string | number;
+  name: string;
+  code?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  manager?: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WarehouseSyncStatus {
+  warehouse: Warehouse;
+  inventory: {
+    productCount: number;
+    totalStock: number;
+  };
+  pos: {
+    productCount: number;
+    syncedCount: number;
+    outOfSyncCount: number;
+  };
+  syncStatus: {
+    percentage: number;
+    needsSync: boolean;
+    lastSync: number | null;
+  };
 }
 
 export interface InventoryTransactionLog {
@@ -43,6 +87,8 @@ export interface InventoryTransactionLog {
   user_agent: string | null;
   created_at: string;
   performed_by?: any; // User object if populated
+  // 🆕 NEW FIELD
+  warehouse_id?: string | null;
 }
 
 export interface ProductInventoryData extends Product {
@@ -156,6 +202,8 @@ export interface InventorySyncResult {
     connected: boolean;
     message?: string;
   };
+  warehouseInfo?: Warehouse | null;
+  deactivated?: number;
   masterSyncId?: number;
 }
 
@@ -329,6 +377,37 @@ export interface ProductOperationResponse {
     updated?: boolean;
     [key: string]: any;
   };
+}
+
+// 🆕 NEW WAREHOUSE RESPONSE INTERFACES
+export interface WarehouseProductsResponse {
+  status: boolean;
+  message: string;
+  data: {
+    products: Product[];
+    total: number;
+    warehouseId: string | number;
+  };
+}
+
+export interface AvailableWarehousesResponse {
+  status: boolean;
+  message: string;
+  data: {
+    warehouses: Warehouse[];
+    currentWarehouse: {
+      id: string | number;
+      name: string;
+    } | null;
+    total: number;
+    timestamp: string;
+  };
+}
+
+export interface WarehouseSyncStatusResponse {
+  status: boolean;
+  message: string;
+  data: WarehouseSyncStatus;
 }
 
 export interface ProductPayload {
@@ -765,6 +844,86 @@ class ProductAPI {
     }
   }
 
+  // 🏬 WAREHOUSE-RELATED OPERATIONS (NEW)
+
+  /**
+   * Get products from specific warehouse
+   */
+  async getWarehouseProducts(
+    warehouseId: string | number,
+    filters?: {
+      is_active?: boolean;
+      category_name?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<WarehouseProductsResponse> {
+    try {
+      if (!window.backendAPI || !window.backendAPI.product) {
+        throw new Error("Electron API not available");
+      }
+
+      const response = await window.backendAPI.product({
+        method: "getWarehouseProducts",
+        params: { warehouseId, filters },
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to get warehouse products");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to get warehouse products");
+    }
+  }
+
+  /**
+   * Get available warehouses from inventory system
+   */
+  async getAvailableWarehouses(): Promise<AvailableWarehousesResponse> {
+    try {
+      if (!window.backendAPI || !window.backendAPI.product) {
+        throw new Error("Electron API not available");
+      }
+
+      const response = await window.backendAPI.product({
+        method: "getAvailableWarehouses",
+        params: {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to get available warehouses");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to get available warehouses");
+    }
+  }
+
+  /**
+   * Get sync status for specific warehouse
+   */
+  async getWarehouseSyncStatus(warehouseId: string | number): Promise<WarehouseSyncStatusResponse> {
+    try {
+      if (!window.backendAPI || !window.backendAPI.product) {
+        throw new Error("Electron API not available");
+      }
+
+      const response = await window.backendAPI.product({
+        method: "getWarehouseSyncStatus",
+        params: { warehouseId },
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to get warehouse sync status");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to get warehouse sync status");
+    }
+  }
+
   // 🛒 SALE-RELATED STOCK OPERATIONS
 
   /**
@@ -823,15 +982,20 @@ class ProductAPI {
   }
 
   /**
-   * Sync products from inventory system
+   * Sync products from inventory system (WAREHOUSE REQUIRED)
    */
-  async syncProductsFromInventory(params?: {
+  async syncProductsFromInventory(params: {
+    warehouseId: string | number;
     fullSync?: boolean;
     incremental?: boolean;
   }): Promise<ProductSyncResponse> {
     try {
       if (!window.backendAPI || !window.backendAPI.product) {
         throw new Error("Electron API not available");
+      }
+
+      if (!params.warehouseId) {
+        throw new Error("Warehouse ID is required for inventory sync");
       }
 
       const response = await window.backendAPI.product({
@@ -936,6 +1100,8 @@ class ProductAPI {
     inventory_auto_update_on_sale?: boolean | string;
     inventory_sync_interval?: number | string;
     inventory_last_sync?: string;
+    current_warehouse_id?: string | number;
+    current_warehouse_name?: string;
     [key: string]: any;
   }): Promise<InventoryConfigUpdateResponse> {
     try {
@@ -1164,6 +1330,55 @@ class ProductAPI {
    */
   isLinkedToInventory(product: Product): boolean {
     return product.stock_item_id !== null && product.stock_item_id !== undefined;
+  }
+
+  /**
+   * Check if product is synced with warehouse
+   */
+  isWarehouseSynced(product: Product): boolean {
+    return product.sync_status === 'synced' && !!product.warehouse_id;
+  }
+
+  /**
+   * Get products by warehouse
+   */
+  async getProductsByWarehouseId(warehouseId: string | number): Promise<Product[]> {
+    try {
+      const response = await this.getWarehouseProducts(warehouseId);
+      return response.data.products;
+    } catch (error) {
+      console.error(`Failed to get products for warehouse ${warehouseId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get current warehouse from settings
+   */
+  async getCurrentWarehouse(): Promise<{ id: string | number; name: string } | null> {
+    try {
+      const response = await this.getAvailableWarehouses();
+      return response.data.currentWarehouse;
+    } catch (error) {
+      console.error("Failed to get current warehouse:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Set current warehouse
+   */
+  async setCurrentWarehouse(warehouseId: string | number, warehouseName: string): Promise<boolean> {
+    try {
+      await this.updateInventoryConfig({
+        current_warehouse_id: warehouseId,
+        current_warehouse_name: warehouseName
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to set current warehouse:", error);
+      return false;
+    }
   }
 }
 

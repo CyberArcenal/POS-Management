@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductTable from './components/ProductTable';
 import PaginationControls from './components/PaginationControls';
 import SyncButton from './components/SyncButton';
 import { showSuccess } from '../../../utils/notification';
 import { useProducts } from './hooks/useProducts';
 import { ProductProvider } from './context/ProductContext';
+import { productSyncAPI } from './api/productSyncAPI';
 
 // Main product page content
 const ProductPageContent: React.FC = () => {
@@ -22,15 +23,30 @@ const ProductPageContent: React.FC = () => {
     refreshProducts
   } = useProducts();
 
-  // Load products on initial render
+  const [warehouses, setWarehouses] = useState<Array<{ id: string | number; name: string }>>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+  // Load products and warehouses on initial render
   useEffect(() => {
     loadProducts();
+    loadWarehouses();
   }, [loadProducts]);
 
+  const loadWarehouses = async () => {
+    try {
+      const response = await productSyncAPI.getAvailableWarehouses();
+      if (response.status) {
+        setWarehouses(response.data.warehouses);
+      }
+    } catch (error) {
+      console.error('Failed to load warehouses:', error);
+    }
+  };
+
   // Handle sync completion
-  const handleSyncComplete = async () => {
+  const handleSyncComplete = async (result: any) => {
     await refreshProducts();
-    showSuccess('Product list refreshed after sync');
+    showSuccess(`Product list refreshed. ${result.created} created, ${result.updated} updated`);
   };
 
   // Handle search input
@@ -40,6 +56,16 @@ const ProductPageContent: React.FC = () => {
       searchProducts(value);
     }
   };
+
+  // Update active filters display
+  useEffect(() => {
+    const active: string[] = [];
+    if (filters.category_name) active.push(`Category: ${filters.category_name}`);
+    if (filters.in_stock_only) active.push('In Stock Only');
+    if (filters.low_stock_only) active.push('Low Stock');
+    if (filters.out_of_stock_only) active.push('Out of Stock');
+    setActiveFilters(active);
+  }, [filters]);
 
   return (
     <div className="h-full flex flex-col bg-gray-900 text-white p-6">
@@ -53,10 +79,36 @@ const ProductPageContent: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <SyncButton onSyncComplete={handleSyncComplete} />
+            <SyncButton 
+              onSyncComplete={handleSyncComplete} 
+              showWarehouseSelect={true}
+            />
           </div>
         </div>
       </div>
+
+      {/* Active Filters */}
+      {activeFilters.length > 0 && (
+        <div className="flex-none mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-gray-400">Active filters:</span>
+            {activeFilters.map((filter, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-full"
+              >
+                {filter}
+              </span>
+            ))}
+            <button
+              onClick={clearFilters}
+              className="text-sm text-gray-400 hover:text-white"
+            >
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters and Search */}
       <div className="flex-none mb-6 p-4 bg-gray-800 rounded-lg">
@@ -97,24 +149,34 @@ const ProductPageContent: React.FC = () => {
             <select
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               onChange={(e) => {
-                if (e.target.value === 'in_stock') applyFilter('in_stock_only', true);
-                else if (e.target.value === 'low_stock') applyFilter('low_stock_only', true);
-                else clearFilters();
+                applyFilter('in_stock_only', e.target.value === 'in_stock');
+                applyFilter('low_stock_only', e.target.value === 'low_stock');
+                applyFilter('out_of_stock_only', e.target.value === 'out_of_stock');
               }}
             >
               <option value="">All Products</option>
               <option value="in_stock">In Stock Only</option>
               <option value="low_stock">Low Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
             </select>
           </div>
 
-          <div className="flex items-end">
-            <button
-              onClick={clearFilters}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors w-full"
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Warehouse
+            </label>
+            <select
+              value={filters.warehouse_id}
+              onChange={(e) => applyFilter('warehouse_id', e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Clear Filters
-            </button>
+              <option value="">All Warehouses</option>
+              {warehouses.map((wh) => (
+                <option key={wh.id} value={wh.id}>
+                  {wh.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -133,8 +195,21 @@ const ProductPageContent: React.FC = () => {
 
       {/* Products Count */}
       <div className="flex-none mb-4">
-        <div className="text-sm text-gray-400">
-          Showing {products.length} of {pagination?.count || 0} products
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-400">
+            Showing {products.length} of {pagination?.count || 0} products
+            {filters.warehouse_id && warehouses.find(w => w.id == filters.warehouse_id) && (
+              <span className="ml-2 text-blue-300">
+                • Warehouse: {warehouses.find(w => w.id == filters.warehouse_id)?.name}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-400">
+              {products.filter(p => p.sync_status === 'synced').length} synced •
+              {products.filter(p => p.stock <= p.min_stock && p.stock > 0).length} low stock
+            </div>
+          </div>
         </div>
       </div>
 
@@ -163,10 +238,15 @@ const ProductPageContent: React.FC = () => {
 
       {/* Stats Footer */}
       <div className="flex-none mt-6 pt-4 border-t border-gray-700">
-        <div className="text-xs text-gray-500">
-          Last updated: {new Date().toLocaleTimeString()} • 
-          Auto-refresh: 5 minutes • 
-          Inventory sync: {typeof window.backendAPI?.sync === 'object' && (window.backendAPI.sync as any)?.isConnected ? 'Connected' : 'Disconnected'}
+        <div className="text-xs text-gray-500 flex justify-between">
+          <div>
+            Last updated: {new Date().toLocaleTimeString()} • 
+            Auto-refresh: 5 minutes
+          </div>
+          <div>
+            Inventory sync: {typeof window.backendAPI?.sync === 'object' && (window.backendAPI.sync as any)?.isConnected ? 'Connected' : 'Disconnected'} •
+            Active warehouses: {warehouses.length}
+          </div>
         </div>
       </div>
     </div>

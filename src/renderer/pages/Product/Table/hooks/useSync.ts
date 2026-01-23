@@ -8,17 +8,21 @@ export const useSync = () => {
   const [syncResult, setSyncResult] = useState<SyncResponse['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const syncFromInventory = useCallback(async () => {
+  const syncFromInventory = useCallback(async (params?: {
+    warehouseId?: string | number;
+    fullSync?: boolean;
+    incremental?: boolean;
+  }) => {
     try {
       setIsSyncing(true);
       setError(null);
 
-      const response = await productSyncAPI.syncFromInventory();
+      const response = await productSyncAPI.syncFromInventory(params);
 
       if (response.status) {
         setSyncResult(response.data);
         showSuccess(
-          `Sync completed: ${response.data.created} created, ${response.data.updated} updated`
+          `Sync completed: ${response.data.created} created, ${response.data.updated} updated, ${response.data.skipped} skipped`
         );
         
         if (response.data.errors.length > 0) {

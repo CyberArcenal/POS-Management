@@ -49,6 +49,7 @@ const InventoryTransactionLog = new EntitySchema({
     id: { type: "int", primary: true, generated: true },
 
     product_id: { type: "varchar", nullable: true },
+    warehouse_id: {type: "varchar", nullable: true},
 
     // ✅ Enum via varchar + constants
     action: {
