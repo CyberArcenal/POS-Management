@@ -8,7 +8,6 @@ const { withErrorHandling } = require("../../../utils/errorHandler");
 const { logger } = require("../../../utils/logger");
 const { AppDataSource } = require("../../db/dataSource");
 const UserActivity = require("../../../entities/UserActivity");
-const WarehouseManager = require("../../../services/inventory_sync/warehouseManager");
 
 class SaleHandler {
   constructor() {
@@ -363,13 +362,6 @@ class SaleHandler {
 
       const [sales, total] = await queryBuilder.getManyAndCount();
 
-      // Get summary
-      const summary = await new WarehouseManager().getWarehouseSalesSummary(
-        warehouse_id, 
-        start_date, 
-        end_date
-      );
-
       return {
         status: true,
         data: {
@@ -380,7 +372,6 @@ class SaleHandler {
             total,
             total_pages: Math.ceil(total / limit)
           },
-          summary
         }
       };
     } catch (error) {

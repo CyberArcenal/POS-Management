@@ -4,6 +4,7 @@ const { ipcMain } = require("electron");
 const { withErrorHandling } = require("../../../utils/errorHandler");
 const { logger } = require("../../../utils/logger");
 // @ts-ignore
+// @ts-ignore
 const { AppDataSource } = require("../../db/dataSource");
 
 class AuditTrailHandler {
@@ -70,6 +71,7 @@ class AuditTrailHandler {
           return await this.getAuditTrailById(enrichedParams.id, userId);
         
         case "getAuditTrailsByEntity":
+          // @ts-ignore
           return await this.getAuditTrailsByEntity(
             // @ts-ignore
             enrichedParams.entity,
@@ -81,6 +83,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditTrailsByUser":
+          // @ts-ignore
           return await this.getAuditTrailsByUser(
             // @ts-ignore
             enrichedParams.user_id,
@@ -90,6 +93,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditTrailsByDateRange":
+          // @ts-ignore
           return await this.getAuditTrailsByDateRange(
             // @ts-ignore
             enrichedParams.start_date,
@@ -101,6 +105,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditTrailsByAction":
+          // @ts-ignore
           return await this.getAuditTrailsByAction(
             // @ts-ignore
             enrichedParams.action,
@@ -110,6 +115,7 @@ class AuditTrailHandler {
           );
         
         case "searchAuditTrails":
+          // @ts-ignore
           return await this.searchAuditTrails(
             // @ts-ignore
             enrichedParams.query,
@@ -120,6 +126,7 @@ class AuditTrailHandler {
 
         // 📊 REPORTING & ANALYTICS
         case "getAuditStatistics":
+          // @ts-ignore
           return await this.getAuditStatistics(
             // @ts-ignore
             enrichedParams.filters,
@@ -127,6 +134,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditActivityReport":
+          // @ts-ignore
           return await this.getAuditActivityReport(
             // @ts-ignore
             enrichedParams.filters,
@@ -134,6 +142,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditComplianceReport":
+          // @ts-ignore
           return await this.getAuditComplianceReport(
             // @ts-ignore
             enrichedParams.filters,
@@ -142,6 +151,7 @@ class AuditTrailHandler {
 
         // 🔒 SECURITY & MONITORING
         case "getSuspiciousActivities":
+          // @ts-ignore
           return await this.getSuspiciousActivities(
             // @ts-ignore
             enrichedParams.filters,
@@ -149,6 +159,7 @@ class AuditTrailHandler {
           );
         
         case "getAuditSummary":
+          // @ts-ignore
           return await this.getAuditSummary(
             // @ts-ignore
             enrichedParams.filters,

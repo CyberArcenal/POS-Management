@@ -4,17 +4,15 @@ const { DataSource } = require("typeorm");
 const { getDatabaseConfig } = require("./database");
 const Sale = require("../../entities/Sale");
 const SaleItem = require("../../entities/SaleItem");
-const Product = require("../../entities/Product");
 const AuditTrail = require("../../entities/AuditTrail");
 const User = require("../../entities/User");
-const SyncData = require("../../entities/SyncData");
 const { InventoryAction } = require("../../entities/InventoryTransactionLogs");
 const InventoryTransactionLog = require("../../entities/InventoryTransactionLogs");
 const PriceHistory = require("../../entities/PriceHistory");
 const { SystemSetting } = require("../../entities/systemSettings");
 const UserActivity = require("../../entities/UserActivity");
 const LicenseCache = require("../../entities/LicenseCache");
-const {Customer} = require("../../entities/Customer");
+const { Customer } = require("../../entities/Customer");
 const { LoyaltyProgram } = require("../../entities/LoyaltyProgram");
 const { LoyaltyCustomer } = require("../../entities/LoyaltyCustomer");
 const { PointsTransaction } = require("../../entities/PointsTransaction");
@@ -23,7 +21,12 @@ const { RedemptionHistory } = require("../../entities/RedemptionHistory");
 const { PointsEarningRule } = require("../../entities/PointsEarningRule");
 const { CustomerContact } = require("../../entities/CustomerContact");
 const { CustomerTransaction } = require("../../entities/CustomerTransaction");
-const StockChange = require("../../entities/StockChange");
+const Category = require("../../entities/Category");
+const ProductVariant = require("../../entities/ProductVariant");
+const Supplier = require("../../entities/Supplier");
+const Brand = require("../../entities/Brand");
+const { Product } = require("../../entities/Product");
+
 
 const config = getDatabaseConfig();
 
@@ -33,13 +36,12 @@ const entities = [
   Product,
   AuditTrail,
   User,
-  SyncData,
   InventoryTransactionLog,
   PriceHistory,
   SystemSetting,
   UserActivity,
   LicenseCache,
-  
+
   CustomerContact,
   CustomerTransaction,
   LoyaltyProgram,
@@ -49,8 +51,10 @@ const entities = [
   RedemptionHistory,
   PointsEarningRule,
   Customer,
-  StockChange,
-  
+  Brand,
+  Category,
+  ProductVariant,
+  Supplier
 ];
 
 // @ts-ignore

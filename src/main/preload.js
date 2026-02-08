@@ -19,10 +19,6 @@ contextBridge.exposeInMainWorld("backendAPI", {
   dashboard: (payload) => ipcRenderer.invoke("dashboard", payload),
 
   customer: (payload) => ipcRenderer.invoke("customer", payload),
-  // onCustomerCreated: (callback: (payload: any) => void) => void;
-  // onCustomerUpdated: (callback: (payload: any) => void) => void;
-  // onCustomerDeleted: (callback: (payload: any) => void) => void;
-  // onCustomerBalanceUpdated: (callback: (payload: any) => void) => void;
   loyalty: (payload) => ipcRenderer.invoke("loyalty", payload),
 
   // 🎯 Event listeners

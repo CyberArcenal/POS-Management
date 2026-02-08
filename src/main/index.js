@@ -11,25 +11,11 @@ const { AppDataSource } = require("./db/dataSource");
 const MigrationManager = require("../utils/migrationManager");
 const {
   registerIpcHandlers,
-  registerSyncIpcHandlers,
 } = require("./reg.handler");
 // @ts-ignore
 const { remindersEnabled, auditLogEnabled } = require("../utils/system");
 const AuditTrailCleanupScheduler = require("../scheduler/auditTrailCleanupScheduler");
-
-// ===================== INVENTORY SYNC IMPORTS =====================
-// NEW: Complete sync imports
-const inventoryConfig = require("../services/inventory_sync/inventoryConfig");
-const syncRetryService = require("../services/inventory_sync/syncRetryService");
-const SyncManager = require("../services/inventory_sync/syncManager"); // NEW IMPORT
-const syncDataManager = require("../services/inventory_sync/syncDataManager"); // NEW IMPORT
-const saleCompletionHandler = require("../services/inventory_sync/saleCompletionHandler"); // NEW IMPORT
 const { registerWindowControlHandlers } = require("./ipc/windows_control.ipc");
-
-// ===================== REMOVE THESE UNUSED IMPORTS =====================
-// DELETE THESE LINES (if they exist):
-// const { getSyncConfig } = require("../services/inventory_sync/inventoryConfig");
-// const registerSyncIpcHandlers = require("./registerSyncIpcHandler");
 
 // ===================== CONFIGURATION =====================
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
@@ -575,37 +561,6 @@ async function continueNormalStartup() {
   }
 }
 
-// ===================== SYNC SERVICES FUNCTIONS =====================
-/**
- * Initialize and start all sync services
- */
-async function startSyncServices() {
-  try {
-    log("INFO", "Starting inventory sync services...");
-
-    // 1. Initialize default settings
-    await inventoryConfig.initializeDefaultSettings();
-    log("INFO", "Inventory sync configuration initialized");
-
-    // 2. Start the sync manager
-    await SyncManager.start();
-    log("INFO", "Sync manager started");
-
-    // 3. Start retry service for failed syncs
-    syncRetryService.start();
-    log("INFO", "Sync retry service started");
-
-    // 4. Test connection to inventory database
-    const connectionResult = await SyncManager.testConnection();
-    log(
-      "INFO",
-      `Inventory connection test: ${connectionResult.connected ? "✅ Connected" : "❌ Failed"}`,
-    );
-  } catch (error) {
-    log("ERROR", "Failed to start sync services:", error);
-  }
-}
-
 // ===================== MAIN STARTUP FLOW =====================
 app.on("ready", async () => {
   try {
@@ -662,17 +617,11 @@ app.on("ready", async () => {
     // 4. Register migration-related IPC handlers
     registerMigrationIpcHandlers();
 
-    // 5. Register sync-related IPC handlers
-    registerSyncIpcHandlers(); // LOCAL FUNCTION, NOT IMPORTED
-
-    // 6. Continue with normal startup
+    // 5. Continue with normal startup
     await continueNormalStartup();
 
-    // 7. Start schedulers
+    // 6. Start schedulers
     await startSchedulers();
-
-    // 8. Start sync services
-    await startSyncServices();
 
     log("SUCCESS", "✅ POS Management System started successfully");
   } catch (error) {
@@ -896,12 +845,7 @@ app.on("activate", async () => {
 
 app.on("before-quit", () => {
   log("INFO", "Application quitting...");
-
-  // Stop sync services gracefully
-  SyncManager.stop().catch((err) => {
-    log("WARN", "Failed to stop sync manager:", err);
-  });
-  syncRetryService.stop();
+  // No sync services to stop
 });
 
 app.on("will-quit", () => {
