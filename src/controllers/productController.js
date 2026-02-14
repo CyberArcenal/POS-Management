@@ -1,1 +1,0 @@
-// productController.js placeholder

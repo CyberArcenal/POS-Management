@@ -1,254 +1,150 @@
 # POS Management System
 
-A modern, feature-rich Point of Sale (POS) management system built with Electron, React, TypeScript, and SQLite. This desktop application provides comprehensive tools for retail management, inventory tracking, sales processing, and customer relationship management.
+A modern, feature‑rich Point of Sale (POS) management system built with **Electron, React, TypeScript, and SQLite**. This desktop application provides tools for retail operations, inventory tracking, sales processing, and customer relationship management.
 
 ## 🚀 Features
 
-### Core Features
-- **Sales Processing**: Complete point-of-sale functionality with receipt generation
-- **Inventory Management**: Track stock levels, manage products, and monitor inventory changes
-- **Customer Management**: Customer profiles, contact management, and transaction history
-- **Loyalty Program**: Integrated loyalty system with points earning and redemption
-- **Multi-platform**: Windows, macOS, and Linux support
+### Core
+- **Sales Processing**: Full POS workflow with receipt generation  
+- **Inventory Management**: Track stock levels, manage products, monitor movements  
+- **Customer Management**: Profiles, contact info, transaction history  
+- **Loyalty Program**: Points earning and redemption  
+- **Cross‑platform**: Windows, macOS, Linux  
 
-### Advanced Features
-- **Database Synchronization**: Real-time inventory sync with external systems
-- **Audit Trail**: Comprehensive logging of all system activities
-- **Automated Backups**: Database backup and recovery system
-- **Migration Management**: Automated database schema migrations
-- **Reporting & Analytics**: Sales reports, charts, and business insights
-- **User Management**: Role-based access control and user activity tracking
+### Advanced
+- **Database Sync**: Real‑time inventory synchronization  
+- **Audit Trail**: Comprehensive activity logging  
+- **Automated Backups**: Backup and recovery system  
+- **Migrations**: Automated schema management  
+- **Reporting & Analytics**: Sales, inventory, customer insights, charts  
+- **User Management**: Role‑based access and activity tracking  
 
-## 🛠 Technology Stack
+## 🛠 Tech Stack
 
-### Frontend
-- **React 19**: Modern React with latest features
-- **TypeScript**: Type-safe development
-- **Vite**: Fast build tool and development server
-- **Tailwind CSS**: Utility-first CSS framework
-- **Chart.js**: Interactive charts and graphs
-- **React Router**: Client-side routing
+**Frontend**
+- React 19, TypeScript, Vite, Tailwind CSS  
+- Chart.js (analytics), React Router (navigation)  
 
-### Backend
-- **Electron**: Cross-platform desktop framework
-- **TypeORM**: TypeScript ORM for database operations
-- **SQLite3**: Embedded relational database
-- **Node.js**: JavaScript runtime environment
+**Backend**
+- Electron (desktop framework)  
+- Node.js runtime  
+- TypeORM ORM + SQLite3 database  
 
-### Key Libraries
-- **Bcryptjs**: Password hashing and security
-- **Decimal.js**: Precise decimal arithmetic for financial calculations
-- **Lucide React**: Modern icon library
-- **Reflect Metadata**: Runtime type metadata for TypeORM
-
-
-## 📸 Screenshots
-Here are sample displays of the system
-
-![Screenshot 3](https://github.com/CyberArcenal/POS-Management/blob/main/public/img3.png?raw=true)
-![Screenshot 2](https://github.com/CyberArcenal/POS-Management/blob/main/public/img2.png?raw=true)
-![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/public/img1.png?raw=true)
-
+**Key Libraries**
+- Bcryptjs (password hashing)  
+- Decimal.js (precise financial calculations)  
+- Lucide React (icons)  
+- Reflect Metadata (TypeORM support)  
 
 ## 📁 Project Structure
-
 ```
 pos-management/
 ├── src/
 │   ├── main/           # Electron main process
-│   │   ├── db/         # Database configuration
-│   │   ├── entities/   # TypeORM entities
+│   │   ├── db/         # Database config
+│   │   ├── entities/   # TypeORM models
 │   │   ├── ipc/        # IPC handlers
-│   │   └── services/   # Business logic services
+│   │   └── services/   # Business logic
 │   ├── renderer/       # React frontend
 │   └── migrations/     # Database migrations
-├── build/              # Build assets and icons
-├── dist/               # Production build output
-├── release/            # Packaged application
+├── build/              # Build assets/icons
+├── dist/               # Production build
+├── release/            # Packaged app
 └── assets/             # Static assets
 ```
 
 ## 🔧 Installation
 
-### Prerequisites
-- Node.js 18+ and npm
-- Git
+**Prerequisites**: Node.js 18+, npm, Git  
 
-### Setup Instructions
-
-1. **Clone the repository**
+1. Clone repo  
    ```bash
    git clone https://github.com/CyberArcenal/POS-Management.git
    cd POS-Management
    ```
-
-2. **Install dependencies**
+2. Install dependencies  
    ```bash
    npm install
    ```
-
-3. **Configure environment**
-   - Development: No configuration needed
-   - Production: Update `package.json` build settings as needed
-
-4. **Run database migrations**
+3. Run migrations  
    ```bash
    npm run migration:run
    ```
-
-5. **Seed initial data** (optional)
+4. (Optional) Seed data  
    ```bash
    npm run seed
    ```
 
 ## 🚦 Development
 
-### Available Scripts
+Scripts:
+- `npm run dev` → Vite + Electron hot reload  
+- `npm run build` → Production build  
+- `npm run migration:generate` → New migration  
+- `npm run migration:run` → Apply migrations  
+- `npm run migration:revert` → Rollback  
+- `npm run seed:reset` → Reset DB  
+- `npm run lint` → Lint code  
+- `npm run preview` → Preview build  
 
-- **Development mode**: `npm run dev`
-  - Starts Vite dev server + Electron with hot reload
+## 📦 Production Build
 
-- **Build for production**: `npm run build`
-  - Compiles TypeScript + builds React app + packages Electron app
-
-- **Database operations**:
-  ```bash
-  npm run migration:generate   # Generate new migration
-  npm run migration:run       # Run pending migrations
-  npm run migration:revert    # Revert last migration
-  npm run seed:reset          # Reset and reseed database
-  ```
-
-- **Linting**: `npm run lint`
-- **Preview production build**: `npm run preview`
-
-### Development Workflow
-
-1. Start development server:
-   ```bash
-   npm run dev
-   ```
-   This concurrently runs:
-   - Vite development server (port 5173)
-   - TypeScript compiler in watch mode
-   - Electron application
-
-2. Make changes to:
-   - `src/renderer/` for React components
-   - `src/main/` for Electron/backend logic
-   - `src/entities/` for database models
-
-## 📦 Building for Production
-
-### Create Production Build
 ```bash
 npm run build
 ```
+Outputs packaged app in `release/`.  
+- Windows: NSIS installer  
+- macOS: DMG  
+- Linux: AppImage  
+- Auto‑update via GitHub releases  
 
-The build process:
-1. Compiles React frontend with Vite
-2. Compiles TypeScript main process
-3. Packages Electron application using electron-builder
-4. Outputs to `release/` directory
+## 🗄️ Database
 
-### Build Configuration
-- **Windows**: NSIS installer with icon support
-- **macOS**: DMG with .icns icon
-- **Linux**: AppImage with .png icon
-- **Auto-update**: GitHub releases integration
+- SQLite stored in user data directory  
+- Automatic backups before migrations  
+- Recovery system included  
 
-## 🗄️ Database Management
+**Entities**: Users, Products, Inventory, Sales, Customers, Loyalty, Audit Trail, Settings  
 
-### SQLite Database
-- **Location**: User data directory (OS-specific)
-- **Backups**: Automatic backups before migrations
-- **Recovery**: Built-in backup restoration system
+## 🔌 Inventory Sync
+- Connects to external DBs  
+- Real‑time stock sync  
+- Retry logic + configurable intervals  
 
-### Entities Overview
-- **Users & Roles**: Authentication and authorization
-- **Products & Inventory**: Stock management with transaction logs
-- **Sales & Transactions**: Complete sales records with items
-- **Customers**: Profiles, contacts, and loyalty data
-- **Audit Trail**: Security and compliance logging
-- **System Settings**: Configurable application settings
+## 🔒 Security
+- Bcrypt password hashing  
+- Audit logging  
+- SQLite encryption options  
+- Input validation  
+- Secure IPC  
 
-## 🔌 Inventory Synchronization
+## 📊 Reporting
+- Sales, inventory, customer, financial reports  
+- Interactive charts via Chart.js  
 
-The system includes a robust inventory sync module that can:
-- Connect to external inventory databases
-- Real-time stock level synchronization
-- Automatic retry for failed sync operations
-- Configurable sync intervals and rules
+## 🛠 Troubleshooting
+- **DB errors**: check permissions, rebuild SQLite modules  
+- **Migration failures**: restore backup, check migration files  
+- **Build errors**: verify dependencies, Node.js version, TS compilation  
 
-### Sync Configuration
-Edit `src/services/inventory_sync/inventoryConfig.js` to configure:
-- Database connection settings
-- Sync frequency and rules
-- Error handling and retry logic
-
-## 🔒 Security Features
-
-- **Password Hashing**: Bcrypt for secure password storage
-- **Audit Logging**: Comprehensive activity tracking
-- **Database Encryption**: SQLite encryption options
-- **Input Validation**: Protection against injection attacks
-- **Secure IPC**: Isolated context for renderer processes
-
-## 📊 Reporting & Analytics
-
-- **Sales Reports**: Daily, weekly, monthly summaries
-- **Inventory Reports**: Stock levels, turnover rates
-- **Customer Insights**: Purchase history, loyalty points
-- **Financial Reports**: Revenue, profit margins, taxes
-- **Chart Visualizations**: Interactive graphs using Chart.js
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-1. **Database connection errors**
-   - Check file permissions in user data directory
-   - Verify database file isn't locked by another process
-   - Run `npm run rebuild` if SQLite native modules fail
-
-2. **Migration failures**
-   - Automatic backup restoration available
-   - Manual migration control via IPC handlers
-   - Check `src/migrations/` for migration files
-
-3. **Build failures**
-   - Ensure all dependencies are installed
-   - Check Node.js and npm versions
-   - Verify TypeScript compilation errors
-
-### Logs
-- Console logs in development mode
-- Log files in user data directory for production
-- IPC communication logging available
+Logs: console (dev), user data directory (prod), IPC logging  
 
 ## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork repo  
+2. Create branch (`git checkout -b feature/XYZ`)  
+3. Commit (`git commit -m 'Add XYZ'`)  
+4. Push (`git push origin feature/XYZ`)  
+5. Open PR  
 
 ## 📄 License
-
-Copyright © CyberArcenal. All rights reserved.
-
-This software is proprietary. See the repository for license details.
+Proprietary © CyberArcenal. See repo for details.  
 
 ## 📞 Support
-
-For support, feature requests, or bug reports:
-- Open an issue on GitHub
-- Check existing documentation in `/docs`
-- Review troubleshooting section above
+- GitHub issues  
+- `/docs` folder  
+- Troubleshooting section  
 
 ---
 
-**Built with ❤️ by CyberArcenal**
-
-*Last Updated: January 2026*
+**Built with ❤️ by CyberArcenal**  
+_Last Updated: February 2026_

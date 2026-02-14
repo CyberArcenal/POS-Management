@@ -12,7 +12,7 @@ function getDatabaseConfig() {
   
   if (isDev) {
     // Development mode
-    databasePath = "pos_management.db";
+    databasePath = "App.db";
     entitiesPath = "src/entities/*.js";
     migrationsPath = "src/migrations/*.js";
     console.log(`Development DB path: ${databasePath}`);
@@ -26,7 +26,7 @@ function getDatabaseConfig() {
       fs.mkdirSync(dbDir, { recursive: true });
     }
     
-    databasePath = path.join(dbDir, 'pos_management.db');
+    databasePath = path.join(dbDir, 'App.db');
     
     // Production paths - use unpacked resources
     const appPath = app.getAppPath();
