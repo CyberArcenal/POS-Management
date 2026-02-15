@@ -4,7 +4,8 @@ import Layout from "../layouts/Layout";
 import DashboardPage from "../pages/dashboard";
 import Cashier from "../pages/cashier";
 import Transactions from "../pages/Transactions/Transactions";
-import ProductPage from "../pages/Product";
+import ProductPage from "../pages/Product/Product";
+// import ProductPage from "../pages/Product";
 
 // Placeholder components
 const TransactionsPage = () => <div>📑 Transactions Page (placeholder)</div>;
