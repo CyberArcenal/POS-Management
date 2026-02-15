@@ -1,1 +1,0 @@
-// SaleTable.tsx placeholder

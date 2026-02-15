@@ -7,31 +7,33 @@ import {
   ShoppingCart,
   Package,
   Users,
-  CreditCard,
-  BarChart3,
   Settings,
   ChevronDown,
   ChevronRight,
-  FileText,
   TrendingUp,
   Bell,
   LogOut,
-  HelpCircle, Calculator, ListChecks,
-  Layers,
-  CalendarDays, MessageSquare, Users2, PieChart,
-  Download,
-  Activity, FileCheck,
-  User2, Receipt,
-  Tag,
+  HelpCircle,
+  Calculator,
+  ListChecks,
+  CalendarDays,
+  Users2,
+  FileCheck,
+  User2,
+  Receipt,
   BarChart2,
-  ShoppingBag,
+  Trophy,
+  Layers,
+  Shuffle,
   Truck,
+  FileBarChart,
   DollarSign,
-  Percent, ClipboardList,
-  Archive,
-  QrCode, Trophy
+  ClipboardList,
+  UserCheck,
+  Sliders,
+  FileText,
+  Boxes,
 } from "lucide-react";
-import { useSystemInfo } from "../../contexts/SystemInfoContext";
 import { dialogs } from "../../utils/dialogs";
 import { posAuthStore } from "../../lib/authStore";
 
@@ -49,63 +51,98 @@ interface MenuItem {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const location = useLocation();
-  const { systemInfo } = useSystemInfo();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
 
-const [menuItems, setMenuItems] = useState<MenuItem[]>([
-  // Core POS
-  { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
+    { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
 
-  {
-    path: "/pos",
-    name: "Point of Sale",
-    icon: ShoppingCart,
-    category: "core",
-    children: [
-      { path: "/pos/cashier", name: "Cashier", icon: Calculator },
-      { path: "/pos/transactions", name: "Transactions", icon: Receipt },
-      { path: "/pos/products", name: "Products", icon: Package },
-      { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
-    ],
-  },
+    {
+      path: "/pos",
+      name: "Point of Sale",
+      icon: ShoppingCart,
+      category: "core",
+      children: [
+        { path: "/pos/cashier", name: "Cashier", icon: Calculator },
+        { path: "/pos/transactions", name: "Transactions", icon: Receipt },
+        { path: "/pos/products", name: "Products", icon: Package },
+        { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
+      ],
+    },
 
-  {
-    path: "/customers",
-    name: "Customers",
-    icon: Users,
-    category: "core",
-    children: [
-      { path: "/customers/list", name: "Customer Directory", icon: Users2 },
-      { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
-    ],
-  },
+    {
+      path: "/customers",
+      name: "Customers",
+      icon: Users,
+      category: "core",
+      children: [
+        { path: "/customers/list", name: "Customer Directory", icon: Users2 },
+        { path: "/customers/loyalty", name: "Loyalty Program", icon: Trophy },
+      ],
+    },
 
-  {
-    path: "/sales",
-    name: "Sales",
-    icon: TrendingUp,
-    category: "core",
-    children: [
-      { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
-      { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
-    ],
-  },
+    {
+      path: "/sales",
+      name: "Sales",
+      icon: TrendingUp,
+      category: "core",
+      children: [
+        { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
+        { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
+      ],
+    },
 
-  // System essentials
-  {
-    path: "/system",
-    name: "System",
-    icon: Settings,
-    category: "system",
-    children: [
-      { path: "/users", name: "User Management", icon: User2 },
-      { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
-      { path: "/notification-logs", name: "Notification Logs", icon: Bell },
-    ],
-  },
-]);
+    {
+      path: "/inventory",
+      name: "Inventory",
+      icon: Boxes,
+      category: "core",
+      children: [
+        { path: "/inventory/stock", name: "Stock Levels", icon: Layers },
+        { path: "/inventory/movements", name: "Movements", icon: Shuffle },
+        { path: "/inventory/reorder", name: "Reorder & Vendors", icon: Truck },
+      ],
+    },
+
+    {
+      path: "/reports",
+      name: "Reports",
+      icon: FileBarChart,
+      category: "analytics",
+      children: [
+        {
+          path: "/reports/financial",
+          name: "Financial Reports",
+          icon: DollarSign,
+        },
+        {
+          path: "/reports/inventory",
+          name: "Inventory Reports",
+          icon: ClipboardList,
+        },
+        {
+          path: "/reports/customer",
+          name: "Customer Insights",
+          icon: UserCheck,
+        },
+      ],
+    },
+
+    {
+      path: "/system",
+      name: "System",
+      icon: Settings,
+      category: "system",
+      children: [
+        { path: "/users", name: "User Management", icon: User2 },
+        { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
+        { path: "/notification-logs", name: "Notification Logs", icon: Bell },
+        { path: "/system/settings", name: "System Settings", icon: Sliders },
+        { path: "/system/logs", name: "Application Logs", icon: FileText },
+      ],
+    },
+  ]);
 
   const filteredMenu = menuItems
     .map((item) => {
@@ -291,7 +328,7 @@ const [menuItems, setMenuItems] = useState<MenuItem[]>([
           {/* Business info */}
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-white">
-              {systemInfo ? systemInfo.site_name : `POS Management`}
+              POS Management
             </h2>
             <p className="text-xs text-[var(--text-tertiary)]">
               Point of Sale System
@@ -371,13 +408,6 @@ const [menuItems, setMenuItems] = useState<MenuItem[]>([
           >
             <Settings className="w-4 h-4" />
           </Link>
-          <button
-            onClick={handleLogOut}
-            className="text-[var(--text-tertiary)] hover:text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 p-1.5 rounded-full transition-colors duration-200"
-            title="Logout"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>

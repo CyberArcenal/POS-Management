@@ -15,7 +15,9 @@ class AuditLogHandler {
     this.getAuditLogById = this.importHandler("./get/by_id.ipc");
     this.getAuditLogsByUser = this.importHandler("./get/by_user.ipc");
     this.getAuditLogsByEntity = this.importHandler("./get/by_entity.ipc");
-    this.getAuditLogsByDateRange = this.importHandler("./get/by_date_range.ipc");
+    this.getAuditLogsByDateRange = this.importHandler(
+      "./get/by_date_range.ipc",
+    );
     this.searchAuditLogs = this.importHandler("./search.ipc");
 
     // ✏️ WRITE (optional: kung gusto mong mag-clear o mag-delete ng logs)
@@ -33,7 +35,10 @@ class AuditLogHandler {
       return require(fullPath);
     } catch (error) {
       // @ts-ignore
-      console.warn(`[AuditLogHandler] Failed to load handler: ${path}`, error.message);
+      console.warn(
+        `[AuditLogHandler] Failed to load handler: ${path}`,
+        error.message,
+      );
       return async () => ({
         status: false,
         message: `Handler not implemented: ${path}`,
@@ -91,7 +96,10 @@ class AuditLogHandler {
 const auditLogHandler = new AuditLogHandler();
 ipcMain.handle(
   "auditLog",
-  withErrorHandling(auditLogHandler.handleRequest.bind(auditLogHandler), "IPC:auditLog")
+  withErrorHandling(
+    auditLogHandler.handleRequest.bind(auditLogHandler),
+    "IPC:auditLog",
+  ),
 );
 
 module.exports = { AuditLogHandler, auditLogHandler };

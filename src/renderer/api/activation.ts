@@ -1,7 +1,7 @@
 // activationAPI.ts - SIMILAR STRUCTURE TO activationOld.ts
 export interface ActivationStatusData {
   isActivated: boolean;
-  status: 'active' | 'trial' | 'grace_period' | 'expired' | 'inactive';
+  status: "active" | "trial" | "grace_period" | "expired" | "inactive";
   remainingDays: number;
   activatedAt: string | null;
   expiresAt: string | null;
@@ -141,26 +141,25 @@ class ActivationAPI {
     }
   }
 
-    async getDeviceInfo(): Promise<DeviceInfoResponse> {
-      try {
-        if (!window.backendAPI || !window.backendAPI.activation) {
-          throw new Error("Electron API not available");
-        }
-  
-        const response = await window.backendAPI.activation({
-          method: "getDeviceInfo",
-          params: {},
-        });
-  
-        if (response.status) {
-          return response;
-        }
-        throw new Error(response.message || "Failed to get device info");
-      } catch (error: any) {
-        throw new Error(error.message || "Failed to get device info");
+  async getDeviceInfo(): Promise<DeviceInfoResponse> {
+    try {
+      if (!window.backendAPI || !window.backendAPI.activation) {
+        throw new Error("Electron API not available");
       }
-    }
 
+      const response = await window.backendAPI.activation({
+        method: "getDeviceInfo",
+        params: {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to get device info");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to get device info");
+    }
+  }
 
   async getRemainingDays(): Promise<RemainingDaysResponse> {
     try {
@@ -234,12 +233,16 @@ class ActivationAPI {
       });
 
       if (response.status) {
-        console.log(response)
+        console.log(response);
         return response;
       }
-      throw new Error(response.message || "Failed to check activation requirement");
+      throw new Error(
+        response.message || "Failed to check activation requirement",
+      );
     } catch (error: any) {
-      throw new Error(error.message || "Failed to check activation requirement");
+      throw new Error(
+        error.message || "Failed to check activation requirement",
+      );
     }
   }
 
@@ -283,7 +286,10 @@ class ActivationAPI {
     }
   }
 
-  async checkLimit(limit: string, count: number = 0): Promise<LimitCheckResponse> {
+  async checkLimit(
+    limit: string,
+    count: number = 0,
+  ): Promise<LimitCheckResponse> {
     try {
       if (!window.backendAPI || !window.backendAPI.activation) {
         throw new Error("Electron API not available");
@@ -304,7 +310,10 @@ class ActivationAPI {
   }
 
   // 🔒 Mutating methods
-  async activate(key: string, isOnline: boolean = true): Promise<ActivationResponse> {
+  async activate(
+    key: string,
+    isOnline: boolean = true,
+  ): Promise<ActivationResponse> {
     try {
       if (!window.backendAPI || !window.backendAPI.activation) {
         throw new Error("Electron API not available");
@@ -448,7 +457,9 @@ class ActivationAPI {
   async checkAndRequireActivation(): Promise<boolean> {
     try {
       const requirement = await this.requiresActivation();
-      return requirement.data.requiresActivation && !requirement.data.canContinue;
+      return (
+        requirement.data.requiresActivation && !requirement.data.canContinue
+      );
     } catch (error) {
       console.error("Error checking activation requirement:", error);
       return false; // Default to allowing access if check fails
@@ -468,7 +479,7 @@ class ActivationAPI {
   async isActivated(): Promise<boolean> {
     try {
       const status = await this.getActivationStatus();
-      return status?.status === 'active' || status?.status === 'trial';
+      return status?.status === "active" || status?.status === "trial";
     } catch (error) {
       console.error("Error checking if activated:", error);
       return false;
@@ -494,11 +505,11 @@ class ActivationAPI {
           message: "Invalid key format (XXXX-XXXX-XXXX-XXXX)",
           data: {
             success: false,
-            message: "Invalid key format (XXXX-XXXX-XXXX-XXXX)"
-          }
+            message: "Invalid key format (XXXX-XXXX-XXXX-XXXX)",
+          },
         };
       }
-      
+
       return await this.activate(key);
     } catch (error: any) {
       return {
@@ -506,8 +517,8 @@ class ActivationAPI {
         message: error.message || "Validation failed",
         data: {
           success: false,
-          message: error.message || "Validation failed"
-        }
+          message: error.message || "Validation failed",
+        },
       };
     }
   }

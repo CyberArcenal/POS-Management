@@ -48,7 +48,7 @@ module.exports = async (params = {}) => {
       ],
     });
 
-    const records = logs.map(log => ({
+    const records = logs.map((log) => ({
       id: log.id,
       timestamp: log.timestamp,
       action: log.action,
@@ -56,14 +56,28 @@ module.exports = async (params = {}) => {
       entityId: log.entityId,
       userId: log.userId,
       userType: log.userType,
-      oldData: log.oldData ? (typeof log.oldData === "string" ? log.oldData : JSON.stringify(log.oldData)) : "",
-      newData: log.newData ? (typeof log.newData === "string" ? log.newData : JSON.stringify(log.newData)) : "",
-      changes: log.changes ? (typeof log.changes === "string" ? log.changes : JSON.stringify(log.changes)) : "",
+      oldData: log.oldData
+        ? typeof log.oldData === "string"
+          ? log.oldData
+          : JSON.stringify(log.oldData)
+        : "",
+      newData: log.newData
+        ? typeof log.newData === "string"
+          ? log.newData
+          : JSON.stringify(log.newData)
+        : "",
+      changes: log.changes
+        ? typeof log.changes === "string"
+          ? log.changes
+          : JSON.stringify(log.changes)
+        : "",
       ipAddress: log.ipAddress,
       userAgent: log.userAgent,
     }));
 
-    const csvString = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+    const csvString =
+      csvStringifier.getHeaderString() +
+      csvStringifier.stringifyRecords(records);
 
     return {
       status: true,

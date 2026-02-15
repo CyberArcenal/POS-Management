@@ -4,7 +4,6 @@ const http = require("http");
 const { URL } = require("url");
 require("dotenv").config();
 
-
 class ActivationClient {
   constructor() {
     // Get server URL from environment or use default Django port
@@ -63,14 +62,14 @@ class ActivationClient {
                   new Error(
                     response.detail ||
                       response.message ||
-                      `HTTP ${res.statusCode}`
-                  )
+                      `HTTP ${res.statusCode}`,
+                  ),
                 );
               }
             } catch (error) {
               // Non-JSON response or invalid JSON
               reject(
-                new Error(`Invalid JSON response: ${body.substring(0, 100)}`)
+                new Error(`Invalid JSON response: ${body.substring(0, 100)}`),
               );
             }
           });
@@ -136,7 +135,7 @@ class ActivationClient {
         timestamp: new Date().toISOString(),
       });
 
-      console.log("Django Response: ", response)
+      console.log("Django Response: ", response);
 
       // Normalize success flag
       // @ts-ignore
@@ -322,7 +321,7 @@ class ActivationClient {
       const response = await this.request(
         `/api/v1/licensing/check-status/?activation_key=${encodeURIComponent(activationKey)}&device_id=${encodeURIComponent(deviceId)}`,
         {},
-        "GET"
+        "GET",
       );
 
       // Normalize success flag
@@ -451,7 +450,7 @@ class ActivationClient {
       const response = await this.request(
         `/api/v1/licensing/device-activations/?device_id=${encodeURIComponent(deviceId)}`,
         {},
-        "GET"
+        "GET",
       );
 
       // Normalize success flag
@@ -463,8 +462,8 @@ class ActivationClient {
           status: true,
           // @ts-ignore
           activations: Array.isArray(response.activations)
-            // @ts-ignore
-            ? response.activations
+            ? // @ts-ignore
+              response.activations
             : [],
           last_checked: new Date().toISOString(),
         };
@@ -553,7 +552,7 @@ class ActivationClient {
       const response = await this.request(
         "/api/v1/licensing/health/",
         {},
-        "GET"
+        "GET",
       );
 
       // @ts-ignore

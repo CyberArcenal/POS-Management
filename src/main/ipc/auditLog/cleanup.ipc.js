@@ -1,6 +1,5 @@
 // src/main/ipc/auditLog/cleanup.ipc.js
 
-
 const auditLogService = require("../../../services/AuditLog");
 
 /**

@@ -16,8 +16,8 @@ class WindowControlHandlers {
     try {
       console.log(`[WindowControlIPC] ${method}`, params);
 
-      const window = BrowserWindow.getFocusedWindow() || 
-                    BrowserWindow.getAllWindows()[0];
+      const window =
+        BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
 
       if (!window) {
         return {
@@ -38,7 +38,7 @@ class WindowControlHandlers {
           return await this.close(window);
         case "toggleMaximize":
           return await this.toggleMaximize(window);
-        
+
         // 📍 WINDOW POSITION & SIZE
         case "setPosition":
           // @ts-ignore
@@ -50,7 +50,7 @@ class WindowControlHandlers {
           return await this.getBounds(window);
         case "center":
           return await this.center(window);
-        
+
         // 👁️ VISIBILITY
         case "show":
           return await this.show(window);
@@ -58,7 +58,7 @@ class WindowControlHandlers {
           return await this.hide(window);
         case "toggleVisibility":
           return await this.toggleVisibility(window);
-        
+
         // 🎯 FOCUS
         case "focus":
           return await this.focus(window);
@@ -66,14 +66,14 @@ class WindowControlHandlers {
           return await this.blur(window);
         case "isFocused":
           return await this.isFocused(window);
-        
+
         // 🚫 ALWAYS ON TOP
         case "setAlwaysOnTop":
           // @ts-ignore
           return await this.setAlwaysOnTop(window, params.flag, params.level);
         case "getAlwaysOnTop":
           return await this.getAlwaysOnTop(window);
-        
+
         // 📊 WINDOW STATE INFO
         case "isMaximized":
           return await this.isMaximized(window);
@@ -81,7 +81,7 @@ class WindowControlHandlers {
           return await this.isMinimized(window);
         case "isNormal":
           return await this.isNormal(window);
-        
+
         // 🔧 ADVANCED CONTROLS
         case "setResizable":
           // @ts-ignore
@@ -101,14 +101,14 @@ class WindowControlHandlers {
         case "setFullScreen":
           // @ts-ignore
           return await this.setFullScreen(window, params.fullscreen);
-        
+
         // 🖥️ MULTI-MONITOR SUPPORT
         case "getDisplayInfo":
           return await this.getDisplayInfo(window);
         case "moveToDisplay":
           // @ts-ignore
           return await this.moveToDisplay(window, params.displayId);
-        
+
         // 💾 WINDOW STATE PERSISTENCE
         case "saveWindowState":
           return await this.saveWindowState(window);
@@ -136,8 +136,8 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async minimize(window) {
     try {
       window.minimize();
@@ -155,8 +155,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async maximize(window) {
     try {
       window.maximize();
@@ -174,8 +174,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async restore(window) {
     try {
       window.restore();
@@ -193,8 +193,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async close(window) {
     try {
       window.close();
@@ -212,8 +212,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async toggleMaximize(window) {
     try {
       if (window.isMaximized()) {
@@ -245,10 +245,10 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} x
-     * @param {any} y
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} x
+   * @param {any} y
+   */
   async setPosition(window, x, y) {
     try {
       window.setPosition(x, y);
@@ -266,10 +266,10 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} width
-     * @param {any} height
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} width
+   * @param {any} height
+   */
   async setSize(window, width, height) {
     try {
       window.setSize(width, height);
@@ -287,8 +287,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async getBounds(window) {
     try {
       const bounds = window.getBounds();
@@ -307,8 +307,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async center(window) {
     try {
       window.center();
@@ -330,8 +330,8 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async show(window) {
     try {
       window.show();
@@ -349,8 +349,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async hide(window) {
     try {
       window.hide();
@@ -368,8 +368,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async toggleVisibility(window) {
     try {
       if (window.isVisible()) {
@@ -401,8 +401,8 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async focus(window) {
     try {
       window.focus();
@@ -420,8 +420,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async blur(window) {
     try {
       window.blur();
@@ -439,8 +439,8 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async isFocused(window) {
     try {
       const isFocused = window.isFocused();
@@ -463,16 +463,18 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} flag
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} flag
+   */
   async setAlwaysOnTop(window, flag, level = "normal") {
     try {
       // @ts-ignore
       window.setAlwaysOnTop(flag, level);
       return {
         status: true,
-        message: flag ? "Window set to always on top" : "Window normal z-order restored",
+        message: flag
+          ? "Window set to always on top"
+          : "Window normal z-order restored",
       };
     } catch (error) {
       return {
@@ -484,15 +486,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async getAlwaysOnTop(window) {
     try {
       const isAlwaysOnTop = window.isAlwaysOnTop();
       return {
         status: true,
         data: { isAlwaysOnTop },
-        message: isAlwaysOnTop ? "Window is always on top" : "Window is not always on top",
+        message: isAlwaysOnTop
+          ? "Window is always on top"
+          : "Window is not always on top",
       };
     } catch (error) {
       return {
@@ -508,15 +512,17 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async isMaximized(window) {
     try {
       const isMaximized = window.isMaximized();
       return {
         status: true,
         data: { isMaximized },
-        message: isMaximized ? "Window is maximized" : "Window is not maximized",
+        message: isMaximized
+          ? "Window is maximized"
+          : "Window is not maximized",
       };
     } catch (error) {
       return {
@@ -528,15 +534,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async isMinimized(window) {
     try {
       const isMinimized = window.isMinimized();
       return {
         status: true,
         data: { isMinimized },
-        message: isMinimized ? "Window is minimized" : "Window is not minimized",
+        message: isMinimized
+          ? "Window is minimized"
+          : "Window is not minimized",
       };
     } catch (error) {
       return {
@@ -548,15 +556,18 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async isNormal(window) {
     try {
-      const isNormal = !window.isMaximized() && !window.isMinimized() && window.isVisible();
+      const isNormal =
+        !window.isMaximized() && !window.isMinimized() && window.isVisible();
       return {
         status: true,
         data: { isNormal },
-        message: isNormal ? "Window is in normal state" : "Window is not in normal state",
+        message: isNormal
+          ? "Window is in normal state"
+          : "Window is not in normal state",
       };
     } catch (error) {
       return {
@@ -572,15 +583,17 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} resizable
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} resizable
+   */
   async setResizable(window, resizable) {
     try {
       window.setResizable(resizable);
       return {
         status: true,
-        message: resizable ? "Window is now resizable" : "Window is now non-resizable",
+        message: resizable
+          ? "Window is now resizable"
+          : "Window is now non-resizable",
       };
     } catch (error) {
       return {
@@ -592,15 +605,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} movable
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} movable
+   */
   async setMovable(window, movable) {
     try {
       window.setMovable(movable);
       return {
         status: true,
-        message: movable ? "Window is now movable" : "Window is now non-movable",
+        message: movable
+          ? "Window is now movable"
+          : "Window is now non-movable",
       };
     } catch (error) {
       return {
@@ -612,15 +627,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} minimizable
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} minimizable
+   */
   async setMinimizable(window, minimizable) {
     try {
       window.setMinimizable(minimizable);
       return {
         status: true,
-        message: minimizable ? "Window is now minimizable" : "Window is now non-minimizable",
+        message: minimizable
+          ? "Window is now minimizable"
+          : "Window is now non-minimizable",
       };
     } catch (error) {
       return {
@@ -632,15 +649,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} closable
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} closable
+   */
   async setClosable(window, closable) {
     try {
       window.setClosable(closable);
       return {
         status: true,
-        message: closable ? "Window is now closable" : "Window is now non-closable",
+        message: closable
+          ? "Window is now closable"
+          : "Window is now non-closable",
       };
     } catch (error) {
       return {
@@ -652,15 +671,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} fullScreenable
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} fullScreenable
+   */
   async setFullScreenable(window, fullScreenable) {
     try {
       window.setFullScreenable(fullScreenable);
       return {
         status: true,
-        message: fullScreenable ? "Window can now go fullscreen" : "Window cannot go fullscreen",
+        message: fullScreenable
+          ? "Window can now go fullscreen"
+          : "Window cannot go fullscreen",
       };
     } catch (error) {
       return {
@@ -672,15 +693,17 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {any} fullscreen
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {any} fullscreen
+   */
   async setFullScreen(window, fullscreen) {
     try {
       window.setFullScreen(fullscreen);
       return {
         status: true,
-        message: fullscreen ? "Window set to fullscreen" : "Window exited fullscreen",
+        message: fullscreen
+          ? "Window set to fullscreen"
+          : "Window exited fullscreen",
       };
     } catch (error) {
       return {
@@ -696,8 +719,8 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async getDisplayInfo(window) {
     try {
       // @ts-ignore
@@ -723,14 +746,14 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     * @param {number} displayId
-     */
+   * @param {Electron.BrowserWindow} window
+   * @param {number} displayId
+   */
   async moveToDisplay(window, displayId) {
     try {
       const displays = require("electron").screen.getAllDisplays();
-      const targetDisplay = displays.find(d => d.id === displayId);
-      
+      const targetDisplay = displays.find((d) => d.id === displayId);
+
       if (!targetDisplay) {
         return {
           status: false,
@@ -739,11 +762,15 @@ class WindowControlHandlers {
       }
 
       const bounds = window.getBounds();
-      const newX = targetDisplay.bounds.x + (targetDisplay.bounds.width - bounds.width) / 2;
-      const newY = targetDisplay.bounds.y + (targetDisplay.bounds.height - bounds.height) / 2;
-      
+      const newX =
+        targetDisplay.bounds.x +
+        (targetDisplay.bounds.width - bounds.width) / 2;
+      const newY =
+        targetDisplay.bounds.y +
+        (targetDisplay.bounds.height - bounds.height) / 2;
+
       window.setPosition(newX, newY);
-      
+
       return {
         status: true,
         message: `Window moved to display ${displayId}`,
@@ -762,8 +789,8 @@ class WindowControlHandlers {
   // ============================================
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async saveWindowState(window) {
     try {
       const state = {
@@ -791,15 +818,15 @@ class WindowControlHandlers {
   }
 
   /**
-     * @param {Electron.BrowserWindow} window
-     */
+   * @param {Electron.BrowserWindow} window
+   */
   async loadWindowState(window) {
     try {
       // In a real app, you would load this from a file or localStorage
       // For now, we'll just restore to default
       window.restore();
       window.center();
-      
+
       return {
         status: true,
         message: "Window state restored to default",

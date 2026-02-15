@@ -1,1 +1,0 @@
-// ProductSearch.tsx placeholder

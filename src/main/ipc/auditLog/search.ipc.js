@@ -8,7 +8,16 @@ const auditLogService = require("../../../services/AuditLog");
  */
 module.exports = async (params = {}) => {
   try {
-    const { entity, entityId, action, userId, startDate, endDate, page, limit } = params;
+    const {
+      entity,
+      entityId,
+      action,
+      userId,
+      startDate,
+      endDate,
+      page,
+      limit,
+    } = params;
 
     const filters = {
       ...(entity && { entity }),

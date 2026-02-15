@@ -2,11 +2,11 @@
 //@ts-check
 const { ipcMain } = require("electron");
 // @ts-ignore
+// @ts-ignore
 const path = require("path");
 const { logger } = require("../../utils/logger");
-const { AppDataSource } = require("../db/dataSource");
 const { SystemSetting, SettingType } = require("../../entities/systemSettings");
-const { log_audit } = require("../../utils/auditLogger");
+const { AppDataSource } = require("../db/datasource");
 
 class SystemConfigHandler {
   constructor() {
@@ -62,6 +62,7 @@ class SystemConfigHandler {
    */
   // @ts-ignore
   // @ts-ignore
+  // @ts-ignore
   async handleRequest(event, payload) {
     try {
       const method = payload.method;
@@ -91,7 +92,13 @@ class SystemConfigHandler {
           return await this.createSetting(params.settingData, userId); // MODIFIED: Pass userId
         case "updateSetting":
           // @ts-ignore
-          return await this.updateSetting(params.id, params.settingData, userId); // MODIFIED: Pass userId
+          return await this.updateSetting(
+            // @ts-ignore
+            params.id,
+            // @ts-ignore
+            params.settingData,
+            userId,
+          ); // MODIFIED: Pass userId
         case "deleteSetting":
           // @ts-ignore
           return await this.deleteSetting(params.id, userId); // MODIFIED: Pass userId
@@ -109,7 +116,7 @@ class SystemConfigHandler {
             params.value,
             // @ts-ignore
             params.options,
-            userId // MODIFIED: Pass userId
+            userId, // MODIFIED: Pass userId
           );
         case "bulkUpdate":
           // @ts-ignore
@@ -222,9 +229,8 @@ class SystemConfigHandler {
       }
 
       // I-group ang settings by type with proper boolean conversion
-      const groupedSettings = await this._groupSettingsWithBooleanConversion(
-        settings
-      );
+      const groupedSettings =
+        await this._groupSettingsWithBooleanConversion(settings);
 
       // I-serialize ang settings data with proper boolean conversion
       const serializedSettings =
@@ -264,7 +270,8 @@ class SystemConfigHandler {
    * @param {string} configData
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async updateGroupedConfig(configData, userId = 1) { // MODIFIED: Added userId parameter
+  async updateGroupedConfig(configData, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (typeof configData === "string") {
         try {
@@ -273,7 +280,7 @@ class SystemConfigHandler {
           logger.error(
             "Invalid JSON string received in updateGroupedConfig",
             // @ts-ignore
-            err
+            err,
           );
           return {
             status: false,
@@ -312,27 +319,14 @@ class SystemConfigHandler {
 
       // Process grouped settings update with boolean normalization
       const updateResult =
-        await this._updateGroupedSettingsWithBooleanNormalization(configData, userId); // MODIFIED: Pass userId
+        await this._updateGroupedSettingsWithBooleanNormalization(
+          configData,
+          userId,
+        ); // MODIFIED: Pass userId
 
       // Clear cache + reload system data
       this._clearCache();
       const systemData = await this.getGroupedConfig();
-
-      // ADDED: Audit logging for bulk configuration update
-      await log_audit(
-        "bulk_update",
-        "SystemConfig",
-        // @ts-ignore
-        null, // No specific entity ID for bulk config update
-        userId,
-        {
-          categories_updated: Object.keys(configData),
-          updated_settings_count: updateResult.updatedSettings.length,
-          errors_count: updateResult.errors.length,
-          categories: updateResult.summary.categories,
-          timestamp: new Date().toISOString()
-        }
-      );
 
       // @ts-ignore
       logger.info("System configuration updated successfully", {
@@ -515,7 +509,9 @@ class SystemConfigHandler {
    * @param {import("typeorm").DeepPartial<import("typeorm").ObjectLiteral>[]} settingData
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async createSetting(settingData, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async createSetting(settingData, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (!settingData) {
         return {
@@ -558,37 +554,15 @@ class SystemConfigHandler {
       // @ts-ignore
       const newSetting = this.systemSettingRepository.create(settingData);
       // @ts-ignore
-      const createdSetting = await this.systemSettingRepository.save(
-        newSetting
-      );
+      const createdSetting =
+        // @ts-ignore
+        await this.systemSettingRepository.save(newSetting);
 
       // I-clear ang cache
       this._clearCache();
 
       const serializedSetting =
         await this._serializeSettingWithBooleanConversion(createdSetting);
-
-      // ADDED: Audit logging
-      await log_audit(
-        "create",
-        "SystemSetting",
-        // @ts-ignore
-        createdSetting.id,
-        userId,
-        {
-          // @ts-ignore
-          key: createdSetting.key,
-          // @ts-ignore
-          setting_type: createdSetting.setting_type,
-          // @ts-ignore
-          value: createdSetting.value,
-          // @ts-ignore
-          description: createdSetting.description,
-          // @ts-ignore
-          is_public: this.dbToBoolean(createdSetting.is_public),
-          cache_cleared: true
-        }
-      );
 
       return {
         status: true,
@@ -613,7 +587,9 @@ class SystemConfigHandler {
    * @param {import("typeorm").DeepPartial<import("typeorm").ObjectLiteral>} settingData
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async updateSetting(id, settingData, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async updateSetting(id, settingData, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (!id || !settingData) {
         return {
@@ -642,13 +618,14 @@ class SystemConfigHandler {
       }
 
       // Record old values for audit log
+      // @ts-ignore
       const oldValues = {
         key: existingSetting.key,
         value: existingSetting.value,
         setting_type: existingSetting.setting_type,
         description: existingSetting.description,
         // @ts-ignore
-        is_public: this.dbToBoolean(existingSetting.is_public)
+        is_public: this.dbToBoolean(existingSetting.is_public),
       };
 
       // Normalize boolean fields
@@ -667,36 +644,15 @@ class SystemConfigHandler {
       existingSetting.updated_at = new Date();
 
       // @ts-ignore
-      const updatedSetting = await this.systemSettingRepository.save(
-        existingSetting
-      );
+      const updatedSetting =
+        // @ts-ignore
+        await this.systemSettingRepository.save(existingSetting);
 
       // I-clear ang cache
       this._clearCache();
 
       const serializedSetting =
         await this._serializeSettingWithBooleanConversion(updatedSetting);
-
-      // ADDED: Audit logging
-      await log_audit(
-        "update",
-        "SystemSetting",
-        id,
-        userId,
-        {
-          old: oldValues,
-          new: {
-            key: updatedSetting.key,
-            value: updatedSetting.value,
-            setting_type: updatedSetting.setting_type,
-            description: updatedSetting.description,
-            // @ts-ignore
-            is_public: this.dbToBoolean(updatedSetting.is_public)
-          },
-          changes: settingData,
-          cache_cleared: true
-        }
-      );
 
       return {
         status: true,
@@ -720,7 +676,9 @@ class SystemConfigHandler {
    * @param {any} id
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async deleteSetting(id, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async deleteSetting(id, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (!id) {
         return {
@@ -754,22 +712,6 @@ class SystemConfigHandler {
 
       // I-clear ang cache
       this._clearCache();
-
-      // ADDED: Audit logging
-      await log_audit(
-        "delete",
-        "SystemSetting",
-        id,
-        userId,
-        {
-          key: setting.key,
-          setting_type: setting.setting_type,
-          value: setting.value,
-          // @ts-ignore
-          is_public: this.dbToBoolean(setting.is_public),
-          cache_cleared: true
-        }
-      );
 
       return {
         status: true,
@@ -876,7 +818,9 @@ class SystemConfigHandler {
    * @param {any} value
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async setValueByKey(key, value, options = {}, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async setValueByKey(key, value, options = {}, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (!key) {
         return {
@@ -910,12 +854,14 @@ class SystemConfigHandler {
 
       let setting;
       // @ts-ignore
+      // @ts-ignore
       let action = "update"; // Default action
 
       if (existing) {
         // Record old value for audit log
+        // @ts-ignore
         const oldValue = existing.value;
-        
+
         // Update existing
         existing.value = value;
         // @ts-ignore
@@ -931,24 +877,6 @@ class SystemConfigHandler {
         existing.updated_at = new Date();
         // @ts-ignore
         setting = await this.systemSettingRepository.save(existing);
-        
-        // ADDED: Audit logging for update
-        await log_audit(
-          "update",
-          "SystemSetting",
-          // @ts-ignore
-          existing.id,
-          userId,
-          {
-            key: key,
-            old_value: oldValue,
-            new_value: value,
-            setting_type: existing.setting_type,
-            // @ts-ignore
-            is_public: this.dbToBoolean(existing.is_public),
-            cache_cleared: true
-          }
-        );
       } else {
         // Create new
         action = "create";
@@ -968,24 +896,6 @@ class SystemConfigHandler {
         });
         // @ts-ignore
         setting = await this.systemSettingRepository.save(newSetting);
-        
-        // ADDED: Audit logging for create
-        await log_audit(
-          "create",
-          "SystemSetting",
-          // @ts-ignore
-          setting.id,
-          userId,
-          {
-            key: key,
-            value: value,
-            setting_type: setting.setting_type,
-            description: setting.description,
-            // @ts-ignore
-            is_public: this.dbToBoolean(setting.is_public),
-            cache_cleared: true
-          }
-        );
       }
 
       // I-clear ang cache
@@ -1017,7 +927,9 @@ class SystemConfigHandler {
    * @param {string | any[]} settingsData
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async bulkUpdate(settingsData, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async bulkUpdate(settingsData, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (
         !settingsData ||
@@ -1039,7 +951,7 @@ class SystemConfigHandler {
       const auditDetails = {
         settings_updated: [],
         settings_created: [],
-        errors: []
+        errors: [],
       };
 
       for (const settingData of settingsData) {
@@ -1073,29 +985,29 @@ class SystemConfigHandler {
               value: existing.value,
               // @ts-ignore
               is_public: this.dbToBoolean(existing.is_public),
-              description: existing.description
+              description: existing.description,
             };
-            
+
             // Update existing
             // @ts-ignore
             this.systemSettingRepository.merge(existing, normalizedSetting);
             existing.updated_at = new Date();
             // @ts-ignore
             await this.systemSettingRepository.save(existing);
-            
+
             results.push({
               success: true,
               id: existing.id,
               action: "updated",
             });
-            
+
             // @ts-ignore
             auditDetails.settings_updated.push({
               id: existing.id,
               key: existing.key,
               setting_type: existing.setting_type,
               old_value: oldValues.value,
-              new_value: existing.value
+              new_value: existing.value,
             });
           } else {
             // Create new
@@ -1105,14 +1017,14 @@ class SystemConfigHandler {
               this.systemSettingRepository.create(normalizedSetting);
             // @ts-ignore
             const created = await this.systemSettingRepository.save(newSetting);
-            
+
             results.push({
               success: true,
               // @ts-ignore
               id: created.id,
               action: "created",
             });
-            
+
             // @ts-ignore
             auditDetails.settings_created.push({
               // @ts-ignore
@@ -1122,7 +1034,7 @@ class SystemConfigHandler {
               // @ts-ignore
               setting_type: created.setting_type,
               // @ts-ignore
-              value: created.value
+              value: created.value,
             });
           }
         } catch (error) {
@@ -1132,12 +1044,12 @@ class SystemConfigHandler {
             // @ts-ignore
             error: error.message,
           });
-          
+
           // @ts-ignore
           auditDetails.errors.push({
             key: settingData.key,
             // @ts-ignore
-            error: error.message
+            error: error.message,
           });
         }
       }
@@ -1147,23 +1059,6 @@ class SystemConfigHandler {
 
       // I-clear ang cache
       this._clearCache();
-
-      // ADDED: Audit logging for bulk operation
-      await log_audit(
-        "bulk_update",
-        "SystemSetting",
-        // @ts-ignore
-        null, // No specific entity ID for bulk operations
-        userId,
-        {
-          total_settings: settingsData.length,
-          successful_count: successful,
-          failed_count: failed,
-          details: auditDetails,
-          cache_cleared: true,
-          timestamp: new Date().toISOString()
-        }
-      );
 
       return {
         status: true,
@@ -1187,7 +1082,9 @@ class SystemConfigHandler {
    * @param {string | any[]} ids
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async bulkDelete(ids, userId = 1) { // MODIFIED: Added userId parameter
+  // @ts-ignore
+  async bulkDelete(ids, userId = 1) {
+    // MODIFIED: Added userId parameter
     try {
       if (!ids || !Array.isArray(ids) || ids.length === 0) {
         return {
@@ -1217,9 +1114,9 @@ class SystemConfigHandler {
               id: setting.id,
               key: setting.key,
               setting_type: setting.setting_type,
-              value: setting.value
+              value: setting.value,
             });
-            
+
             setting.is_deleted = true;
             setting.updated_at = new Date();
             // @ts-ignore
@@ -1239,23 +1136,6 @@ class SystemConfigHandler {
 
       // I-clear ang cache
       this._clearCache();
-
-      // ADDED: Audit logging for bulk delete
-      await log_audit(
-        "bulk_delete",
-        "SystemSetting",
-        // @ts-ignore
-        null, // No specific entity ID for bulk operations
-        userId,
-        {
-          total_requested: ids.length,
-          successful_deletions: successful,
-          failed_deletions: failed,
-          deleted_settings: deletedSettings,
-          cache_cleared: true,
-          timestamp: new Date().toISOString()
-        }
-      );
 
       return {
         status: true,
@@ -1343,9 +1223,8 @@ class SystemConfigHandler {
       const settings = await this.systemSettingRepository.find({
         where: { setting_type: "tax", is_deleted: false },
       });
-      const groupedSettings = await this._groupSettingsWithBooleanConversion(
-        settings
-      );
+      const groupedSettings =
+        await this._groupSettingsWithBooleanConversion(settings);
 
       return {
         status: true,
@@ -1378,9 +1257,8 @@ class SystemConfigHandler {
       const settings = await this.systemSettingRepository.find({
         where: { setting_type: "email", is_deleted: false },
       });
-      const groupedSettings = await this._groupSettingsWithBooleanConversion(
-        settings
-      );
+      const groupedSettings =
+        await this._groupSettingsWithBooleanConversion(settings);
 
       return {
         status: true,
@@ -1522,7 +1400,8 @@ class SystemConfigHandler {
    * @param {ArrayLike<any> | { [s: string]: any; }} configData
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
-  async _updateGroupedSettingsWithBooleanNormalization(configData, userId = 1) { // MODIFIED: Added userId parameter
+  async _updateGroupedSettingsWithBooleanNormalization(configData, userId = 1) {
+    // MODIFIED: Added userId parameter
     const updatedSettings = [];
     const errors = [];
 
@@ -1557,7 +1436,12 @@ class SystemConfigHandler {
           const oldValue = existing ? existing.value : null;
 
           // MODIFIED: Pass userId to setValueByKey
-          const result = await this.setValueByKey(key, valueToSave, options, userId);
+          const result = await this.setValueByKey(
+            key,
+            valueToSave,
+            options,
+            userId,
+          );
 
           if (result.status && result.data) {
             updatedSettings.push({

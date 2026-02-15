@@ -1,1 +1,0 @@
-// ProductView.tsx placeholder

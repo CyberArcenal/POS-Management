@@ -40,7 +40,7 @@
     "migration:revert": "npx typeorm migration:revert -d src/main/db/dataSource.js",
     "dev": "cross-env NODE_ENV=development concurrently \"vite\" \"tsc -w -p tsconfig.main.json\" \"electron ./src/main/index.js\"",
     "build": "vite build && tsc -p tsconfig.main.json && electron-builder",
-    "seed": "ts-node src/seeders/seedData.js",
+    "seed": "node src/seeders/seedData.js",
     "seed:reset": "ts-node src/seeders/seedData.js --reset",
     "postinstall": "electron-rebuild",
     "rebuild": "electron-rebuild -f -w sqlite3"
@@ -49,6 +49,8 @@
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
+    "csv-parse": "^6.1.0",
+    "date-fns": "^4.1.0",
     "decimal.js": "^10.6.0",
     "electron": "^39.2.7",
     "lucide-react": "^0.562.0",

@@ -1,1 +1,0 @@
-// ReceiptPreview.tsx placeholder
