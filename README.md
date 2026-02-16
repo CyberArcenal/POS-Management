@@ -144,6 +144,11 @@ Proprietary © CyberArcenal. See repo for details.
 - `/docs` folder  
 - Troubleshooting section  
 
+
+## 📜 Changelog
+All notable changes are documented in the [CHANGELOG.md](./CHANGELOG.md).
+
+
 ---
 
 **Built with ❤️ by CyberArcenal**  
