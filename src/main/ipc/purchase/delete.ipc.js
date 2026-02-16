@@ -1,7 +1,8 @@
 // src/main/ipc/purchase/delete.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require('../../../services/PurchaseService');
+
 
 /**
  * Soft delete a purchase (set status to cancelled)

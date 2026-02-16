@@ -1,7 +1,7 @@
 // src/main/ipc/purchase/create.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require('../../../services/PurchaseService');
 
 /**
  * Create a new purchase

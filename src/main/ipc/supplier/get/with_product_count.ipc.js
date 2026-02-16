@@ -2,6 +2,7 @@
 // @ts-check
 const { AppDataSource } = require("../../../db/datasource");
 const { logger } = require("../../../../utils/logger");
+const Supplier = require("../../../../entities/Supplier");
 
 /**
  * Get suppliers with product count (active only)
@@ -10,7 +11,6 @@ const { logger } = require("../../../../utils/logger");
  */
 module.exports = async (params) => {
   try {
-    const Supplier = require("../../../entities/Supplier");
     const supplierRepo = AppDataSource.getRepository(Supplier);
 
     const result = await supplierRepo

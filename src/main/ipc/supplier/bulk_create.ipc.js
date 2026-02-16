@@ -57,6 +57,7 @@ module.exports = async (params, queryRunner) => {
 
     // Audit log for each successful creation
     for (const sup of created) {
+      // @ts-ignore
       await auditLogger.logCreate("Supplier", sup.id, sup, user, queryRunner.manager);
     }
 
@@ -66,9 +67,11 @@ module.exports = async (params, queryRunner) => {
       data: { created, errors },
     };
   } catch (error) {
+    // @ts-ignore
     logger?.error("bulkCreateSuppliers error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to bulk create suppliers",
       data: null,
     };

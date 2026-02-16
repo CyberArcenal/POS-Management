@@ -1,7 +1,8 @@
 // src/main/ipc/purchase/bulk_create.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require('../../../services/PurchaseService');
+
 
 /**
  * Create multiple purchases in bulk

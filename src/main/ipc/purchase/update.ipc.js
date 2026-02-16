@@ -1,7 +1,8 @@
 // src/main/ipc/purchase/update.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require('../../../services/PurchaseService');
+
 
 /**
  * Update an existing purchase

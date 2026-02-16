@@ -1,7 +1,8 @@
 // src/main/ipc/purchase/export_csv.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require("../../../services/PurchaseService");
+
 
 /**
  * Export purchases to CSV format

@@ -1,7 +1,8 @@
 // src/main/ipc/purchase/update_status.ipc.js
 // @ts-check
 
-const purchaseService = require("../../../../services/PurchaseService");
+const purchaseService = require('../../../services/PurchaseService');
+
 
 /**
  * Update only the status of a purchase
