@@ -2,6 +2,11 @@
 
 A modern, feature‑rich Point of Sale (POS) management system built with **Electron, React, TypeScript, and SQLite**. This desktop application provides tools for retail operations, inventory tracking, sales processing, and customer relationship management.
 
+## 📸 Screenshots
+Here are sample displays of the system
+
+![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/1.png?raw=true)
+
 ## 🚀 Features
 
 ### Core
