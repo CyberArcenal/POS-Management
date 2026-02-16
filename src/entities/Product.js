@@ -11,6 +11,8 @@ const Product = new EntitySchema({
     description: { type: String, nullable: true },
     price: { type: "decimal" },
     stockQty: { type: Number, default: 0 },
+    reorderLevel: { type: Number, default: 0 },   // threshold for auto-reorder
+    reorderQty: { type: Number, default: 0 },     // default reorder quantity
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: () => "CURRENT_TIMESTAMP" },
     updatedAt: { type: Date, nullable: true }
@@ -25,6 +27,18 @@ const Product = new EntitySchema({
       target: "InventoryMovement",
       type: "one-to-many",
       inverseSide: "product"
+    },
+    category: {
+      target: "Category",
+      type: "many-to-one",
+      joinColumn: true,
+      eager: true
+    },
+    supplier: {
+      target: "Supplier",
+      type: "many-to-one",
+      joinColumn: true,
+      eager: true
     }
   }
 });

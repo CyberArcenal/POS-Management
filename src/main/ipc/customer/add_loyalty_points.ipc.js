@@ -1,6 +1,6 @@
+//@ts-check
 
-
-const customerService = require("../../../../services/Customer");
+const customerService = require("../../../services/Customer");
 
 /**
  * Add loyalty points to a customer
@@ -27,6 +27,7 @@ module.exports = async (params, queryRunner) => {
     const result = await customerService.addLoyaltyPoints(
       Number(id),
       Number(points),
+      // @ts-ignore
       notes || null,
       saleId ? Number(saleId) : null,
       userId,
@@ -41,6 +42,7 @@ module.exports = async (params, queryRunner) => {
     console.error("Error in addLoyaltyPoints:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to add loyalty points",
       data: null,
     };

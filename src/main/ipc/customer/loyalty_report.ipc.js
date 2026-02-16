@@ -1,7 +1,8 @@
 //@ts-check
-const { AppDataSource } = require("../../../db/datasource");
-const Customer = require("../../../../entities/Customer");
-const LoyaltyTransaction = require("../../../../entities/LoyaltyTransaction");
+
+const Customer = require("../../../entities/Customer");
+const LoyaltyTransaction = require("../../../entities/LoyaltyTransaction");
+const { AppDataSource } = require("../../db/datasource");
 
 /**
  * Generate loyalty-specific report
@@ -99,6 +100,7 @@ module.exports = async (params) => {
     console.error("Error in generateLoyaltyReport:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to generate loyalty report",
       data: null,
     };

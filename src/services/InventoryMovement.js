@@ -1,6 +1,6 @@
 // services/InventoryMovementService.js
 //@ts-check
-const { AppDataSource } = require("../main/db/datasource");
+
 const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateInventoryMovement } = require("../utils/inventoryUtils");
@@ -13,6 +13,7 @@ class InventoryMovementService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     const InventoryMovement = require("../entities/InventoryMovement");
     const Product = require("../entities/Product");
     const Sale = require("../entities/Sale");

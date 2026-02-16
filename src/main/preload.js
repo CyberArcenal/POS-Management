@@ -7,9 +7,8 @@ contextBridge.exposeInMainWorld("backendAPI", {
   activation: (payload) => ipcRenderer.invoke("activation", payload),
   systemConfig: (payload) => ipcRenderer.invoke("systemConfig", payload),
   product: (payload) => ipcRenderer.invoke("product", payload),
-  auditTrail: (payload) => ipcRenderer.invoke("audit-trail", payload),
-  inventoryTransaction: (payload) =>
-    ipcRenderer.invoke("inventory-transaction", payload),
+  auditLog: (payload) => ipcRenderer.invoke("auditLog", payload),
+  inventory: (payload) => ipcRenderer.invoke("inventory", payload),
   sale: (payload) => ipcRenderer.invoke("sale", payload),
   saleItem: (payload) => ipcRenderer.invoke("sale-item", payload),
   // 👤 User & Auth
@@ -20,6 +19,12 @@ contextBridge.exposeInMainWorld("backendAPI", {
 
   customer: (payload) => ipcRenderer.invoke("customer", payload),
   loyalty: (payload) => ipcRenderer.invoke("loyalty", payload),
+
+  category: (payload) => ipcRenderer.invoke("category", payload),
+  notification: (payload) => ipcRenderer.invoke("notification", payload),
+  supplier: (payload) => ipcRenderer.invoke("supplier", payload),
+  purchase: (payload) => ipcRenderer.invoke("purchase", payload),
+  returnRefund: (payload) => ipcRenderer.invoke("returnRefund", payload),
 
   // 🎯 Event listeners
   onAppReady: (callback) => {

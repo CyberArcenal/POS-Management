@@ -1,30 +1,68 @@
-// src/renderer/api/auditLog.ts
-// Audit Log API – aligned with backend IPC handlers (auditLog channel)
+// Similar structure to activation.ts
 
 // ----------------------------------------------------------------------
-// 📦 Types & Interfaces (based on backend entity and service)
+// 📦 Types & Interfaces
 // ----------------------------------------------------------------------
-
 export interface AuditLogEntry {
   id: number;
-  action: string;               // e.g., 'CREATE', 'UPDATE', 'DELETE', 'VIEW', 'EXPORT'
-  entity: string;               // e.g., 'Employee', 'PayrollRecord', 'AttendanceLog'
-  entityId: string | null;      // ID of the affected entity (as string)
-  timestamp: string;            // ISO datetime
+  action: string;
+  entity: string;
+  entityId: number;
+  timestamp: string;
+  user: string | null;
+  // Additional optional fields that may be present in detailed views
+  userId?: number;
+  oldData?: string | null;
+  newData?: string | null;
+  changes?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  userType?: string;
+}
 
-  // User information (may be partially populated)
-  userId: number | null;
-  userType: string | null;      // e.g., 'admin', 'employee', 'system'
-  ipAddress: string | null;
-  userAgent: string | null;
+export interface PaginatedAuditLogs {
+  items: AuditLogEntry[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-  // Data snapshots (stored as JSON strings)
-  oldData: string | null;       // Previous state (for UPDATE/DELETE)
-  newData: string | null;       // New state (for CREATE/UPDATE)
-  changes: string | null;       // Description of changes (optional)
+export interface AuditLogSummary {
+  total: number;
+  byAction: Array<{ action: string; count: string | number }>;
+  byEntity: Array<{ entity: string; count: string | number }>;
+  byUser: Array<{ user: string; count: string | number }>;
+}
 
-  // Legacy/fallback field (if present)
-  user?: string | null;         // Sometimes used for username
+export interface AuditLogStats {
+  total: number;
+  avgPerDay: string | number;
+  mostActiveDay: { day: string; count: string | number } | null;
+  uniqueUsers: number;
+  dateRange?: { start: string; end: string } | null;
+}
+
+export interface AuditLogCounts {
+  byAction: Array<{ action: string; count: string | number }>;
+  byEntity: Array<{ entity: string; count: string | number }>;
+  byUser: Array<{ user: string; count: string | number }>;
+}
+
+export interface TopActivities {
+  topActions: Array<{ action: string; count: string | number }>;
+  topEntities: Array<{ entity: string; count: string | number }>;
+  topUsers: Array<{ user: string; count: string | number }>;
+}
+
+export interface FileOperationResult {
+  filePath: string;
+}
+
+export interface AuditReportResult {
+  filePath: string;
+  format: string;
+  entryCount: number;
 }
 
 // ----------------------------------------------------------------------
@@ -34,73 +72,96 @@ export interface AuditLogEntry {
 export interface AuditLogsResponse {
   status: boolean;
   message: string;
-  data: AuditLogEntry[];        // Array of logs (for listing/search)
+  data: PaginatedAuditLogs;
 }
 
 export interface AuditLogResponse {
   status: boolean;
   message: string;
-  data: AuditLogEntry;          // Single log (for getById)
+  data: AuditLogEntry;
+}
+
+export interface AuditLogSummaryResponse {
+  status: boolean;
+  message: string;
+  data: AuditLogSummary;
+}
+
+export interface AuditLogStatsResponse {
+  status: boolean;
+  message: string;
+  data: AuditLogStats;
+}
+
+export interface AuditLogCountsResponse {
+  status: boolean;
+  message: string;
+  data: AuditLogCounts;
+}
+
+export interface TopActivitiesResponse {
+  status: boolean;
+  message: string;
+  data: TopActivities;
+}
+
+export interface RecentActivityResponse {
+  status: boolean;
+  message: string;
+  data: {
+    items: AuditLogEntry[];
+    limit: number;
+  };
 }
 
 export interface ExportAuditLogsResponse {
   status: boolean;
   message: string;
-  data: {
-    filePath: string;           // Path to the generated CSV file
-  };
+  data: FileOperationResult;
 }
 
-export interface CleanupResponse {
+export interface GenerateAuditReportResponse {
   status: boolean;
   message: string;
-  data: {
-    deletedCount: number;       // Number of logs deleted
-  };
+  data: AuditReportResult;
 }
 
-export interface DeleteResponse {
+export interface ValidationResponse {
   status: boolean;
   message: string;
-  data: {
-    id: number;                 // ID of the deleted log
-  };
+  data: boolean;
 }
 
 // ----------------------------------------------------------------------
-// 🧠 AuditLogAPI Class
+// 🧠 AuditAPI Class
 // ----------------------------------------------------------------------
 
-class AuditLogAPI {
+class AuditAPI {
   // --------------------------------------------------------------------
   // 🔎 READ-ONLY METHODS
   // --------------------------------------------------------------------
 
   /**
-   * Get all audit logs with optional filtering and pagination.
-   * @param params - Filters: page, limit, entity, action, userId, startDate, endDate
+   * Get all audit logs with pagination
+   * @param params.page - Page number (1-based)
+   * @param params.limit - Items per page (default 50, max 100)
    */
   async getAll(params?: {
     page?: number;
     limit?: number;
-    entity?: string;
-    action?: string;
-    userId?: number;
-    startDate?: string;         // ISO date or datetime
-    endDate?: string;
   }): Promise<AuditLogsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const response = await window.backendAPI.audit({
+      const response = await window.backendAPI.auditLog({
         method: "getAllAuditLogs",
         params: params || {},
       });
 
       if (response.status) {
-        return response as AuditLogsResponse;
+        return response;
       }
       throw new Error(response.message || "Failed to fetch audit logs");
     } catch (error: any) {
@@ -109,22 +170,22 @@ class AuditLogAPI {
   }
 
   /**
-   * Get a single audit log by ID.
+   * Get a single audit log by ID
    * @param id - Audit log ID
    */
   async getById(id: number): Promise<AuditLogResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const response = await window.backendAPI.audit({
+      const response = await window.backendAPI.auditLog({
         method: "getAuditLogById",
         params: { id },
       });
 
       if (response.status) {
-        return response as AuditLogResponse;
+        return response;
       }
       throw new Error(response.message || "Failed to fetch audit log");
     } catch (error: any) {
@@ -133,75 +194,103 @@ class AuditLogAPI {
   }
 
   /**
-   * Get audit logs for a specific user.
-   * @param params - userId, page, limit, startDate, endDate
+   * Get audit logs filtered by entity
+   * @param params.entity - Entity name (e.g., 'Room', 'Booking')
+   * @param params.entityId - Optional specific entity ID
+   * @param params.page - Page number
+   * @param params.limit - Items per page
    */
-  async getByUser(params: {
-    userId: number;
+  async getByEntity(params: {
+    entity: string;
+    entityId?: number;
     page?: number;
     limit?: number;
-    startDate?: string;
-    endDate?: string;
   }): Promise<AuditLogsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const response = await window.backendAPI.audit({
+      const response = await window.backendAPI.auditLog({
+        method: "getAuditLogsByEntity",
+        params,
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to fetch audit logs by entity");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch audit logs by entity");
+    }
+  }
+
+  /**
+   * Get audit logs filtered by user
+   * @param params.user - Username
+   * @param params.page - Page number
+   * @param params.limit - Items per page
+   */
+  async getByUser(params: {
+    user: string;
+    page?: number;
+    limit?: number;
+  }): Promise<AuditLogsResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
         method: "getAuditLogsByUser",
         params,
       });
 
       if (response.status) {
-        return response as AuditLogsResponse;
+        return response;
       }
-      throw new Error(response.message || "Failed to fetch audit logs for user");
+      throw new Error(response.message || "Failed to fetch audit logs by user");
     } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch audit logs for user");
+      throw new Error(error.message || "Failed to fetch audit logs by user");
     }
   }
 
   /**
-   * Get audit logs for a specific entity (e.g., 'Employee', 'PayrollRecord').
-   * @param params - entity, entityId (optional), page, limit, startDate, endDate
+   * Get audit logs filtered by action
+   * @param params.action - Action name (e.g., 'CREATE', 'UPDATE')
+   * @param params.page - Page number
+   * @param params.limit - Items per page
    */
-  async getByEntity(params: {
-    entity: string;
-    entityId?: string | number;
+  async getByAction(params: {
+    action: string;
     page?: number;
     limit?: number;
-    startDate?: string;
-    endDate?: string;
   }): Promise<AuditLogsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      // Convert entityId to string if needed (backend expects string)
-      const payload = {
-        ...params,
-        entityId: params.entityId != null ? String(params.entityId) : undefined,
-      };
-
-      const response = await window.backendAPI.audit({
-        method: "getAuditLogsByEntity",
-        params: payload,
+      const response = await window.backendAPI.auditLog({
+        method: "getAuditLogsByAction",
+        params,
       });
 
       if (response.status) {
-        return response as AuditLogsResponse;
+        return response;
       }
-      throw new Error(response.message || "Failed to fetch audit logs for entity");
+      throw new Error(response.message || "Failed to fetch audit logs by action");
     } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch audit logs for entity");
+      throw new Error(error.message || "Failed to fetch audit logs by action");
     }
   }
 
   /**
-   * Get audit logs within a specific date range.
-   * @param params - startDate, endDate, page, limit
+   * Get audit logs within a date range
+   * @param params.startDate - ISO date string
+   * @param params.endDate - ISO date string
+   * @param params.page - Page number
+   * @param params.limit - Items per page
    */
   async getByDateRange(params: {
     startDate: string;
@@ -210,17 +299,17 @@ class AuditLogAPI {
     limit?: number;
   }): Promise<AuditLogsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const response = await window.backendAPI.audit({
+      const response = await window.backendAPI.auditLog({
         method: "getAuditLogsByDateRange",
         params,
       });
 
       if (response.status) {
-        return response as AuditLogsResponse;
+        return response;
       }
       throw new Error(response.message || "Failed to fetch audit logs by date range");
     } catch (error: any) {
@@ -229,37 +318,87 @@ class AuditLogAPI {
   }
 
   /**
-   * Search audit logs with flexible criteria.
-   * @param params - searchTerm, entity, entityId, action, userId, startDate, endDate, page, limit
+   * Get summary statistics of audit logs
+   * @param params.startDate - Optional start date
+   * @param params.endDate - Optional end date
+   */
+  async getSummary(params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<AuditLogSummaryResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "getAuditLogSummary",
+        params: params || {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to fetch audit summary");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch audit summary");
+    }
+  }
+
+  /**
+   * Get detailed statistics of audit logs
+   * @param params.startDate - Optional start date
+   * @param params.endDate - Optional end date
+   */
+  async getStats(params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<AuditLogStatsResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "getAuditLogStats",
+        params: params || {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to fetch audit stats");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch audit stats");
+    }
+  }
+
+  /**
+   * Search audit logs with flexible filters
+   * @param params - Supports searchTerm, entity, user, action, date range, pagination
    */
   async search(params: {
-    searchTerm?: string;        // Optional general search (may match entity, action, etc.)
+    searchTerm?: string;
     entity?: string;
-    entityId?: string | number;
+    user?: string;
     action?: string;
-    userId?: number;
     startDate?: string;
     endDate?: string;
     page?: number;
     limit?: number;
   }): Promise<AuditLogsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const payload = {
-        ...params,
-        entityId: params.entityId != null ? String(params.entityId) : undefined,
-      };
-
-      const response = await window.backendAPI.audit({
+      const response = await window.backendAPI.auditLog({
         method: "searchAuditLogs",
-        params: payload,
+        params,
       });
 
       if (response.status) {
-        return response as AuditLogsResponse;
+        return response;
       }
       throw new Error(response.message || "Failed to search audit logs");
     } catch (error: any) {
@@ -267,130 +406,194 @@ class AuditLogAPI {
     }
   }
 
-  // --------------------------------------------------------------------
-  // ✏️ WRITE OPERATION METHODS
-  // --------------------------------------------------------------------
-
   /**
-   * Delete a single audit log by ID (if permitted).
-   * @param id - Audit log ID
-   * @param user - Optional username (defaults to 'system')
+   * Get aggregated counts grouped by action, entity, and user
+   * @param params.startDate - Optional start date
+   * @param params.endDate - Optional end date
    */
-  async delete(id: number, user: string = "system"): Promise<DeleteResponse> {
-    try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
-      }
-
-      const response = await window.backendAPI.audit({
-        method: "deleteAuditLog",
-        params: { id },
-        user,
-      });
-
-      if (response.status) {
-        return response as DeleteResponse;
-      }
-      throw new Error(response.message || "Failed to delete audit log");
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to delete audit log");
-    }
-  }
-
-  /**
-   * Delete audit logs older than a specified date.
-   * @param olderThan - ISO date string (e.g., '2023-01-01')
-   * @param user - Optional username (defaults to 'system')
-   */
-  async cleanup(olderThan: string, user: string = "system"): Promise<CleanupResponse> {
-    try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
-      }
-
-      const response = await window.backendAPI.audit({
-        method: "cleanupOldLogs",
-        params: { olderThan },
-        user,
-      });
-
-      if (response.status) {
-        return response as CleanupResponse;
-      }
-      throw new Error(response.message || "Failed to cleanup old audit logs");
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to cleanup old audit logs");
-    }
-  }
-
-  // --------------------------------------------------------------------
-  // 📁 EXPORT METHOD
-  // --------------------------------------------------------------------
-
-  /**
-   * Export filtered audit logs to CSV.
-   * @param params - Filters: entity, entityId, action, userId, startDate, endDate
-   */
-  async exportCSV(params?: {
-    entity?: string;
-    entityId?: string | number;
-    action?: string;
-    userId?: number;
+  async getCounts(params?: {
     startDate?: string;
     endDate?: string;
-  }): Promise<ExportAuditLogsResponse> {
+  }): Promise<AuditLogCountsResponse> {
     try {
-      if (!window.backendAPI?.audit) {
-        throw new Error("Electron API (audit) not available");
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
       }
 
-      const payload = {
-        ...params,
-        entityId: params?.entityId != null ? String(params.entityId) : undefined,
-      };
-
-      const response = await window.backendAPI.audit({
-        method: "exportAuditLogsToCSV",
-        params: payload || {},
+      const response = await window.backendAPI.auditLog({
+        method: "getAuditLogCounts",
+        params: params || {},
       });
 
       if (response.status) {
-        return response as ExportAuditLogsResponse;
+        return response;
       }
-      throw new Error(response.message || "Failed to export audit logs to CSV");
+      throw new Error(response.message || "Failed to fetch audit counts");
     } catch (error: any) {
-      throw new Error(error.message || "Failed to export audit logs to CSV");
+      throw new Error(error.message || "Failed to fetch audit counts");
+    }
+  }
+
+  /**
+   * Get top activities (most frequent actions, entities, users)
+   * @param params.limit - Number of top items to return (default 10, max 20)
+   * @param params.startDate - Optional start date
+   * @param params.endDate - Optional end date
+   */
+  async getTopActivities(params?: {
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<TopActivitiesResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "getTopActivities",
+        params: params || {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to fetch top activities");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch top activities");
+    }
+  }
+
+  /**
+   * Get recent activity (latest audit logs)
+   * @param limit - Number of entries (default 10, max 50)
+   */
+  async getRecentActivity(limit?: number): Promise<RecentActivityResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "getRecentActivity",
+        params: { limit },
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to fetch recent activity");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch recent activity");
     }
   }
 
   // --------------------------------------------------------------------
-  // 🧰 UTILITY METHODS
+  // 📁 EXPORT & REPORT METHODS (read‑only file generation)
   // --------------------------------------------------------------------
 
   /**
-   * Check if the backend API is available.
+   * Export filtered audit logs to CSV file
+   * @param params - Same filters as search() (searchTerm, entity, user, action, date range)
+   * @param params.limit - Max rows to export (default 5000, max 10000)
    */
-  async isAvailable(): Promise<boolean> {
-    return !!(window.backendAPI?.audit);
+  async exportCSV(params?: {
+    searchTerm?: string;
+    entity?: string;
+    user?: string;
+    action?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): Promise<ExportAuditLogsResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "exportAuditLogs",
+        params: params || {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to export audit logs");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to export audit logs");
+    }
   }
 
   /**
-   * Quick check if there are any logs for a given entity/ID.
+   * Generate a comprehensive audit report (JSON or HTML)
+   * @param params.startDate - Optional start date
+   * @param params.endDate - Optional end date
+   * @param params.format - 'json' or 'html' (default 'json')
+   */
+  async generateReport(params?: {
+    startDate?: string;
+    endDate?: string;
+    format?: "json" | "html";
+  }): Promise<GenerateAuditReportResponse> {
+    try {
+      if (!window.backendAPI?.auditLog) {
+        throw new Error("Electron API (auditlog) not available");
+      }
+
+      const response = await window.backendAPI.auditLog({
+        method: "generateAuditReport",
+        params: params || {},
+      });
+
+      if (response.status) {
+        return response;
+      }
+      throw new Error(response.message || "Failed to generate audit report");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to generate audit report");
+    }
+  }
+
+  // --------------------------------------------------------------------
+  // 🧰 UTILITY METHODS (simplified wrappers)
+  // --------------------------------------------------------------------
+
+  /**
+   * Check if a specific entity has any audit logs
    * @param entity - Entity name
    * @param entityId - Optional entity ID
    */
-  async hasLogs(entity: string, entityId?: string | number): Promise<boolean> {
+  async hasLogs(entity: string, entityId?: number): Promise<boolean> {
     try {
-      const response = await this.getByEntity({
-        entity,
-        entityId,
-        limit: 1,
-      });
-      return (response.data?.length ?? 0) > 0;
+      const response = await this.getByEntity({ entity, entityId, limit: 1 });
+      return response.data.total > 0;
     } catch (error) {
       console.error("Error checking audit logs:", error);
       return false;
     }
+  }
+
+  /**
+   * Get the latest audit log entry for an entity
+   * @param entity - Entity name
+   * @param entityId - Entity ID
+   */
+  async getLatestEntry(entity: string, entityId: number): Promise<AuditLogEntry | null> {
+    try {
+      const response = await this.getByEntity({ entity, entityId, limit: 1, page: 1 });
+      return response.data.items[0] || null;
+    } catch (error) {
+      console.error("Error fetching latest audit entry:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Validate if the backend API is available
+   */
+  async isAvailable(): Promise<boolean> {
+    return !!(window.backendAPI?.auditLog);
   }
 }
 
@@ -398,5 +601,5 @@ class AuditLogAPI {
 // 📤 Export singleton instance
 // ----------------------------------------------------------------------
 
-const auditLogAPI = new AuditLogAPI();
-export default auditLogAPI;
+const auditAPI = new AuditAPI();
+export default auditAPI;

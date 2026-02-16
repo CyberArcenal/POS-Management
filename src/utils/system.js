@@ -5,7 +5,7 @@ const path = require("path");
 // @ts-ignore
 const Decimal = require("decimal.js");
 const { logger } = require("./logger");
-const { AppDataSource } = require("../main/db/dataSource");
+const { AppDataSource } = require("../main/db/datasource");
 const { SystemSetting, SettingType } = require("../entities/systemSettings");
 
 // ============================================================
@@ -30,7 +30,7 @@ async function getValue(key, settingType, defaultValue = null) {
     const repository = AppDataSource.getRepository(SystemSetting);
     if (!repository) {
       logger.debug(
-        `[DB] Repository not available for key: ${key}, using default: ${defaultValue}`
+        `[DB] Repository not available for key: ${key}, using default: ${defaultValue}`,
       );
       return defaultValue;
     }
@@ -54,7 +54,7 @@ async function getValue(key, settingType, defaultValue = null) {
 
     if (!setting || setting.value === null || setting.value === undefined) {
       logger.debug(
-        `[DB] Setting ${key} not found, using default: ${defaultValue}`
+        `[DB] Setting ${key} not found, using default: ${defaultValue}`,
       );
       return defaultValue;
     }
@@ -63,7 +63,7 @@ async function getValue(key, settingType, defaultValue = null) {
   } catch (error) {
     logger.warn(
       // @ts-ignore
-      `[DB] Error fetching setting ${key}: ${error.message}, using default: ${defaultValue}`
+      `[DB] Error fetching setting ${key}: ${error.message}, using default: ${defaultValue}`,
     );
     return defaultValue;
   }
@@ -80,7 +80,7 @@ async function getBool(key, settingType, defaultValue = false) {
       key,
       settingType,
       // @ts-ignore
-      defaultValue ? "true" : "false"
+      defaultValue ? "true" : "false",
     );
     if (raw === null) {
       return defaultValue;
@@ -94,7 +94,7 @@ async function getBool(key, settingType, defaultValue = false) {
     }
     if (
       ["false", "0", "no", "n", "off", "disabled", "inactive"].includes(
-        normalized
+        normalized,
       )
     ) {
       return false;
@@ -106,13 +106,13 @@ async function getBool(key, settingType, defaultValue = false) {
     }
 
     logger.warn(
-      `Unrecognized boolean for key='${key}': '${raw}' → using default=${defaultValue}`
+      `Unrecognized boolean for key='${key}': '${raw}' → using default=${defaultValue}`,
     );
     return defaultValue;
   } catch (error) {
     logger.error(
       // @ts-ignore
-      `Error in getBool for ${key}: ${error.message}, using default: ${defaultValue}`
+      `Error in getBool for ${key}: ${error.message}, using default: ${defaultValue}`,
     );
     return defaultValue;
   }
@@ -136,7 +136,7 @@ async function getInt(key, settingType, defaultValue = 0) {
   } catch (error) {
     logger.warn(
       // @ts-ignore
-      `Invalid int for key='${key}': '${error.message}' – using default=${defaultValue}`
+      `Invalid int for key='${key}': '${error.message}' – using default=${defaultValue}`,
     );
     return defaultValue;
   }
@@ -169,7 +169,7 @@ async function getArray(key, settingType, defaultValue = []) {
   } catch (error) {
     logger.warn(
       // @ts-ignore
-      `Error getting array setting ${key}: ${error.message}, using default`
+      `Error getting array setting ${key}: ${error.message}, using default`,
     );
     return defaultValue;
   }
@@ -193,7 +193,6 @@ async function language() {
   // @ts-ignore
   return getValue("language", SettingType.GENERAL, "en");
 }
-
 
 // ============================================================
 // 🔔 NOTIFICATIONS
@@ -236,7 +235,7 @@ async function smsGateway() {
     "sms_gateway_url",
     SettingType.INTEGRATIONS,
     // @ts-ignore
-    "https://api.twilio.com/2010-04-01/Accounts/"
+    "https://api.twilio.com/2010-04-01/Accounts/",
   );
 }
 
@@ -266,11 +265,9 @@ async function browserNotifEnabled() {
   return getBool(
     "browser_notifications_enabled",
     SettingType.NOTIFICATION,
-    true
+    true,
   );
 }
-
-
 
 // ============================================================
 // 🔐 AUDIT & SECURITY
@@ -324,7 +321,6 @@ async function passHistorySize() {
   return getInt("password_history_size", SettingType.USER_SECURITY, 5);
 }
 
-
 async function sessionTimeout() {
   return getInt("session_timeout_minutes", SettingType.USER_SECURITY, 60);
 }
@@ -341,13 +337,11 @@ async function autoDeleteInactiveDays() {
   return getInt(
     "auto_delete_inactive_users_days",
     SettingType.USER_SECURITY,
-    0
+    0,
   );
 }
 
 module.exports = {
-
-
   // Core functions
   getValue,
   getBool,

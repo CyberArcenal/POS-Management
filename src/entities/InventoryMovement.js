@@ -9,26 +9,26 @@ const InventoryMovement = new EntitySchema({
     movementType: {
       type: "varchar",
       enum: ["sale", "refund", "adjustment"],
-      default: "sale"
+      default: "sale",
     }, // sale, refund, adjustment
     qtyChange: { type: Number },
     timestamp: { type: Date, default: () => "CURRENT_TIMESTAMP" },
     notes: { type: String, nullable: true },
-    updatedAt: { type: Date, nullable: true }
+    updatedAt: { type: Date, nullable: true },
   },
   relations: {
     product: {
       target: "Product",
       type: "many-to-one",
-      joinColumn: true
+      joinColumn: true,
     },
     sale: {
       target: "Sale",
       type: "many-to-one",
       joinColumn: true,
-      nullable: true
-    }
-  }
+      nullable: true,
+    },
+  },
 });
 
 module.exports = InventoryMovement;

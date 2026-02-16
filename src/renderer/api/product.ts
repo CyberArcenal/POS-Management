@@ -1,9 +1,29 @@
 // src/renderer/api/product.ts
 // Product API – aligned with backend IPC handlers (product channel)
+// Updated to include category and supplier relations
 
 // ----------------------------------------------------------------------
 // 📦 Types & Interfaces (based on backend entities and services)
 // ----------------------------------------------------------------------
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;            // ISO datetime
+  updatedAt: string | null;
+}
+
+export interface Supplier {
+  id: number;
+  name: string;
+  contactInfo: string | null;
+  address: string | null;
+  isActive: boolean;
+  createdAt: string;            // ISO datetime
+  updatedAt: string | null;
+}
 
 export interface Product {
   id: number;
@@ -12,9 +32,15 @@ export interface Product {
   description: string | null;
   price: number;                // decimal stored as number
   stockQty: number;
+  reorderLevel: number;         // threshold for auto-reorder
+  reorderQty: number;           // default reorder quantity
   isActive: boolean;
   createdAt: string;            // ISO datetime
   updatedAt: string | null;
+
+  // New relations (eager-loaded)
+  category: Category | null;
+  supplier: Supplier | null;
 }
 
 export interface InventoryMovement {
@@ -46,6 +72,9 @@ export interface ProductSalesReportItem {
   totalQuantity: number;
   totalRevenue: number;
   avgPrice: number;
+  // Optional: include category/supplier names if needed
+  categoryName?: string;
+  supplierName?: string;
 }
 
 export interface ProductReport {
@@ -59,6 +88,10 @@ export interface ProductReport {
     price: number;
     stockQty: number;
     isActive: boolean;
+    categoryId?: number | null;
+    supplierId?: number | null;
+    categoryName?: string | null;
+    supplierName?: string | null;
   }>;
   sales: ProductSalesReportItem[];
 }
@@ -70,13 +103,13 @@ export interface ProductReport {
 export interface ProductsResponse {
   status: boolean;
   message: string;
-  data: Product[];              // array of products
+  data: Product[];              // array of products with category & supplier
 }
 
 export interface ProductResponse {
   status: boolean;
   message: string;
-  data: Product;                // single product
+  data: Product;                // single product with category & supplier
 }
 
 export interface InventoryMovementsResponse {
@@ -115,7 +148,10 @@ export interface ImportCSVResponse {
   status: boolean;
   message: string;
   data: {
-    imported: Product[];
+    imported: Array<Product & {
+      categoryName?: string;     // if CSV included category/supplier names
+      supplierName?: string;
+    }>;
     errors: Array<{ row: any; errors: string[] }>;
   };
 }
@@ -165,13 +201,15 @@ class ProductAPI {
 
   /**
    * Get all products with optional filtering, sorting, pagination.
-   * @param params - Filters: isActive, search, minPrice, maxPrice, sortBy, sortOrder, page, limit
+   * @param params - Filters: isActive, search, minPrice, maxPrice, categoryId, supplierId, sortBy, sortOrder, page, limit
    */
   async getAll(params?: {
     isActive?: boolean;
     search?: string;
     minPrice?: number;
     maxPrice?: number;
+    categoryId?: number;          // new filter
+    supplierId?: number;          // new filter
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
     page?: number;
@@ -246,12 +284,14 @@ class ProductAPI {
 
   /**
    * Get all active products.
-   * @param params - Optional filters (search, minPrice, maxPrice, etc.)
+   * @param params - Optional filters (search, minPrice, maxPrice, categoryId, supplierId, etc.)
    */
   async getActive(params?: {
     search?: string;
     minPrice?: number;
     maxPrice?: number;
+    categoryId?: number;
+    supplierId?: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
     page?: number;
@@ -462,7 +502,7 @@ class ProductAPI {
 
   /**
    * Create a new product.
-   * @param productData - Product data (sku, name, price, stockQty, description, isActive)
+   * @param productData - Product data (sku, name, price, stockQty, description, isActive, categoryId, supplierId)
    * @param user - Optional username (defaults to 'system')
    */
   async create(
@@ -473,6 +513,8 @@ class ProductAPI {
       stockQty?: number;
       description?: string | null;
       isActive?: boolean;
+      categoryId?: number | null;      // new field
+      supplierId?: number | null;      // new field
     },
     user: string = 'system'
   ): Promise<ProductResponse> {
@@ -499,7 +541,7 @@ class ProductAPI {
   /**
    * Update an existing product.
    * @param id - Product ID
-   * @param updates - Fields to update (sku, name, price, stockQty, description, isActive)
+   * @param updates - Fields to update (sku, name, price, stockQty, description, isActive, categoryId, supplierId)
    * @param user - Optional username
    */
   async update(
@@ -511,6 +553,8 @@ class ProductAPI {
       stockQty: number;
       description: string | null;
       isActive: boolean;
+      categoryId: number | null;      // new field
+      supplierId: number | null;      // new field
     }>,
     user: string = 'system'
   ): Promise<ProductResponse> {
@@ -597,7 +641,7 @@ class ProductAPI {
 
   /**
    * Bulk create multiple products.
-   * @param products - Array of product objects (each with sku, name, price, etc.)
+   * @param products - Array of product objects (each with sku, name, price, stockQty, description, isActive, categoryId, supplierId)
    * @param user - Optional username
    */
   async bulkCreate(
@@ -608,6 +652,8 @@ class ProductAPI {
       stockQty?: number;
       description?: string | null;
       isActive?: boolean;
+      categoryId?: number | null;      // new field
+      supplierId?: number | null;      // new field
     }>,
     user: string = 'system'
   ): Promise<BulkOperationResponse> {
@@ -646,6 +692,8 @@ class ProductAPI {
         stockQty: number;
         description: string | null;
         isActive: boolean;
+        categoryId: number | null;      // new field
+        supplierId: number | null;      // new field
       }>;
     }>,
     user: string = 'system'
@@ -711,6 +759,8 @@ class ProductAPI {
       search?: string;
       minPrice?: number;
       maxPrice?: number;
+      categoryId?: number;      // new filter
+      supplierId?: number;      // new filter
     },
     outputPath?: string,
     user: string = 'system'
@@ -803,6 +853,28 @@ class ProductAPI {
     } catch (error) {
       return null;
     }
+  }
+
+  // --------------------------------------------------------------------
+  // 🆕 HELPER METHODS FOR CATEGORY/SUPPLIER FILTERING
+  // --------------------------------------------------------------------
+
+  /**
+   * Get products by category ID.
+   * @param categoryId - Category ID
+   * @param params - Additional filter parameters
+   */
+  async getByCategory(categoryId: number, params?: Omit<Parameters<typeof this.getAll>[0], 'categoryId'>): Promise<ProductsResponse> {
+    return this.getAll({ ...params, categoryId });
+  }
+
+  /**
+   * Get products by supplier ID.
+   * @param supplierId - Supplier ID
+   * @param params - Additional filter parameters
+   */
+  async getBySupplier(supplierId: number, params?: Omit<Parameters<typeof this.getAll>[0], 'supplierId'>): Promise<ProductsResponse> {
+    return this.getAll({ ...params, supplierId });
   }
 }
 

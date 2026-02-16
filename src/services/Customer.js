@@ -1,6 +1,6 @@
 // services/CustomerService.js
 //@ts-check
-const { AppDataSource } = require("../main/db/datasource");
+
 const auditLogger = require("../utils/auditLogger");
 const { validateCustomerData } = require("../utils/customerUtils");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
@@ -13,6 +13,7 @@ class CustomerService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     const Customer = require("../entities/Customer");
     const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
     const Sale = require("../entities/Sale");

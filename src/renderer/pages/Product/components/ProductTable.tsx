@@ -71,7 +71,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   }
 
   return (
-    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden flex flex-col h-full">
+    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden flex flex-col">
       {/* Fixed Header Table */}
       <table className="w-full table-fixed">
         <thead className="bg-[var(--table-header-bg)]">
@@ -104,6 +104,10 @@ export const ProductTable: React.FC<ProductTableProps> = ({
           <tbody className="divide-y divide-[var(--border-color)]">
             {products.map((product) => (
               <tr
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(product);
+                }}
                 key={product.id}
                 className="hover:bg-[var(--table-row-hover)] transition-colors"
               >
@@ -125,21 +129,21 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 <td className="w-1/6 px-4 py-3">
                   <div className="flex items-center justify-center gap-2">
                     <button
-                      onClick={() => onView(product)}
+                      onClick={(e) => {e.stopPropagation(); onView(product)}}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => onEdit(product)}
+                      onClick={(e) => {e.stopPropagation(); onEdit(product)}}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-purple)]"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => onDelete(product)}
+                      onClick={(e) => {e.stopPropagation(); onDelete(product);}}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-red)]"
                       title="Delete"
                     >

@@ -27,3 +27,5 @@ pos_management.db-shm
 pos_management.db
 setup.ps1
 *.db
+*.db-wal
+*.db-shm

@@ -16,6 +16,13 @@ const Product = require("../../entities/Product");
 const Sale = require("../../entities/Sale");
 const SaleItem = require("../../entities/SaleItem");
 const { SystemSetting } = require("../../entities/systemSettings");
+const Category = require("../../entities/Category");
+const NotificationLog = require("../../entities/NotificationLog");
+const Purchase = require("../../entities/Purchase");
+const PurchaseItem = require("../../entities/PurchaseItem");
+const ReturnRefund = require("../../entities/ReturnRefund");
+const ReturnRefundItem = require("../../entities/ReturnRefundItem");
+const Supplier = require("../../entities/Supplier");
 
 const config = getDatabaseConfig();
 
@@ -29,6 +36,13 @@ const entities = [
   Sale,
   SaleItem,
   SystemSetting,
+  Category,
+  NotificationLog,
+  Purchase,
+  PurchaseItem,
+  ReturnRefund,
+  ReturnRefundItem,
+  Supplier,
 ];
 
 const dataSourceOptions = {

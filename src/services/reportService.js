@@ -1,5 +1,5 @@
 // @ts-check
-const { AppDataSource } = require("../main/db/datasource");
+
 const auditLogger = require("../utils/auditLogger");
 // @ts-ignore
 const { Between, In, MoreThanOrEqual, LessThanOrEqual } = require("typeorm");
@@ -10,6 +10,7 @@ class ReportService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
     }

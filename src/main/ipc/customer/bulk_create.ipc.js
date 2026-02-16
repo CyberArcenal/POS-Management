@@ -1,4 +1,4 @@
-const customerService = require("../../../../services/Customer");
+
 
 const { validateCustomerData } = require("../../../utils/customerUtils");
 

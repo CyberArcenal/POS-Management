@@ -1,5 +1,6 @@
 //@ts-check
-const customerService = require("../../../services/CustomerService");
+
+const customerService = require("../../../services/Customer");
 
 /**
  * Directly set loyalty points (use with caution; prefer add/redeem)

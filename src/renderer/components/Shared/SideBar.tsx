@@ -33,9 +33,11 @@ import {
   Sliders,
   FileText,
   Boxes,
+  Tags,
+  RotateCcw,
+  ClipboardCheck,
+  Building2,
 } from "lucide-react";
-import { dialogs } from "../../utils/dialogs";
-import { posAuthStore } from "../../lib/authStore";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -67,7 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { path: "/pos/cashier", name: "Cashier", icon: Calculator },
         { path: "/pos/transactions", name: "Transactions", icon: Receipt },
         { path: "/pos/products", name: "Products", icon: Package },
-        { path: "/pos/returns", name: "Returns & Refunds", icon: FileCheck },
       ],
     },
 
@@ -90,6 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       children: [
         { path: "/sales/daily", name: "Daily Sales", icon: CalendarDays },
         { path: "/sales/reports", name: "Sales Reports", icon: BarChart2 },
+        { path: "/sales/returns", name: "Returns & Refunds", icon: RotateCcw },
       ],
     },
 
@@ -102,6 +104,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { path: "/inventory/stock", name: "Stock Levels", icon: Layers },
         { path: "/inventory/movements", name: "Movements", icon: Shuffle },
         { path: "/inventory/reorder", name: "Reorder & Vendors", icon: Truck },
+        {
+          path: "/inventory/purchases",
+          name: "Purchases",
+          icon: ClipboardCheck,
+        },
+          { path: "/inventory/suppliers", name: "Suppliers", icon: Building2},
+        { path: "/inventory/categories", name: "Categories", icon: Tags },
+      
       ],
     },
 
@@ -135,7 +145,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: Settings,
       category: "system",
       children: [
-        { path: "/users", name: "User Management", icon: User2 },
         { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
         { path: "/notification-logs", name: "Notification Logs", icon: Bell },
         { path: "/system/settings", name: "System Settings", icon: Sliders },
@@ -297,15 +306,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     { id: "analytics", name: "Analytics & Reports" },
     { id: "system", name: "System" },
   ];
-
-  const handleLogOut = async (event: any) => {
-    const confirm = await dialogs.confirm({
-      title: "Log-out?",
-      message: "Are you sure do you want to logout?",
-    });
-    if (!confirm) return;
-    posAuthStore.logout();
-  };
 
   return (
     <div

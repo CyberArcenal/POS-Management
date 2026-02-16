@@ -775,6 +775,7 @@ function registerIpcHandlers() {
     const ipcModules = [
       "./ipc/audit/index.ipc.js",
       "./ipc/customer/index.ipc.js",
+      "./ipc/notification_log/index.ipc.js",
       "./ipc/inventory/index.ipc.js",
       "./ipc/loyalty/index.ipc.js",
       "./ipc/product/index.ipc.js",
@@ -783,6 +784,10 @@ function registerIpcHandlers() {
       "./ipc/activation.ipc.js",
       "./ipc/system_config.ipc.js",
       "./ipc/windows_control.ipc.js",
+      "./ipc/category/index.ipc.js",
+      "./ipc/purchase/index.ipc.js",
+      "./ipc/returnrefund/index.ipc.js",
+      "./ipc/supplier/index.ipc.js",
     ];
 
     ipcModules.forEach((modulePath) => {

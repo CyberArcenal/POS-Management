@@ -1,5 +1,6 @@
 //@ts-check
-const customerService = require("../../../services/CustomerService");
+
+const customerService = require("../../../services/Customer");
 
 /**
  * Search customers by name or contact (wrapper for findAll with search)

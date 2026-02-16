@@ -5,6 +5,12 @@ declare global {
     backendAPI: {
       // 🔑 Activation
       activation: (payload: any) => Promise<any>;
+      category: (payload: any) => Promise<any>;
+      notification: (payload: any) => Promise<any>;
+      supplier: (payload: any) => Promise<any>;
+      purchase: (payload: any) => Promise<any>;
+      returnRefund: (payload: any) => Promise<any>;
+
 
       // Events
       onActivationCompleted: (callback: (data: any) => void) => void;
@@ -19,8 +25,8 @@ declare global {
       }>;
 
       product: (payload: any) => Promise<any>;
-      auditTrail: (payload: any) => Promise<any>;
-      inventoryTransaction: (payload: any) => Promise<any>;
+      auditLog: (payload: any) => Promise<any>;
+      inventory: (payload: any) => Promise<any>;
       sale: (payload: any) => Promise<any>;
       saleItem: (payload: any) => Promise<any>;
       sync: (payload: any) => Promise<any>;

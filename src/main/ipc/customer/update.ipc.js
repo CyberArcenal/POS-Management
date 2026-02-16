@@ -1,5 +1,6 @@
 //@ts-check
-const customerService = require("../../../services/CustomerService");
+
+const customerService = require("../../../services/Customer");
 
 /**
  * Update an existing customer

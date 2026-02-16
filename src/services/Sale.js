@@ -1,6 +1,6 @@
 // services/SaleService.js
 //@ts-check
-const { AppDataSource } = require("../main/db/dataSource");
+
 const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateSaleData, calculateSaleTotals } = require("../utils/saleUtils");
@@ -16,16 +16,19 @@ class SaleService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     const Sale = require("../entities/Sale");
     const SaleItem = require("../entities/SaleItem");
     const Customer = require("../entities/Customer");
     const Product = require("../entities/Product");
     const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
     const InventoryMovement = require("../entities/InventoryMovement");
+    try {
+      if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+      }
+    } catch (err) {}
 
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
     this.saleRepository = AppDataSource.getRepository(Sale);
     this.saleItemRepository = AppDataSource.getRepository(SaleItem);
     this.customerRepository = AppDataSource.getRepository(Customer);
@@ -457,7 +460,7 @@ class SaleService {
             (i) => i.product.id === req.productId,
           );
           return orig && req.quantity === orig.quantity;
-        // @ts-ignore
+          // @ts-ignore
         }) && itemsToRefund.length === sale.saleItems.length;
 
       if (!isFullRefund) {

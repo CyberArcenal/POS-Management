@@ -1,9 +1,9 @@
 //@ts-check
 const fs = require("fs").promises;
+// @ts-ignore
 const path = require("path");
-const { AppDataSource } = require("../../../db/datasource");
-const Customer = require("../../../../entities/Customer");
-const { validateCustomerData } = require("../../../../utils/customerUtils");
+const Customer = require("../../../entities/Customer");
+const { validateCustomerData } = require("../../../utils/customerUtils");
 
 /**
  * Import customers from a CSV file
@@ -75,6 +75,7 @@ module.exports = async (params, queryRunner) => {
         });
         await auditRepo.save(log);
       } catch (err) {
+        // @ts-ignore
         errors.push({ row: i + 1, error: err.message });
       }
     }
@@ -88,6 +89,7 @@ module.exports = async (params, queryRunner) => {
     console.error("Error in importCustomersFromCSV:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "CSV import failed",
       data: null,
     };

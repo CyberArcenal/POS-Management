@@ -1,6 +1,6 @@
 // services/LoyaltyTransactionService.js
 //@ts-check
-const { AppDataSource } = require("../main/db/datasource");
+
 const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateLoyaltyTransaction } = require("../utils/loyaltyUtils");
@@ -13,6 +13,7 @@ class LoyaltyTransactionService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
     const Customer = require("../entities/Customer");
     const Sale = require("../entities/Sale");

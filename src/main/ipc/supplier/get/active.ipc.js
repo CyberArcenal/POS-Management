@@ -1,0 +1,26 @@
+// src/main/ipc/supplier/get/active.ipc
+// @ts-check
+const supplierService = require("../../../../services/SupplierService");
+const { logger } = require("../../../../utils/logger");
+
+/**
+ * Get all active suppliers (isActive = true)
+ * @param {Object} params - (unused, kept for consistency)
+ * @returns {Promise<{status: boolean, message?: string, data?: any}>}
+ */
+module.exports = async (params) => {
+  try {
+    const suppliers = await supplierService.findAll({ isActive: true });
+    return {
+      status: true,
+      data: suppliers,
+    };
+  } catch (error) {
+    logger?.error("getActiveSuppliers error:", error);
+    return {
+      status: false,
+      message: error.message || "Failed to fetch active suppliers",
+      data: null,
+    };
+  }
+};

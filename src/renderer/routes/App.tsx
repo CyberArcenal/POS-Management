@@ -1,10 +1,13 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import PageNotFound from "../components/Shared/PageNotFound";
 import Layout from "../layouts/Layout";
 import DashboardPage from "../pages/dashboard";
 import Cashier from "../pages/cashier";
 import Transactions from "../pages/Transactions/Transactions";
 import ProductPage from "../pages/Product/Product";
+import CustomerPage from "../pages/Customer";
+import CustomerLoyaltyPage from "../pages/CustomerLoyalty";
+import MovementPage from "../pages/Movement";
+import AuditTrailPage from "../pages/AuditTrail";
 // import ProductPage from "../pages/Product";
 
 // Placeholder components
@@ -19,8 +22,10 @@ const DailySalesPage = () => <div>📅 Daily Sales (placeholder)</div>;
 const SalesReportsPage = () => <div>📊 Sales Reports (placeholder)</div>;
 
 const UserManagementPage = () => <div>👤 User Management (placeholder)</div>;
-const AuditTrailPage = () => <div>📝 Audit Trail (placeholder)</div>;
+// const AuditTrailPage = () => <div>📝 Audit Trail (placeholder)</div>;
 const NotificationLogsPage = () => <div>🔔 Notification Logs (placeholder)</div>;
+
+const PageNotFound = () => <div> Page Not Found</div>
 
 function App() {
   return (
@@ -38,15 +43,16 @@ function App() {
           <Route path="pos/returns" element={<ReturnsPage />} />
 
           {/* Customers */}
-          <Route path="customers/list" element={<CustomersListPage />} />
-          <Route path="customers/loyalty" element={<LoyaltyPage />} />
+          <Route path="customers/list" element={<CustomerPage />} />
+          <Route path="customers/loyalty" element={<CustomerLoyaltyPage />} />
+
+          <Route path="/inventory/movements" element={<MovementPage/>}/>
 
           {/* Sales */}
           <Route path="sales/daily" element={<DailySalesPage />} />
           <Route path="sales/reports" element={<SalesReportsPage />} />
 
           {/* System */}
-          <Route path="users" element={<UserManagementPage />} />
           <Route path="system/audit" element={<AuditTrailPage />} />
           <Route path="notification-logs" element={<NotificationLogsPage />} />
 

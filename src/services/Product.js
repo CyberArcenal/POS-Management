@@ -1,7 +1,8 @@
 // services/ProductService.js
 //@ts-check
-const { AppDataSource } = require("../main/db/datasource");
+
 const auditLogger = require("../utils/auditLogger");
+// @ts-ignore
 // @ts-ignore
 const { saveDb, updateDb, removeDb } = require("../utils/dbUtils/dbActions");
 const { validateProductData } = require("../utils/productUtils");
@@ -13,6 +14,7 @@ class ProductService {
   }
 
   async initialize() {
+    const { AppDataSource } = require("../main/db/datasource");
     const Product = require("../entities/Product");
     const InventoryMovement = require("../entities/InventoryMovement");
 
@@ -43,8 +45,15 @@ class ProductService {
   async create(productData, user = "system") {
     const { product: productRepo } = await this.getRepositories();
 
+    // Kunin ang category at supplier repositories kung kailangan mong i-validate ang existence
+    const { AppDataSource } = require("../main/db/datasource");
+    const Category = require("../entities/Category");
+    const Supplier = require("../entities/Supplier");
+    const categoryRepo = AppDataSource.getRepository(Category);
+    const supplierRepo = AppDataSource.getRepository(Supplier);
+
     try {
-      // Validate product data
+      // Validate product data (dapat i-update din ang validation function)
       const validation = validateProductData(productData);
       if (!validation.valid) {
         throw new Error(validation.errors.join(", "));
@@ -63,15 +72,32 @@ class ProductService {
         description = null,
         // @ts-ignore
         isActive = true,
+        // @ts-ignore
+        categoryId,
+        // @ts-ignore
+        supplierId,
       } = productData;
-
-      console.log(`Creating product: SKU ${sku}, Name ${name}, Price ${price}`);
 
       // Check SKU uniqueness
       // @ts-ignore
       const existing = await productRepo.findOne({ where: { sku } });
       if (existing) {
         throw new Error(`Product with SKU "${sku}" already exists`);
+      }
+
+      // I-validate ang category at supplier kung provided
+      let category = null;
+      if (categoryId) {
+        category = await categoryRepo.findOne({ where: { id: categoryId } });
+        if (!category)
+          throw new Error(`Category with ID ${categoryId} not found`);
+      }
+
+      let supplier = null;
+      if (supplierId) {
+        supplier = await supplierRepo.findOne({ where: { id: supplierId } });
+        if (!supplier)
+          throw new Error(`Supplier with ID ${supplierId} not found`);
       }
 
       // Create product entity
@@ -83,21 +109,18 @@ class ProductService {
         price,
         stockQty,
         isActive,
+        category, // i-assign ang category entity (o kaya { id: categoryId })
+        supplier, // i-assign ang supplier entity
         createdAt: new Date(),
       });
 
       // @ts-ignore
       const savedProduct = await saveDb(productRepo, product);
-
       await auditLogger.logCreate(
         "Product",
         savedProduct.id,
         savedProduct,
         user,
-      );
-
-      console.log(
-        `Product created: #${savedProduct.id} - ${savedProduct.name}`,
       );
       return savedProduct;
     } catch (error) {
@@ -116,6 +139,12 @@ class ProductService {
   async update(id, productData, user = "system") {
     const { product: productRepo } = await this.getRepositories();
 
+    const { AppDataSource } = require("../main/db/datasource");
+    const Category = require("../entities/Category");
+    const Supplier = require("../entities/Supplier");
+    const categoryRepo = AppDataSource.getRepository(Category);
+    const supplierRepo = AppDataSource.getRepository(Supplier);
+
     try {
       // @ts-ignore
       const existingProduct = await productRepo.findOne({ where: { id } });
@@ -125,7 +154,7 @@ class ProductService {
 
       const oldData = { ...existingProduct };
 
-      // If SKU is being changed, check uniqueness
+      // Handle SKU uniqueness (existing code)
       // @ts-ignore
       if (productData.sku && productData.sku !== existingProduct.sku) {
         // @ts-ignore
@@ -133,24 +162,68 @@ class ProductService {
           // @ts-ignore
           where: { sku: productData.sku },
         });
-        if (skuExists) {
+        if (skuExists)
           throw new Error(
             // @ts-ignore
             `Product with SKU "${productData.sku}" already exists`,
           );
-        }
       }
 
-      // Update fields
+      // Handle category update
+      // @ts-ignore
+      if (productData.categoryId !== undefined) {
+        // @ts-ignore
+        if (productData.categoryId === null) {
+          // @ts-ignore
+          existingProduct.category = null;
+        } else {
+          const category = await categoryRepo.findOne({
+            // @ts-ignore
+            where: { id: productData.categoryId },
+          });
+          if (!category)
+            throw new Error(
+              // @ts-ignore
+              `Category with ID ${productData.categoryId} not found`,
+            );
+          // @ts-ignore
+          existingProduct.category = category;
+        }
+        // @ts-ignore
+        delete productData.categoryId; // para hindi ma-assign bilang direct property
+      }
+
+      // Handle supplier update
+      // @ts-ignore
+      if (productData.supplierId !== undefined) {
+        // @ts-ignore
+        if (productData.supplierId === null) {
+          // @ts-ignore
+          existingProduct.supplier = null;
+        } else {
+          const supplier = await supplierRepo.findOne({
+            // @ts-ignore
+            where: { id: productData.supplierId },
+          });
+          if (!supplier)
+            throw new Error(
+              // @ts-ignore
+              `Supplier with ID ${productData.supplierId} not found`,
+            );
+          // @ts-ignore
+          existingProduct.supplier = supplier;
+        }
+        // @ts-ignore
+        delete productData.supplierId;
+      }
+
+      // Update other fields
       Object.assign(existingProduct, productData);
       existingProduct.updatedAt = new Date();
 
       // @ts-ignore
       const savedProduct = await updateDb(productRepo, existingProduct);
-
       await auditLogger.logUpdate("Product", id, oldData, savedProduct, user);
-
-      console.log(`Product updated: #${id}`);
       return savedProduct;
     } catch (error) {
       // @ts-ignore
@@ -228,7 +301,10 @@ class ProductService {
 
     try {
       // @ts-ignore
-      const queryBuilder = productRepo.createQueryBuilder("product");
+      const queryBuilder = productRepo
+        .createQueryBuilder("product")
+        .leftJoinAndSelect("product.category", "category") // kung gusto mong i-include ang category sa result
+        .leftJoinAndSelect("product.supplier", "supplier"); // kung gusto mong i-include ang supplier
 
       // Filter by active status
       // @ts-ignore
@@ -236,6 +312,24 @@ class ProductService {
         queryBuilder.andWhere("product.isActive = :isActive", {
           // @ts-ignore
           isActive: options.isActive,
+        });
+      }
+
+      // Filter by categoryId
+      // @ts-ignore
+      if (options.categoryId) {
+        queryBuilder.andWhere("category.id = :categoryId", {
+          // @ts-ignore
+          categoryId: options.categoryId,
+        });
+      }
+
+      // Filter by supplierId
+      // @ts-ignore
+      if (options.supplierId) {
+        queryBuilder.andWhere("supplier.id = :supplierId", {
+          // @ts-ignore
+          supplierId: options.supplierId,
         });
       }
 
@@ -249,7 +343,7 @@ class ProductService {
         );
       }
 
-      // Filter by price range
+      // Price range filters
       // @ts-ignore
       if (options.minPrice !== undefined) {
         queryBuilder.andWhere("product.price >= :minPrice", {
@@ -282,7 +376,6 @@ class ProductService {
       }
 
       const products = await queryBuilder.getMany();
-
       await auditLogger.logView("Product", null, "system");
       return products;
     } catch (error) {
