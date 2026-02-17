@@ -25,32 +25,29 @@ export const MovementTable: React.FC<MovementTableProps> = ({
   }
 
   return (
-    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden flex flex-col">
-      {/* Fixed Header */}
-      <table className="w-full table-fixed">
-        <thead className="bg-[var(--table-header-bg)]">
-          <tr>
-            <th className="w-20 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">ID</th>
-            <th className="w-36 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Date & Time</th>
-            <th className="w-1/4 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Product</th>
-            <th className="w-20 px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Quantity</th>
-            <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Type</th>
-            <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Source</th>
-            <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Destination</th>
-            <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">User</th>
-            <th className="w-20 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Actions</th>
-          </tr>
-        </thead>
-      </table>
-
-      {/* Scrollable Body */}
-      <div className="flex-1 overflow-auto min-h-0">
+    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg flex flex-col ">
+      {/* Scrollable Table with Sticky Header */}
+      <div className="flex-1 overflow-auto">
         <table className="w-full table-fixed">
+          <thead className="bg-[var(--table-header-bg)] sticky top-0 z-10">
+            <tr>
+              <th className="w-20 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">ID</th>
+              <th className="w-36 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Date & Time</th>
+              <th className="w-1/4 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Product</th>
+              <th className="w-20 px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Quantity</th>
+              <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Type</th>
+              <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Source</th>
+              <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Destination</th>
+              <th className="w-24 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">User</th>
+              <th className="w-20 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
           <tbody className="divide-y divide-[var(--border-color)]">
             {movements.map((movement) => (
               <tr
                 key={movement.id}
-                className="hover:bg-[var(--table-row-hover)] transition-colors"
+                className="hover:bg-[var(--table-row-hover)] transition-colors cursor-pointer"
+                onClick={() => onView(movement)}
               >
                 <td className="w-20 px-4 py-3 text-sm font-mono text-[var(--text-primary)]">#{movement.id}</td>
                 <td className="w-36 px-4 py-3 text-sm text-[var(--text-secondary)]">
@@ -91,20 +88,15 @@ export const MovementTable: React.FC<MovementTableProps> = ({
                   </span>
                 </td>
                 <td className="w-24 px-4 py-3 text-sm text-[var(--text-secondary)]">
-                  {/* For now, show "System" or derive from notes? */}
                   {movement.notes?.includes("source:") ? movement.notes.split("source:")[1] : "System"}
                 </td>
                 <td className="w-24 px-4 py-3 text-sm text-[var(--text-secondary)]">
-                  {/* For now, show "System" or derive from notes? */}
                   {movement.notes?.includes("dest:") ? movement.notes.split("dest:")[1] : "System"}
                 </td>
-                <td className="w-24 px-4 py-3 text-sm text-[var(--text-secondary)]">
-                  {/* The API doesn't include user, so we show "system" or extract from notes */}
-                  System
-                </td>
+                <td className="w-24 px-4 py-3 text-sm text-[var(--text-secondary)]">System</td>
                 <td className="w-20 px-4 py-3 text-center">
                   <button
-                    onClick={() => onView(movement)}
+                    onClick={(e) => { e.stopPropagation(); onView(movement); }}
                     className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
                     title="View Details"
                   >

@@ -195,7 +195,6 @@ class AuditAPI {
 
   /**
    * Get audit logs filtered by entity
-   * @param params.entity - Entity name (e.g., 'Room', 'Booking')
    * @param params.entityId - Optional specific entity ID
    * @param params.page - Page number
    * @param params.limit - Items per page

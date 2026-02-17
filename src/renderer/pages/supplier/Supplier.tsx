@@ -14,13 +14,12 @@ import { FilterBar } from './components/FilterBar';
 import { SupplierTable } from './components/SupplierTable';
 import { SupplierFormDialog } from './components/SupplierFormDialog';
 import { SupplierViewDialog } from './components/SupplierViewDialog';
+import { Pagination } from '../../components/Shared/Pagination';
 
 const SupplierPage: React.FC = () => {
   const { suppliers, productCounts, filters, setFilters, loading, error, reload } = useSuppliers({
     search: '',
     status: 'all',
-    page: 1,
-    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC',
   });
@@ -28,10 +27,25 @@ const SupplierPage: React.FC = () => {
   const formDialog = useSupplierForm();
   const viewDialog = useSupplierView();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   // Pagination state (handled in hook, but we need to update page)
-  const handleFilterChange = (key: keyof SupplierFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value, page: 1 })); // reset to first page
+  const handleFilterChange = <K extends keyof SupplierFilters>(key: K, value: SupplierFilters[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // Client-side pagination
+  const paginatedSuppliers = suppliers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalPages = Math.ceil(suppliers.length / pageSize);
 
   const handleDelete = async (supplier: Supplier) => {
     const confirmed = await dialogs.confirm({
@@ -89,7 +103,7 @@ const SupplierPage: React.FC = () => {
         <>
           <div className="flex-1">
             <SupplierTable
-              suppliers={suppliers}
+              suppliers={paginatedSuppliers}
               productCounts={productCounts}
               onView={viewDialog.open}
               onEdit={formDialog.openEdit}
@@ -97,15 +111,14 @@ const SupplierPage: React.FC = () => {
             />
           </div>
 
-          {/* Pagination (simplified) */}
-          {suppliers.length > 0 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {suppliers.length} suppliers
-              </div>
-              {/* You can add page navigation here if you implement total count from backend */}
-            </div>
-          )}
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={suppliers.length}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
 

@@ -4,12 +4,12 @@ import { type Product } from "../../../api/product";
 export interface ProductFormData {
   sku: string;
   name: string;
-  description: string;
   price: number;
-  stockQty: number;
-  reorderLevel?: number;
-  isActive: boolean;
-  category?: string;
+  stockQty?: number;
+  description?: string | null;
+  isActive?: boolean;
+  categoryId?: number | null; // new field
+  supplierId?: number | null; // new field
 }
 
 export function useProductForm() {
@@ -22,9 +22,9 @@ export function useProductForm() {
     description: "",
     price: 0,
     stockQty: 0,
-    reorderLevel: 5,
     isActive: true,
-    category: "",
+    categoryId: 0,
+    supplierId: 0,
   });
 
   const openAdd = () => {
@@ -36,9 +36,9 @@ export function useProductForm() {
       description: "",
       price: 0,
       stockQty: 0,
-      reorderLevel: 5,
       isActive: true,
-      category: "",
+      categoryId: 0,
+      supplierId: 0,
     });
     setIsOpen(true);
   };
@@ -55,9 +55,9 @@ export function useProductForm() {
           ? parseFloat(product.price)
           : product.price,
       stockQty: product.stockQty,
-      reorderLevel: (product as any).reorderLevel || 5,
       isActive: product.isActive,
-      category: (product as any).category || "",
+      categoryId: product.category?.id || 0,
+      supplierId: product.supplier?.id || 0,
     });
     setIsOpen(true);
   };

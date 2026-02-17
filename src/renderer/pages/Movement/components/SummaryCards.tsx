@@ -66,7 +66,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ summary }) => {
       })}
 
       {/* Most moved product card (optional) */}
-      {summary.mostMovedProduct && (
+      {/* {summary.mostMovedProduct && (
         <div className="col-span-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
           <p className="text-sm text-[var(--text-tertiary)]">Most Moved Product</p>
           <p className="text-lg font-semibold text-[var(--text-primary)] truncate">
@@ -76,7 +76,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ summary }) => {
             {summary.mostMovedProduct.count} units moved
           </p>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

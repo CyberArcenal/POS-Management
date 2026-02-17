@@ -1,5 +1,5 @@
 // src/renderer/pages/stock/StockLevels.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, ShoppingCart } from 'lucide-react';
 import { useStockLevels, type StockFilters } from './hooks/useStockLevels';
 import { dialogs } from '../../utils/dialogs';
@@ -8,7 +8,7 @@ import { StockSummaryCards } from './components/StockSummaryCards';
 import { StockFilterBar } from './components/StockFilterBar';
 import { StockTable } from './components/StockTable';
 import { PurchaseFormDialog } from '../purchase/components/PurchaseFormDialog';
-
+import { Pagination } from '../../components/Shared/Pagination'; // verify path
 
 const StockLevelsPage: React.FC = () => {
   const {
@@ -27,19 +27,41 @@ const StockLevelsPage: React.FC = () => {
     categoryId: '',
     stockStatus: 'all',
     page: 1,
-    limit: 20,
+    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC',
   });
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [orderFormOpen, setOrderFormOpen] = useState(false);
-  const [orderInitialData, setOrderInitialData] = useState<any>(null);
+  const [orderInitialData, setOrderInitialData] = useState<any>(null); // TODO: Define proper type for PurchaseForm initial data
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = filters.limit; // 10
 
-  const handleFilterChange = (key: keyof StockFilters, value: any) => {
+  // Logging para sa debugging
+  useEffect(() => {
+    console.log('Products loaded:', products.length);
+    console.log('Total from hook:', total);
+    console.log('Current page:', currentPage);
+    console.log('Page size:', pageSize);
+  }, [products, total, currentPage, pageSize]);
+
+  const handleFilterChange = <K extends keyof StockFilters>(key: K, value: StockFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
-    setSelectedIds(new Set()); // clear selections on filter change
+    setSelectedIds(new Set());
+    setCurrentPage(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // Client-side pagination
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalPages = Math.ceil(products.length / pageSize);
 
   const toggleSelect = (productId: number) => {
     const newSet = new Set(selectedIds);
@@ -62,8 +84,6 @@ const StockLevelsPage: React.FC = () => {
       return;
     }
     const selectedProducts = products.filter(p => selectedIds.has(p.id));
-    // Group by supplier? For now, we'll only allow reorder if all selected products belong to the same supplier.
-    // If multiple suppliers, we need to create separate purchase orders. For simplicity, we'll alert.
     const supplierIds = new Set(selectedProducts.map(p => p.supplier?.id));
     if (supplierIds.size > 1 || supplierIds.has(undefined)) {
       dialogs.alert({
@@ -79,14 +99,10 @@ const StockLevelsPage: React.FC = () => {
     }
     const items = selectedProducts.map(p => ({
       productId: p.id,
-      quantity: p.reorderQty, // use product's reorderQty
+      quantity: p.reorderQty,
       unitPrice: p.price,
     }));
-    const initialData = {
-      supplierId,
-      items,
-    };
-    setOrderInitialData(initialData);
+    setOrderInitialData({ supplierId, items });
     setOrderFormOpen(true);
   };
 
@@ -95,15 +111,14 @@ const StockLevelsPage: React.FC = () => {
       dialogs.alert({ title: 'No Supplier', message: 'This product has no supplier assigned.' });
       return;
     }
-    const initialData = {
+    setOrderInitialData({
       supplierId: product.supplier.id,
       items: [{
         productId: product.id,
         quantity: product.reorderQty,
         unitPrice: product.price,
       }],
-    };
-    setOrderInitialData(initialData);
+    });
     setOrderFormOpen(true);
   };
 
@@ -112,7 +127,7 @@ const StockLevelsPage: React.FC = () => {
     setOrderInitialData(null);
     setSelectedIds(new Set());
     dialogs.alert({ title: 'Success', message: 'Purchase order created.' });
-    reload(); // maybe refresh stock levels
+    reload();
   };
 
   const handleOrderClose = () => {
@@ -122,6 +137,7 @@ const StockLevelsPage: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Stock Levels</h1>
         <button
@@ -135,7 +151,6 @@ const StockLevelsPage: React.FC = () => {
       </div>
 
       <StockSummaryCards products={products} />
-
       <StockFilterBar
         filters={filters}
         suppliers={suppliers}
@@ -161,25 +176,27 @@ const StockLevelsPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1">
             <StockTable
-              products={products}
+              products={paginatedProducts}
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               onSelectAll={toggleSelectAll}
               onReorder={handleSingleReorder}
             />
           </div>
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-[var(--text-tertiary)]">
-              Showing {products.length} of {total} products
-            </div>
-            {/* Pagination controls can be added later */}
-          </div>
+
+          {/* Pagination component - lalabas kahit isang page lang (tingnan ang component) */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={products.length}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
 
-      {/* Purchase Form Dialog */}
       {orderFormOpen && (
         <PurchaseFormDialog
           isOpen={orderFormOpen}

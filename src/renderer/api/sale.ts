@@ -177,6 +177,7 @@ class SaleAPI {
       });
 
       if (response.status) {
+        console.log(response)
         return response as SalesResponse;
       }
       throw new Error(response.message || "Failed to fetch sales");

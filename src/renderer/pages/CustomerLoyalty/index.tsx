@@ -194,13 +194,13 @@ const CustomerLoyaltyPage: React.FC = () => {
           )}
 
           {/* Analytics Section */}
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <LoyaltyAnalytics
               pointsDistribution={pointsDistribution}
               monthlyTrends={monthlyTrends}
               topCustomers={topCustomers}
             />
-          </div>
+          </div> */}
         </>
       )}
 

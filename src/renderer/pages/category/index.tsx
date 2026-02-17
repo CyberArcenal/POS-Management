@@ -1,5 +1,5 @@
 // src/renderer/pages/category/Category.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import { dialogs } from '../../utils/dialogs';
 import categoryAPI, { type Category } from '../../api/category';
@@ -14,13 +14,12 @@ import { FilterBar } from './components/FilterBar';
 import { CategoryTable } from './components/CategoryTable';
 import { CategoryFormDialog } from './components/CategoryFormDialog';
 import { CategoryViewDialog } from './components/CategoryViewDialog';
+import { Pagination } from '../../components/Shared/Pagination';
 
 const CategoryPage: React.FC = () => {
   const { categories, productCounts, filters, setFilters, loading, error, reload } = useCategories({
     search: '',
     status: 'all',
-    page: 1,
-    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC',
   });
@@ -28,9 +27,20 @@ const CategoryPage: React.FC = () => {
   const formDialog = useCategoryForm();
   const viewDialog = useCategoryView();
 
-  const handleFilterChange = (key: keyof CategoryFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  const handleFilterChange = <K extends keyof CategoryFilters>(key: K, value: CategoryFilters[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
   };
+
+  // Client-side pagination
+  const paginatedCategories = categories.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalPages = Math.ceil(categories.length / pageSize);
 
   const handleDelete = async (category: Category) => {
     const confirmed = await dialogs.confirm({
@@ -88,7 +98,7 @@ const CategoryPage: React.FC = () => {
         <>
           <div className="flex-1">
             <CategoryTable
-              categories={categories}
+              categories={paginatedCategories}
               productCounts={productCounts}
               onView={viewDialog.open}
               onEdit={formDialog.openEdit}
@@ -96,15 +106,14 @@ const CategoryPage: React.FC = () => {
             />
           </div>
 
-          {/* Simple pagination info */}
-          {categories.length > 0 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {categories.length} categories
-              </div>
-              {/* You can add page navigation here if you implement total count from backend */}
-            </div>
-          )}
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={categories.length}
+            onPageChange={(newPage) => setCurrentPage(newPage)}
+          />
         </>
       )}
 

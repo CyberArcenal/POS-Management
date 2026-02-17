@@ -26,6 +26,17 @@ contextBridge.exposeInMainWorld("backendAPI", {
   purchase: (payload) => ipcRenderer.invoke("purchase", payload),
   returnRefund: (payload) => ipcRenderer.invoke("returnRefund", payload),
 
+  customerInsights: (payload) =>
+    ipcRenderer.invoke("customerInsights", payload),
+  dailySales: (payload) => ipcRenderer.invoke("dailySales", payload),
+  financialReports: (payload) =>
+    ipcRenderer.invoke("financialReports", payload),
+  inventoryReports: (payload) =>
+    ipcRenderer.invoke("inventoryReports", payload),
+  salesReport: (payload) => ipcRenderer.invoke("salesReport", payload),
+  returnRefundReports: (payload) =>
+    ipcRenderer.invoke("returnRefundReports", payload),
+
   // 🎯 Event listeners
   onAppReady: (callback) => {
     ipcRenderer.on("app-ready", callback);

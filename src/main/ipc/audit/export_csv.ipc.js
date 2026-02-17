@@ -70,7 +70,7 @@ module.exports = async (params = {}) => {
     // Determine export directory
     let exportDir;
     if (typeof app !== "undefined" && app?.getPath) {
-      exportDir = path.join(app.getPath("documents"), "HotelBookingManagement", "exports");
+      exportDir = path.join(app.getPath("documents"), "POSManagement", "exports");
     } else {
       exportDir = path.join(process.cwd(), "exports");
     }

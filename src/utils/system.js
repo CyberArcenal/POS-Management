@@ -1,12 +1,11 @@
-// systemUtils.js - SHORTENED & CLEANED VERSION
 //@ts-check
 // @ts-ignore
 const path = require("path");
 // @ts-ignore
 const Decimal = require("decimal.js");
 const { logger } = require("./logger");
-const { AppDataSource } = require("../main/db/datasource");
 const { SystemSetting, SettingType } = require("../entities/systemSettings");
+const { AppDataSource } = require("../main/db/datasource");
 
 // ============================================================
 // 📊 CORE GETTER FUNCTIONS
@@ -79,6 +78,7 @@ async function getBool(key, settingType, defaultValue = false) {
     const raw = await getValue(
       key,
       settingType,
+
       // @ts-ignore
       defaultValue ? "true" : "false",
     );
@@ -147,6 +147,7 @@ async function getInt(key, settingType, defaultValue = 0) {
  * @param {string} key
  * @param {string} settingType
  */
+
 // @ts-ignore
 async function getArray(key, settingType, defaultValue = []) {
   try {
@@ -179,12 +180,21 @@ async function getArray(key, settingType, defaultValue = []) {
 // 🏢 GENERAL SETTINGS
 // ============================================================
 
+// ============================================================
+// 🏢 GENERAL SETTINGS
+// ============================================================
+
 async function companyName() {
-  // @ts-ignore
-  return getValue("company_name", SettingType.GENERAL, "POS Management");
+  return getValue(
+    "company_name",
+    SettingType.GENERAL,
+    // @ts-ignore
+    "Hotel Management",
+  );
 }
 
-async function timezone() {
+// ✅ RENAME: from 'timezone' to 'defaultTimezone' (para hindi malito)
+async function defaultTimezone() {
   // @ts-ignore
   return getValue("default_timezone", SettingType.GENERAL, "Asia/Manila");
 }
@@ -194,197 +204,205 @@ async function language() {
   return getValue("language", SettingType.GENERAL, "en");
 }
 
+// ✅ NEW: para sa actual na "timezone" key (id 11)
+async function timezone() {
+  // @ts-ignore
+  return getValue("timezone", SettingType.GENERAL, "Asia/Manila");
+}
+
 // ============================================================
-// 🔔 NOTIFICATIONS
+// 🔔 NOTIFICATION SETTINGS
 // ============================================================
 
-async function emailEnabled() {
-  return getBool("email_enabled", SettingType.NOTIFICATION, false);
+async function enableEmailAlerts() {
+  // @ts-ignore
+  return getValue("enable_email_alerts", SettingType.NOTIFICATION, "false");
+}
+
+async function enableSmsAlerts() {
+  // @ts-ignore
+  return getValue("enable_sms_alerts", SettingType.NOTIFICATION, "false");
+}
+
+async function adminAlerts() {
+  // @ts-ignore
+  return getValue("admin_alerts", SettingType.NOTIFICATION, "false");
+}
+
+async function reminderIntervalHours() {
+  // @ts-ignore
+  return getValue("reminder_interval_hours", SettingType.NOTIFICATION, "24");
 }
 
 async function smtpHost() {
   // @ts-ignore
-  return getValue("smtp_host", SettingType.INTEGRATIONS, "smtp.gmail.com");
+  return getValue("smtp_host", SettingType.NOTIFICATION, "smtp.gmail.com");
 }
 
 async function smtpPort() {
-  return getInt("smtp_port", SettingType.INTEGRATIONS, 587);
+  return getInt("smtp_port", SettingType.NOTIFICATION, 587);
 }
 
-async function smtpUser() {
+async function smtpUsername() {
   // @ts-ignore
-  return getValue("smtp_user", SettingType.INTEGRATIONS, "");
+  return getValue("smtp_username", SettingType.NOTIFICATION, "");
 }
 
-async function smtpPass() {
+async function smtpPassword() {
   // @ts-ignore
-  return getValue("smtp_password", SettingType.INTEGRATIONS, "");
+  return getValue("smtp_password", SettingType.NOTIFICATION, "");
 }
 
-async function sendgridKey() {
+async function smtpUseSsl() {
   // @ts-ignore
-  return getValue("sendgrid_api_key", SettingType.INTEGRATIONS, "");
+  return getValue("smtp_use_ssl", SettingType.NOTIFICATION, "true");
 }
 
-async function smsEnabled() {
-  return getBool("sms_enabled", SettingType.NOTIFICATION, false);
+async function smtpFromEmail() {
+  // @ts-ignore
+  return getValue("smtp_from_email", SettingType.NOTIFICATION, "");
 }
 
-async function smsGateway() {
-  return getValue(
-    "sms_gateway_url",
-    SettingType.INTEGRATIONS,
+async function smtpFromName() {
+  // @ts-ignore
+  return getValue("smtp_from_name", SettingType.NOTIFICATION, "");
+}
+
+// 📱 TWILIO SMS SETTINGS (NEW)
+async function twilioAccountSid() {
+  // @ts-ignore
+  return getValue("twilio_account_sid", SettingType.NOTIFICATION, "");
+}
+
+async function twilioAuthToken() {
+  // @ts-ignore
+  return getValue("twilio_auth_token", SettingType.NOTIFICATION, "");
+}
+
+async function twilioPhoneNumber() {
+  // @ts-ignore
+  return getValue("twilio_phone_number", SettingType.NOTIFICATION, "");
+}
+
+async function twilioMessagingServiceSid() {
+  // @ts-ignore
+  return getValue("twilio_messaging_service_sid", SettingType.NOTIFICATION, "");
+}
+
+async function getSmtpConfig() {
+  const [host, port, username, password, useSsl, fromEmail, fromName] =
+    await Promise.all([
+      smtpHost(),
+      smtpPort(),
+      smtpUsername(),
+      smtpPassword(),
+      smtpUseSsl(),
+      smtpFromEmail(),
+      smtpFromName(),
+    ]);
+
+  return {
+    host,
     // @ts-ignore
-    "https://api.twilio.com/2010-04-01/Accounts/",
-  );
+    port: parseInt(port, 10),
+    username,
+    password,
+    secure: useSsl === "true" || useSsl === "1" || useSsl === "yes",
+    from: {
+      email: fromEmail,
+      name: fromName,
+    },
+  };
 }
 
-async function smsApiKey() {
+async function getTwilioConfig() {
+  const [accountSid, authToken, phoneNumber, messagingServiceSid] =
+    await Promise.all([
+      twilioAccountSid(),
+      twilioAuthToken(),
+      twilioPhoneNumber(),
+      twilioMessagingServiceSid(),
+    ]);
+
+  return {
+    accountSid,
+    authToken,
+    phoneNumber,
+    messagingServiceSid,
+  };
+}
+
+// ============================================================
+// ⚙️ SYSTEM SETTINGS
+// ============================================================
+
+async function debugMode() {
   // @ts-ignore
-  return getValue("sms_api_key", SettingType.INTEGRATIONS, "");
+  return getValue("debug_mode", SettingType.SYSTEM, "false");
 }
 
-async function smsSender() {
+async function environment() {
   // @ts-ignore
-  return getValue("sms_sender_id", SettingType.INTEGRATIONS, "");
+  return getValue("environment", SettingType.SYSTEM, "development");
 }
 
-async function remindersEnabled() {
-  return getBool("reminders_enabled", SettingType.NOTIFICATION, true);
+async function auditTrailEnabled() {
+  // @ts-ignore
+  return getValue("audit_trail_enabled", SettingType.SYSTEM, "true");
 }
 
-async function reminderTimes() {
-  return getArray("reminder_times", SettingType.NOTIFICATION, [24, 2]);
-}
 
-async function pushEnabled() {
-  return getBool("push_notifications_enabled", SettingType.NOTIFICATION, false);
-}
 
-async function browserNotifEnabled() {
-  return getBool(
-    "browser_notifications_enabled",
-    SettingType.NOTIFICATION,
-    true,
-  );
+
+
+
+async function getLoyaltyPointRate(){
+  return getInt("loyalty_points_rate", SettingType.SALE, 20)
 }
 
 // ============================================================
-// 🔐 AUDIT & SECURITY
+// 📤 EXPORT ALL FUNCTIONS
 // ============================================================
-
-async function auditLogEnabled() {
-  return getBool("audit_log_enabled", SettingType.SECURITY, true);
-}
-
-async function logRetentionDays() {
-  return getInt("log_retention_days", SettingType.SECURITY, 365);
-}
-
-// ============================================================
-// 👤 USER SECURITY
-// ============================================================
-
-async function maxLoginAttempts() {
-  return getInt("max_login_attempts", SettingType.USER_SECURITY, 5);
-}
-
-async function lockoutDuration() {
-  return getInt("lockout_duration_minutes", SettingType.USER_SECURITY, 30);
-}
-
-async function passMinLength() {
-  return getInt("password_min_length", SettingType.USER_SECURITY, 8);
-}
-
-async function passExpiryDays() {
-  return getInt("password_expiry_days", SettingType.USER_SECURITY, 90);
-}
-
-async function passRequireUpper() {
-  return getBool("password_require_uppercase", SettingType.USER_SECURITY, true);
-}
-
-async function passRequireLower() {
-  return getBool("password_require_lowercase", SettingType.USER_SECURITY, true);
-}
-
-async function passRequireNumbers() {
-  return getBool("password_require_numbers", SettingType.USER_SECURITY, true);
-}
-
-async function passRequireSymbols() {
-  return getBool("password_require_symbols", SettingType.USER_SECURITY, false);
-}
-
-async function passHistorySize() {
-  return getInt("password_history_size", SettingType.USER_SECURITY, 5);
-}
-
-async function sessionTimeout() {
-  return getInt("session_timeout_minutes", SettingType.USER_SECURITY, 60);
-}
-
-async function allowMultiSession() {
-  return getBool("allow_multiple_sessions", SettingType.USER_SECURITY, false);
-}
-
-async function sessionEncrypted() {
-  return getBool("session_encryption_enabled", SettingType.USER_SECURITY, true);
-}
-
-async function autoDeleteInactiveDays() {
-  return getInt(
-    "auto_delete_inactive_users_days",
-    SettingType.USER_SECURITY,
-    0,
-  );
-}
 
 module.exports = {
-  // Core functions
+  getLoyaltyPointRate,
+  // Core getters
   getValue,
   getBool,
   getInt,
   getArray,
 
-  // General Settings
+  // General settings
   companyName,
-  timezone,
+  defaultTimezone, // ✅ pinalitan mula sa dating 'timezone'
   language,
+  timezone, // ✅ bago – para sa "timezone" key
 
-  // Notifications
-  emailEnabled,
+  // Notification settings
+  enableEmailAlerts,
+  enableSmsAlerts,
+  adminAlerts,
+  reminderIntervalHours,
+
+  // 📧 SMTP Settings (NEW)
   smtpHost,
   smtpPort,
-  smtpUser,
-  smtpPass,
-  sendgridKey,
-  smsEnabled,
-  smsGateway,
-  smsApiKey,
-  smsSender,
-  remindersEnabled,
-  reminderTimes,
-  pushEnabled,
-  browserNotifEnabled,
+  smtpUsername,
+  smtpPassword,
+  smtpUseSsl,
+  smtpFromEmail,
+  smtpFromName,
+  getSmtpConfig, // ✅ Convenience function
 
-  // Audit & Security
-  auditLogEnabled,
-  logRetentionDays,
+  // 📱 TWILIO SETTINGS (NEW)
+  twilioAccountSid,
+  twilioAuthToken,
+  twilioPhoneNumber,
+  twilioMessagingServiceSid,
+  getTwilioConfig, // ✅ Convenience function
 
-  // User Security
-  maxLoginAttempts,
-  lockoutDuration,
-  passMinLength,
-  passExpiryDays,
-  passRequireUpper,
-  passRequireLower,
-  passRequireNumbers,
-  passRequireSymbols,
-  passHistorySize,
-  sessionTimeout,
-  allowMultiSession,
-  sessionEncrypted,
-  autoDeleteInactiveDays,
+  // System settings
+  debugMode,
+  environment,
+  auditTrailEnabled,
 };

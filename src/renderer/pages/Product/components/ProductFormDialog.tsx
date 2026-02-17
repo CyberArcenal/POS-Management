@@ -3,6 +3,8 @@ import { X, Loader2, Save } from "lucide-react";
 import productAPI from "../../../api/product";
 import { dialogs } from "../../../utils/dialogs";
 import { type ProductFormData } from "../hooks/useProductForm";
+import CategorySelect from "../../../components/Selects/Category";
+import type { Category } from "../../../api/category";
 
 interface ProductFormDialogProps {
   isOpen: boolean;
@@ -36,8 +38,6 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     if (!formData.sku.trim()) newErrors.sku = "SKU is required";
     if (!formData.name.trim()) newErrors.name = "Product name is required";
     if (formData.price <= 0) newErrors.price = "Price must be greater than 0";
-    if (formData.stockQty < 0)
-      newErrors.stockQty = "Stock quantity cannot be negative";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -57,10 +57,10 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
             name: formData.name,
             description: formData.description || undefined,
             price: formData.price,
-            stockQty: formData.stockQty,
             isActive: formData.isActive,
+            // stockQty intentionally omitted – use stock adjustment dialog
           },
-          user
+          user,
         );
       } else {
         if (!productId) throw new Error("Product ID missing");
@@ -71,10 +71,10 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
             name: formData.name,
             description: formData.description || undefined,
             price: formData.price,
-            stockQty: formData.stockQty,
             isActive: formData.isActive,
+            // stockQty intentionally omitted – use stock adjustment dialog
           },
-          user
+          user,
         );
       }
 
@@ -126,7 +126,9 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   setFormData({ ...formData, sku: e.target.value })
                 }
                 className={`w-full bg-[var(--input-bg)] border ${
-                  errors.sku ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
+                  errors.sku
+                    ? "border-[var(--accent-red)]"
+                    : "border-[var(--input-border)]"
                 } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
               />
               {errors.sku && (
@@ -147,7 +149,9 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className={`w-full bg-[var(--input-bg)] border ${
-                  errors.name ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
+                  errors.name
+                    ? "border-[var(--accent-red)]"
+                    : "border-[var(--input-border)]"
                 } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
               />
               {errors.name && (
@@ -157,12 +161,33 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
               )}
             </div>
 
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                  Category
+                </label>
+                <CategorySelect
+                  value={formData.categoryId as number}
+                  activeOnly
+                  onChange={(
+                    categoryId: number | null,
+                    category?: Category,
+                  ) => {
+                    setFormData({
+                      ...formData,
+                      categoryId: categoryId,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                 Description
               </label>
               <textarea
-                value={formData.description}
+                value={formData.description as string}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
@@ -188,7 +213,9 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                     })
                   }
                   className={`w-full bg-[var(--input-bg)] border ${
-                    errors.price ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
+                    errors.price
+                      ? "border-[var(--accent-red)]"
+                      : "border-[var(--input-border)]"
                   } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
                 />
                 {errors.price && (
@@ -198,65 +225,7 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Stock Quantity
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.stockQty}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      stockQty: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className={`w-full bg-[var(--input-bg)] border ${
-                    errors.stockQty ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
-                  } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
-                />
-                {errors.stockQty && (
-                  <p className="mt-1 text-xs text-[var(--accent-red)]">
-                    {errors.stockQty}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Reorder Level
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.reorderLevel}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      reorderLevel: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
-                  placeholder="e.g., Electronics"
-                />
-              </div>
+              {/* Stock quantity input removed – use stock adjustment dialog */}
             </div>
 
             <div className="flex items-center gap-2">

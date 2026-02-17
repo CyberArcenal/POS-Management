@@ -156,11 +156,6 @@ class PurchaseService {
         `Purchase created: #${savedPurchase.id} - ${savedPurchase.referenceNo}`,
       );
 
-      // If status is 'completed', update stock immediately
-      if (status === "completed") {
-        await this._updateStockFromPurchase(savedPurchase, user);
-      }
-
       return savedPurchase;
     } catch (error) {
       // @ts-ignore
@@ -339,11 +334,6 @@ class PurchaseService {
       // Save updated purchase
       // @ts-ignore
       const savedPurchase = await updateDb(purchaseRepo, existingPurchase);
-
-      // If status changed to completed, update stock
-      if (newStatus === "completed" && oldStatus !== "completed") {
-        await this._updateStockFromPurchase(savedPurchase, user);
-      }
 
       await auditLogger.logUpdate("Purchase", id, oldData, savedPurchase, user);
 
@@ -625,60 +615,6 @@ class PurchaseService {
       console.error("Failed to export purchases:", error);
       throw error;
     }
-  }
-
-  /**
-   * Private method: Update product stock based on purchase items
-   * @param {Object} purchase - Purchase entity with items loaded
-   * @param {string} user
-   */
-  async _updateStockFromPurchase(purchase, user) {
-    const { product: productRepo, inventoryMovement: movementRepo } =
-      await this.getRepositories();
-
-    // @ts-ignore
-    for (const item of purchase.purchaseItems) {
-      const product = item.product;
-      const oldStock = product.stockQty;
-      const newStock = oldStock + item.quantity; // purchase increases stock
-
-      // Update product stock
-      product.stockQty = newStock;
-      product.updatedAt = new Date();
-      // @ts-ignore
-      await updateDb(productRepo, product);
-
-      // Create inventory movement
-      // @ts-ignore
-      const movement = movementRepo.create({
-        movementType: "purchase", // assuming we add 'purchase' to enum? Or use 'adjustment' with note
-        qtyChange: item.quantity,
-        // @ts-ignore
-        notes: `Purchase #${purchase.id} - ${purchase.referenceNo}`,
-        product,
-        purchase, // we might need a relation from InventoryMovement to Purchase? Not defined. Use notes for now.
-        timestamp: new Date(),
-      });
-      // @ts-ignore
-      await saveDb(movementRepo, movement);
-
-      await auditLogger.logUpdate(
-        "Product",
-        product.id,
-        { stockQty: oldStock },
-        { stockQty: newStock },
-        user,
-      );
-      await auditLogger.logCreate(
-        "InventoryMovement",
-        movement.id,
-        movement,
-        user,
-      );
-    }
-
-    // @ts-ignore
-    console.log(`Stock updated for purchase #${purchase.id}`);
   }
 }
 

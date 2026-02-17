@@ -14,9 +14,10 @@ import { FilterBar } from './components/FilterBar';
 import { PurchaseTable } from './components/PurchaseTable';
 import { PurchaseFormDialog } from './components/PurchaseFormDialog';
 import { PurchaseViewDialog } from './components/PurchaseViewDialog';
+import { Pagination } from '../../components/Shared/Pagination';
 
 const PurchasePage: React.FC = () => {
-  const { purchases, filters, setFilters, loading, error, reload } = usePurchases({
+  const { purchases, suppliers, filters, setFilters, loading, error, reload } = usePurchases({
     search: '',
     status: '',
     supplierId: '',
@@ -35,9 +36,24 @@ const PurchasePage: React.FC = () => {
 
   const viewDialog = usePurchaseView();
 
-  const handleFilterChange = (key: keyof PurchaseFilters, value: any) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = filters.limit;
+
+  const handleFilterChange = <K extends keyof PurchaseFilters>(key: K, value: PurchaseFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+    setCurrentPage(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // Client-side pagination
+  const paginatedPurchases = purchases.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalPages = Math.ceil(purchases.length / pageSize);
 
   const handleAdd = () => {
     setFormDialog({ open: true, mode: 'add' });
@@ -110,17 +126,19 @@ const PurchasePage: React.FC = () => {
         <>
           <div className="flex-1">
             <PurchaseTable
-              purchases={purchases}
-              onView={viewDialog.open}
+              purchases={paginatedPurchases}
+              onView={(purchase) => {viewDialog.open(purchase.id)}}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
           </div>
-          {purchases.length > 0 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">Showing {purchases.length} purchases</div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={purchases.length}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
 

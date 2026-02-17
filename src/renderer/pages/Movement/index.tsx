@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useMovements, type MovementFilters } from "./hooks/useMovements";
 import { useMovementView } from "./hooks/useMovementView";
+
+// Components
 import { SummaryCards } from "./components/SummaryCards";
 import { FilterBar } from "./components/FilterBar";
 import { MovementTable } from "./components/MovementTable";
 import { MovementViewDialog } from "./components/MovementViewDialog";
+import { Pagination } from "../../components/Shared/Pagination";
+
 const MovementPage: React.FC = () => {
   const {
     movements,
@@ -27,7 +31,7 @@ const MovementPage: React.FC = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 15;
+  const pageSize = 10;
 
   const handleFilterChange = (key: keyof MovementFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -83,7 +87,7 @@ const MovementPage: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Movement Table */}
+          {/* Movement Table (sticky header + scrollable body) */}
           <div className="flex-1">
             <MovementTable
               movements={paginatedMovements}
@@ -91,47 +95,14 @@ const MovementPage: React.FC = () => {
             />
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, movements.length)} of{" "}
-                {movements.length} movements
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 border rounded-lg ${
-                        currentPage === page
-                          ? "bg-[var(--accent-blue)] text-white border-[var(--accent-blue)]"
-                          : "border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)]"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Pagination Component */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={movements.length}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
 

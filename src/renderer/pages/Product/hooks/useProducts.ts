@@ -4,7 +4,7 @@ import productAPI, { type Product } from "../../../api/product";
 export interface ProductFilters {
   search: string;
   status: "active" | "inactive" | "all";
-  category: string;
+  category: string;               // category name (for filtering)
   lowStock: boolean;
 }
 
@@ -14,7 +14,7 @@ export function useProducts(initialFilters: ProductFilters) {
   const [filters, setFilters] = useState<ProductFilters>(initialFilters);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);  // array of names
 
   const loadProducts = async () => {
     setLoading(true);
@@ -33,18 +33,17 @@ export function useProducts(initialFilters: ProductFilters) {
         params.search = filters.search;
       }
 
-      if (filters.category) {
-        params.category = filters.category;
-      }
+      // Do NOT send category filter to API – we handle it locally
+      // because the API may not support filtering by category name.
 
       const response = await productAPI.getAll(params);
       if (response.status) {
         setProducts(response.data);
 
-        // Extract unique categories
+        // Extract unique category names from the product list
         const cats = response.data
-          .map((p) => (p as any).category)
-          .filter(Boolean)
+          .map((p) => p.category?.name)
+          .filter((name): name is string => !!name)
           .filter((v, i, a) => a.indexOf(v) === i);
         setCategories(cats);
       } else {
@@ -76,7 +75,7 @@ export function useProducts(initialFilters: ProductFilters) {
     }
 
     if (filters.category) {
-      filtered = filtered.filter((p) => (p as any).category === filters.category);
+      filtered = filtered.filter((p) => p.category?.name === filters.category);
     }
 
     if (filters.status !== "all") {
@@ -90,7 +89,7 @@ export function useProducts(initialFilters: ProductFilters) {
 
   useEffect(() => {
     loadProducts();
-  }, [filters.status, filters.category]);
+  }, [filters.status]); // category filter is local, no need to refetch when it changes
 
   return {
     products: filteredProducts,

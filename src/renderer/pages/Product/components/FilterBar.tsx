@@ -5,7 +5,7 @@ import type { ProductFilters } from "../hooks/useProducts";
 interface FilterBarProps {
   filters: ProductFilters;
   onFilterChange: (key: keyof ProductFilters, value: any) => void;
-  categories: string[];
+  categories: string[]; // now array of strings
   onReload: () => void;
 }
 

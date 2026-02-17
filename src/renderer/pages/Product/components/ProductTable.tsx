@@ -1,10 +1,18 @@
 import React from "react";
-import { Eye, Edit, Trash2, Package, Check, X } from "lucide-react";
+import {
+  Eye,
+  Edit,
+  Trash2,
+  Package,
+  Check,
+  X,
+  PackagePlus,
+} from "lucide-react";
 import Decimal from "decimal.js";
 import { type Product } from "../../../api/product";
 
 // ----------------------------------------------------------------------
-// Helper Components (StatusBadge at StockBadge)
+// Helper Components (StatusBadge and StockBadge)
 // ----------------------------------------------------------------------
 
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => {
@@ -48,6 +56,7 @@ interface ProductTableProps {
   onView: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onStockAdjust: (product: Product) => void;
 }
 
 export const ProductTable: React.FC<ProductTableProps> = ({
@@ -55,6 +64,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   onView,
   onEdit,
   onDelete,
+  onStockAdjust,
 }) => {
   if (products.length === 0) {
     return (
@@ -72,26 +82,29 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
   return (
     <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden flex flex-col">
-      {/* Fixed Header Table */}
+      {/* Fixed Header Table - unchanged */}
       <table className="w-full table-fixed">
         <thead className="bg-[var(--table-header-bg)]">
           <tr>
             <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               SKU
             </th>
-            <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+            <th className="w-1/4 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               Product Name
+            </th>
+            <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+              Category
             </th>
             <th className="w-1/6 px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               Price
             </th>
-            <th className="w-1/6 px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+            <th className="w-1/12 px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               Stock
             </th>
-            <th className="w-1/6 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+            <th className="w-1/12 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               Status
             </th>
-            <th className="w-1/6 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+            <th className="w-1/12 px-4 py-3 text-center text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
               Actions
             </th>
           </tr>
@@ -104,46 +117,65 @@ export const ProductTable: React.FC<ProductTableProps> = ({
           <tbody className="divide-y divide-[var(--border-color)]">
             {products.map((product) => (
               <tr
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onView(product);
-                }}
                 key={product.id}
-                className="hover:bg-[var(--table-row-hover)] transition-colors"
+                onClick={() => onView(product)}
+                className="hover:bg-[var(--table-row-hover)] transition-colors cursor-pointer"
               >
                 <td className="w-1/6 px-4 py-3 text-sm font-mono text-[var(--text-primary)]">
                   {product.sku}
                 </td>
-                <td className="w-1/3 px-4 py-3 text-sm text-[var(--text-secondary)] font-medium">
+                <td className="w-1/4 px-4 py-3 text-sm text-[var(--text-secondary)] font-medium">
                   {product.name}
+                </td>
+                <td className="w-1/6 px-4 py-3 text-sm text-[var(--text-secondary)]">
+                  {product.category?.name ?? "—"}
                 </td>
                 <td className="w-1/6 px-4 py-3 text-right text-sm font-semibold text-[var(--accent-green)]">
                   ₱{new Decimal(product.price).toFixed(2)}
                 </td>
-                <td className="w-1/6 px-4 py-3 text-right text-sm">
+                <td className="w-1/12 px-4 py-3 text-right text-sm">
                   <StockBadge qty={product.stockQty} />
                 </td>
-                <td className="w-1/6 px-4 py-3 text-center">
+                <td className="w-1/12 px-4 py-3 text-center">
                   <StatusBadge active={product.isActive} />
                 </td>
-                <td className="w-1/6 px-4 py-3">
+                <td className="w-1/12 px-4 py-3">
                   <div className="flex items-center justify-center gap-2">
                     <button
-                      onClick={(e) => {e.stopPropagation(); onView(product)}}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onView(product);
+                      }}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={(e) => {e.stopPropagation(); onEdit(product)}}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStockAdjust(product);
+                      }} // new button
+                      className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-orange)]"
+                      title="Adjust Stock"
+                    >
+                      <PackagePlus className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(product);
+                      }}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-purple)]"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={(e) => {e.stopPropagation(); onDelete(product);}}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(product);
+                      }}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-red)]"
                       title="Delete"
                     >

@@ -5,8 +5,6 @@ import categoryAPI, { type Category, type CategoryWithProductCount } from '../..
 export interface CategoryFilters {
   search: string;
   status: 'all' | 'active' | 'inactive';
-  page: number;
-  limit: number;
   sortBy: string;
   sortOrder: 'ASC' | 'DESC';
 }
@@ -20,8 +18,6 @@ export function useCategories(initialFilters?: Partial<CategoryFilters>) {
   const [filters, setFilters] = useState<CategoryFilters>({
     search: '',
     status: 'all',
-    page: 1,
-    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC',
     ...initialFilters,
@@ -36,8 +32,6 @@ export function useCategories(initialFilters?: Partial<CategoryFilters>) {
       const response = await categoryAPI.getAll({
         search: filters.search || undefined,
         isActive,
-        page: filters.page,
-        limit: filters.limit,
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder,
       });
@@ -52,7 +46,7 @@ export function useCategories(initialFilters?: Partial<CategoryFilters>) {
         if (Array.isArray(data)) {
           items = data;
           totalCount = data.length;
-        } else if (data && 'items' in data) {
+        } else if (data && 'items' in data && 'total' in data) {
           items = data.items;
           totalCount = data.total;
         }
@@ -60,20 +54,21 @@ export function useCategories(initialFilters?: Partial<CategoryFilters>) {
         setCategories(items);
         setTotal(totalCount);
       } else {
-        throw new Error(response.message);
+        throw new Error(response.message || 'Failed to fetch categories');
       }
 
       // Fetch product counts (active categories only)
       const countsResponse = await categoryAPI.getWithProductCount(true);
       if (countsResponse.status) {
         const countsMap = new Map<number, number>();
-        countsResponse.data.forEach(item => {
+        countsResponse.data.forEach((item: CategoryWithProductCount) => {
           countsMap.set(item.id, item.productCount);
         });
         setProductCounts(countsMap);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch categories');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch categories';
+      setError(message);
     } finally {
       setLoading(false);
     }

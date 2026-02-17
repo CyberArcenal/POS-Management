@@ -21,7 +21,6 @@ class EmailSender {
    * @param {string} text
    * @param {object} options
    * @param {boolean} asyncMode
-   * @param {number|null} bookingId
    */
   async send(
     to,
@@ -30,11 +29,10 @@ class EmailSender {
     text,
     options = {},
     asyncMode = true,
-    bookingId = null,
   ) {
     if (asyncMode) {
       this.queue.add(() =>
-        this._sendWithRetry(to, subject, html, text, options, bookingId),
+        this._sendWithRetry(to, subject, html, text, options),
       );
       logger.info(`📥 Queued email → To: ${to}, Subject: "${subject}"`);
       return { success: true, queued: true };
@@ -44,8 +42,7 @@ class EmailSender {
         subject,
         html,
         text,
-        options,
-        bookingId,
+        options
       );
     }
   }
@@ -54,7 +51,7 @@ class EmailSender {
    * @private
    */
   // @ts-ignore
-  async _sendWithRetry(to, subject, html, text, options, bookingId) {
+  async _sendWithRetry(to, subject, html, text, options) {
     let attempt = 0;
     let lastError;
 
@@ -70,7 +67,6 @@ class EmailSender {
           to,
           subject,
           html,
-          bookingId,
           attempt === 1 ? "queued" : "resend", // first attempt = queued, retries = resend
           attempt,
           null,
@@ -90,7 +86,6 @@ class EmailSender {
           to,
           subject,
           html,
-          bookingId,
           "sent",
           attempt,
           null,
@@ -109,7 +104,6 @@ class EmailSender {
           to,
           subject,
           html,
-          bookingId,
           "failed",
           attempt,
           // @ts-ignore
@@ -192,8 +186,6 @@ class EmailSender {
     // @ts-ignore
     html,
     // @ts-ignore
-    bookingId,
-    // @ts-ignore
     status,
     // @ts-ignore
     retryCount,
@@ -214,23 +206,9 @@ class EmailSender {
         log = await repo.findOneBy({ id: existingLogId });
       }
 
-      // 2. Otherwise try to find by booking + recipient (unique per attempt series)
-      if (!log && bookingId) {
-        log = await repo.findOne({
-          where: {
-            // @ts-ignore
-            booking: { id: bookingId },
-            recipient_email: to,
-          },
-          order: { created_at: "DESC" }, // get the latest
-        });
-      }
-
       // 3. Still not found? Create a new one
       if (!log) {
         log = repo.create({
-          // @ts-ignore
-          booking: bookingId ? { id: bookingId } : null,
           recipient_email: to,
           subject,
           payload: html,

@@ -47,7 +47,7 @@ export const LoyaltyTransactionsTable: React.FC<LoyaltyTransactionsTableProps> =
         <table className="w-full table-fixed">
           <tbody className="divide-y divide-[var(--border-color)]">
             {transactions.map((tx) => (
-              <tr key={tx.id} className="hover:bg-[var(--table-row-hover)] transition-colors">
+              <tr key={tx.id} className="hover:bg-[var(--table-row-hover)] transition-colors" onClick={(e) => {e.stopPropagation(); onViewCustomer(tx.customer?.id!)}}>
                 <td className="w-20 px-4 py-3 text-sm font-mono text-[var(--text-primary)]">#{tx.id}</td>
                 <td className="w-1/4 px-4 py-3 text-sm text-[var(--text-secondary)] font-medium">
                   {tx.customer?.name || `Customer #${tx.customerId}`}
@@ -91,7 +91,7 @@ export const LoyaltyTransactionsTable: React.FC<LoyaltyTransactionsTableProps> =
                 </td>
                 <td className="w-20 px-4 py-3 text-center">
                   <button
-                    onClick={() => onViewCustomer(tx.customerId!)}
+                    onClick={(e) => {e.stopPropagation(); onViewCustomer(tx.customer?.id!)}}
                     className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
                     title="View Customer Loyalty"
                   >

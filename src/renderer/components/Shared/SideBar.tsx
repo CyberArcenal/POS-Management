@@ -38,6 +38,8 @@ import {
   ClipboardCheck,
   Building2,
 } from "lucide-react";
+import dashboardAPI from "../../api/dashboard";
+import { formatCurrency } from "../../utils/formatters";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -56,6 +58,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
+
+  // Stats state
+  const [stats, setStats] = useState({
+    revenueToday: 0,
+    transactions: 0,
+    lowStockCount: 0,
+    pendingOrders: 0, // placeholder – can be replaced with real data later
+  });
+
+  // Fetch stats on mount
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchStats = async () => {
+      try {
+        // Get summary (includes today's revenue and sales count)
+        const summaryRes = await dashboardAPI.getSummary();
+        if (mounted && summaryRes.status && summaryRes.data) {
+          setStats(prev => ({
+            ...prev,
+            revenueToday: summaryRes.data!.revenueToday,
+            transactions: summaryRes.data!.salesToday,
+          }));
+        }
+
+        // Get inventory status (includes low stock count)
+        const inventoryRes = await dashboardAPI.getInventoryStatus();
+        if (mounted && inventoryRes.status && inventoryRes.data) {
+          setStats(prev => ({
+            ...prev,
+            lowStockCount: inventoryRes.data!.lowStockCount,
+          }));
+        }
+
+        // Optional: fetch pending orders count if an API exists
+        // const ordersRes = await dashboardAPI.getPendingOrdersCount?.();
+        // if (mounted && ordersRes?.status) setStats(prev => ({ ...prev, pendingOrders: ordersRes.data.count }));
+      } catch (error) {
+        console.error("Failed to fetch sidebar stats:", error);
+      }
+    };
+
+    fetchStats();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     { path: "/", name: "Dashboard", icon: LayoutDashboard, category: "core" },
@@ -109,9 +159,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           name: "Purchases",
           icon: ClipboardCheck,
         },
-          { path: "/inventory/suppliers", name: "Suppliers", icon: Building2},
+        { path: "/inventory/suppliers", name: "Suppliers", icon: Building2 },
         { path: "/inventory/categories", name: "Categories", icon: Tags },
-      
       ],
     },
 
@@ -155,7 +204,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const filteredMenu = menuItems
     .map((item) => {
-      // If a parent has children, filter its children array
       if (item.children) {
         const children = item.children.filter(
           (child) => !(child.path === "/users"),
@@ -164,10 +212,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       }
       return item;
     })
-    // Remove any parent with no visible route & no children
     .filter(
       (item) =>
-        item.path !== "/users" && // top-level Users
+        item.path !== "/users" &&
         (item.children ? item.children.length > 0 : true),
     );
 
@@ -186,7 +233,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     return items.some((item) => isActivePath(item.path));
   };
 
-  // Auto-open dropdown if current path matches a child
   useEffect(() => {
     filteredMenu.forEach((item) => {
       if (item.children && isDropdownActive(item.children)) {
@@ -210,12 +256,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <div
                 onClick={() => toggleDropdown(item.name)}
                 className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer
-            ${
-              is_active
-                ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
-                : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
-            }
-          `}
+                  ${
+                    is_active
+                      ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+                      : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <item.icon
@@ -250,12 +295,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                         <Link
                           to={child.path}
                           className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm
-                      ${
-                        isChildActive
-                          ? "text-white bg-[var(--accent-blue)]/20 font-semibold border-l-2 border-[var(--accent-blue)] pl-2"
-                          : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
-                      }
-                    `}
+                            ${
+                              isChildActive
+                                ? "text-white bg-[var(--accent-blue)]/20 font-semibold border-l-2 border-[var(--accent-blue)] pl-2"
+                                : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+                            }`}
                         >
                           <child.icon className="w-4 h-4" />
                           <span>{child.name}</span>
@@ -270,12 +314,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             <Link
               to={item.path}
               className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200
-          ${
-            is_active
-              ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
-              : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
-          }
-        `}
+                ${
+                  is_active
+                    ? "bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-blue-hover)] text-white shadow-lg"
+                    : "text-[var(--sidebar-text)] hover:bg-[var(--card-hover-bg)] hover:text-white"
+                }`}
             >
               <div className="flex items-center gap-3">
                 <item.icon
@@ -318,14 +361,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       {/* Header - Fixed height */}
       <div className="flex-shrink-0 border-b border-[var(--sidebar-border)] bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b] p-6">
         <div className="flex items-center gap-3">
-          {/* Logo container */}
           <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-blue)] to-[#3b82f6] flex items-center justify-center overflow-hidden shadow-lg">
             <div className="flex items-center justify-center w-full h-full">
               <ShoppingCart className="w-6 h-6 text-white" />
             </div>
           </div>
 
-          {/* Business info */}
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-white">
               POS Management
@@ -358,23 +399,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         })}
       </nav>
 
-      {/* Quick Status Indicators */}
+      {/* Quick Status Indicators with real data */}
       <div className="p-4 border-t border-[var(--border-color)] bg-[#334155]/30">
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-[var(--status-completed-bg)] text-[var(--status-completed)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
-            <div className="font-bold text-sm">₱0.00</div>
+            <div className="font-bold text-sm">
+              {formatCurrency(stats.revenueToday.toFixed(2))}
+            </div>
             <div className="text-[10px]">Today's Sales</div>
           </div>
           <div className="bg-[var(--status-pending-bg)] text-[var(--status-pending)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
-            <div className="font-bold text-sm">0</div>
+            <div className="font-bold text-sm">{stats.pendingOrders}</div>
             <div className="text-[10px]">Pending Orders</div>
           </div>
           <div className="bg-[var(--stock-lowstock-bg)] text-[var(--stock-lowstock)] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
-            <div className="font-bold text-sm">0</div>
+            <div className="font-bold text-sm">{stats.lowStockCount}</div>
             <div className="text-[10px]">Low Stock</div>
           </div>
           <div className="bg-[rgba(37,99,235,0.1)] text-[#2563eb] text-xs py-2 px-2 rounded-lg text-center border border-[var(--border-light)]">
-            <div className="font-bold text-sm">0</div>
+            <div className="font-bold text-sm">{stats.transactions}</div>
             <div className="text-[10px]">Transactions</div>
           </div>
         </div>

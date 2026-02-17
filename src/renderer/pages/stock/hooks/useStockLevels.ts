@@ -28,7 +28,7 @@ export function useStockLevels(initialFilters?: Partial<StockFilters>) {
     categoryId: '',
     stockStatus: 'all',
     page: 1,
-    limit: 20,
+    limit: 10,
     sortBy: 'name',
     sortOrder: 'ASC',
     ...initialFilters,
@@ -42,10 +42,21 @@ export function useStockLevels(initialFilters?: Partial<StockFilters>) {
           supplierAPI.getActive(),
           categoryAPI.getActive(),
         ]);
-        if (suppliersRes.status) setSuppliers(suppliersRes.data);
-        if (categoriesRes.status) setCategories(categoriesRes.data);
+        if (suppliersRes.status) {
+          const suppliersData = Array.isArray(suppliersRes.data)
+            ? suppliersRes.data
+            : (suppliersRes.data as { items?: Supplier[] })?.items || [];
+          setSuppliers(suppliersData);
+        }
+        if (categoriesRes.status) {
+          const categoriesData = Array.isArray(categoriesRes.data)
+            ? categoriesRes.data
+            : (categoriesRes.data as { items?: Category[] })?.items || [];
+          setCategories(categoriesData);
+        }
       } catch (err) {
         console.error('Failed to fetch filter data', err);
+        setError('Failed to load suppliers and categories.');
       }
     };
     fetchFilterData();
@@ -55,9 +66,7 @@ export function useStockLevels(initialFilters?: Partial<StockFilters>) {
     setLoading(true);
     setError(null);
     try {
-      const params: any = {
-        page: filters.page,
-        limit: filters.limit,
+      const params: Record<string, unknown> = {
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder,
       };
@@ -65,22 +74,13 @@ export function useStockLevels(initialFilters?: Partial<StockFilters>) {
       if (filters.supplierId) params.supplierId = filters.supplierId;
       if (filters.categoryId) params.categoryId = filters.categoryId;
 
-      // Stock status filter: we might need to handle this on frontend or backend.
-      // If backend supports filtering by stock range (minStock, maxStock), we can pass.
-      // For simplicity, we'll fetch all and filter on frontend based on stockStatus.
-      // But for pagination, we need backend to handle it. Let's assume backend has minStock/maxStock params.
-      // For now, we'll fetch all and filter frontend, but pagination will be off.
-      // Better: backend should support stockStatus filter.
-      // We'll implement frontend filtering for now, but pagination will be incorrect.
-      // For demo, we'll just fetch and filter later, and disable pagination or handle manually.
-      
       const response = await productAPI.getAll(params);
       if (response.status) {
         let fetchedProducts = response.data;
-        // Apply stock status filter on frontend (temporary)
+        // Apply stock status filter on frontend
         if (filters.stockStatus !== 'all') {
           fetchedProducts = fetchedProducts.filter(p => {
-            if (filters.stockStatus === 'instock') return p.stockQty > 5; // define threshold
+            if (filters.stockStatus === 'instock') return p.stockQty > 5;
             if (filters.stockStatus === 'lowstock') return p.stockQty > 0 && p.stockQty <= 5;
             if (filters.stockStatus === 'outstock') return p.stockQty === 0;
             return true;
@@ -89,10 +89,11 @@ export function useStockLevels(initialFilters?: Partial<StockFilters>) {
         setProducts(fetchedProducts);
         setTotal(fetchedProducts.length);
       } else {
-        throw new Error(response.message);
+        throw new Error(response.message || 'Failed to fetch products');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch products');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch products';
+      setError(message);
     } finally {
       setLoading(false);
     }

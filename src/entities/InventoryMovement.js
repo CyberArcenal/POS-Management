@@ -8,7 +8,7 @@ const InventoryMovement = new EntitySchema({
     id: { type: Number, primary: true, generated: true },
     movementType: {
       type: "varchar",
-      enum: ["sale", "refund", "adjustment"],
+      enum: ["sale", "refund", "adjustment", "purchase"],
       default: "sale",
     }, // sale, refund, adjustment
     qtyChange: { type: Number },

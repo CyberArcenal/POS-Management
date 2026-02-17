@@ -10,6 +10,7 @@ import {
   PointElement,
   LineElement,
   Title,
+  Filler,
 } from "chart.js";
 import { Pie, Line, Bar } from "react-chartjs-2";
 
@@ -22,7 +23,8 @@ ChartJS.register(
   BarElement,
   PointElement,
   LineElement,
-  Title
+  Title,
+  Filler
 );
 
 interface PointsDistribution {
@@ -55,13 +57,13 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
   monthlyTrends,
   topCustomers,
 }) => {
-  // Colors from theme
-  const colors = [
-    "var(--accent-blue)",
-    "var(--accent-green)",
-    "var(--accent-amber)",
-    "var(--accent-purple)",
-    "var(--accent-red)",
+  // Bright, vibrant colors
+  const pieColors = [
+    "#22c55e", // green
+    "#3b82f6", // blue
+    "#f97316", // orange
+    "#a855f7", // purple
+    "#ef4444", // red
   ];
 
   // Pie chart: points distribution
@@ -70,11 +72,32 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
     datasets: [
       {
         data: pointsDistribution.map((d) => d.count),
-        backgroundColor: colors,
+        backgroundColor: pieColors,
+        borderColor: "#ffffff",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const pieOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        labels: {
+          color: "var(--text-primary)",
+          font: { size: 12 },
+        },
+        position: "bottom" as const,
+      },
+      tooltip: {
+        backgroundColor: "var(--card-bg)",
+        titleColor: "var(--text-primary)",
+        bodyColor: "var(--text-secondary)",
         borderColor: "var(--border-color)",
         borderWidth: 1,
       },
-    ],
+    },
   };
 
   // Line chart: monthly trends (earned vs redeemed)
@@ -84,16 +107,28 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
       {
         label: "Points Earned",
         data: monthlyTrends.map((t) => t.earned),
-        borderColor: "var(--accent-green)",
-        backgroundColor: "var(--accent-green-light)",
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34, 197, 94, 0.1)",
         tension: 0.4,
+        fill: true,
+        pointBackgroundColor: "#22c55e",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
       {
         label: "Points Redeemed",
         data: monthlyTrends.map((t) => t.redeemed),
-        borderColor: "var(--accent-red)",
-        backgroundColor: "var(--accent-red-light)",
+        borderColor: "#ef4444",
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
         tension: 0.4,
+        fill: true,
+        pointBackgroundColor: "#ef4444",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -103,12 +138,26 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: { color: "var(--text-secondary)" },
+        labels: { color: "var(--text-primary)" },
+        position: "top" as const,
+      },
+      tooltip: {
+        backgroundColor: "var(--card-bg)",
+        titleColor: "var(--text-primary)",
+        bodyColor: "var(--text-secondary)",
+        borderColor: "var(--border-color)",
+        borderWidth: 1,
       },
     },
     scales: {
-      x: { ticks: { color: "var(--text-tertiary)" } },
-      y: { ticks: { color: "var(--text-tertiary)" } },
+      x: {
+        ticks: { color: "var(--text-tertiary)" },
+        grid: { color: "var(--border-light)" },
+      },
+      y: {
+        ticks: { color: "var(--text-tertiary)" },
+        grid: { color: "var(--border-light)" },
+      },
     },
   };
 
@@ -119,9 +168,9 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
       {
         label: "Net Points",
         data: topCustomers.slice(0, 5).map((c) => c.netPoints),
-        backgroundColor: "var(--accent-blue)",
-        borderColor: "var(--accent-blue-hover)",
-        borderWidth: 1,
+        backgroundColor: "#3b82f6",
+        borderRadius: 4,
+        barPercentage: 0.6,
       },
     ],
   };
@@ -131,34 +180,49 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
+      tooltip: {
+        backgroundColor: "var(--card-bg)",
+        titleColor: "var(--text-primary)",
+        bodyColor: "var(--text-secondary)",
+        borderColor: "var(--border-color)",
+        borderWidth: 1,
+      },
     },
     scales: {
-      x: { ticks: { color: "var(--text-tertiary)" } },
-      y: { ticks: { color: "var(--text-tertiary)" } },
+      x: {
+        ticks: { color: "var(--text-tertiary)" },
+        grid: { display: false },
+      },
+      y: {
+        ticks: { color: "var(--text-tertiary)" },
+        grid: { color: "var(--border-light)" },
+      },
     },
   };
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Points Distribution */}
-      <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
-        <h3 className="text-md font-semibold text-[var(--text-primary)] mb-4">Points Distribution</h3>
-        <div className="h-64">
-          <Pie data={pieData} options={{ maintainAspectRatio: false }} />
+      <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--border-color)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Points Distribution</h3>
+        <div className="flex justify-center items-center h-64">
+          <div className="w-full max-w-xs">
+            <Pie data={pieData} options={pieOptions} />
+          </div>
         </div>
       </div>
 
-      {/* Redemption Trends */}
-      <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
-        <h3 className="text-md font-semibold text-[var(--text-primary)] mb-4">Monthly Trends</h3>
+      {/* Monthly Trends */}
+      <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--border-color)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Monthly Trends</h3>
         <div className="h-64">
           <Line data={lineData} options={lineOptions} />
         </div>
       </div>
 
       {/* Top Customers */}
-      <div className="col-span-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
-        <h3 className="text-md font-semibold text-[var(--text-primary)] mb-4">Top Customers by Net Points</h3>
+      <div className="lg:col-span-2 bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--border-color)]">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Top Customers by Net Points</h3>
         <div className="h-64">
           <Bar data={barData} options={barOptions} />
         </div>

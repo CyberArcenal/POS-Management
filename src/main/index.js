@@ -788,6 +788,13 @@ function registerIpcHandlers() {
       "./ipc/purchase/index.ipc.js",
       "./ipc/returnrefund/index.ipc.js",
       "./ipc/supplier/index.ipc.js",
+
+      "./ipc/analytics/customerInsights/index.ipc.js",
+      "./ipc/analytics/dailySales/index.ipc.js",
+      "./ipc/analytics/financialReports/index.ipc.js",
+      "./ipc/analytics/inventoryReports/index.ipc.js",
+      "./ipc/analytics/returnRefund/index.ipc.js",
+      "./ipc/analytics/sales/index.ipc.js",
     ];
 
     ipcModules.forEach((modulePath) => {

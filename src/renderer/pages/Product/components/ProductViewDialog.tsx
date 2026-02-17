@@ -129,7 +129,7 @@ export const ProductViewDialog: React.FC<ProductViewDialogProps> = ({
                   <div>
                     <p className="text-xs text-[var(--text-tertiary)]">Category</p>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      {(product as any).category || "—"}
+                      {product.category?.name ?? "—"}
                     </p>
                   </div>
                   <div>

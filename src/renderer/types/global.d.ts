@@ -3,6 +3,12 @@ export {};
 declare global {
   interface Window {
     backendAPI: {
+      customerInsights: (payload: any) => Promise<any>;
+      dailySales: (payload: any) => Promise<any>;
+      financialReports: (payload: any) => Promise<any>;
+      inventoryReports: (payload: any) => Promise<any>;
+      salesReport: (payload: any) => Promise<any>;
+      returnRefundReports: (payload: any) => Promise<any>;
       // 🔑 Activation
       activation: (payload: any) => Promise<any>;
       category: (payload: any) => Promise<any>;
@@ -10,7 +16,6 @@ declare global {
       supplier: (payload: any) => Promise<any>;
       purchase: (payload: any) => Promise<any>;
       returnRefund: (payload: any) => Promise<any>;
-
 
       // Events
       onActivationCompleted: (callback: (data: any) => void) => void;

@@ -23,7 +23,7 @@ export interface AlertOptions {
   icon?: ConfirmIconType;
 }
 
-// Icon component definitions
+// Icon component definitions (unchanged)
 const IconTemplates = {
   question: `
     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -52,12 +52,13 @@ const IconTemplates = {
   `,
 };
 
+// Updated IconColors to use POS Management dark theme variables
 const IconColors: Record<ConfirmIconType, string> = {
-  question: "text-blue-600 bg-emerald-100",
-  warning: "text-yellow-600 bg-yellow-100",
-  danger: "text-red-600 bg-red-100",
-  info: "text-blue-600 bg-emerald-100",
-  success: "text-green-600 bg-green-100",
+  question: "text-[var(--info-color)] bg-[var(--status-processing-bg)]",
+  warning: "text-[var(--warning-color)] bg-[var(--status-pending-bg)]",
+  danger: "text-[var(--danger-color)] bg-[var(--status-cancelled-bg)]",
+  info: "text-[var(--info-color)] bg-[var(--status-processing-bg)]",
+  success: "text-[var(--success-color)] bg-[var(--status-completed-bg)]",
 };
 
 class DialogManager {
@@ -83,8 +84,8 @@ class DialogManager {
     styles.id = "dialog-styles";
     styles.textContent = `
       .dialog-backdrop {
-        background-color: rgba(0, 0, 0, 0.2); /* Mas lighter na overlay */
-        backdrop-filter: blur(2px); /* Subtle blur lang */
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
         transition: opacity 150ms ease-out;
       }
       
@@ -112,7 +113,6 @@ class DialogManager {
                     transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      /* Para mas smooth ang backdrop */
       .backdrop-enter {
         opacity: 0;
       }
@@ -147,19 +147,19 @@ class DialogManager {
   private createBackdrop(): HTMLDivElement {
     const backdrop = document.createElement("div");
     backdrop.className =
-      "fixed inset-0 bg-black/10 dialog-backdrop backdrop-enter pointer-events-auto"; /* Mas light */
+      "fixed inset-0 bg-black/50 dialog-backdrop backdrop-enter pointer-events-auto";
     return backdrop;
   }
 
   private createDialogElement(): HTMLDivElement {
     const dialog = document.createElement("div");
     dialog.className = `
-      bg-white rounded-xl shadow-2xl
+      bg-[var(--card-bg)] rounded-xl shadow-2xl
       w-full max-w-md
       overflow-hidden
       transform transition-all duration-200
       pointer-events-auto
-      border border-gray-200
+      border border-[var(--border-color)]
       dialog-enter
     `;
     return dialog;
@@ -211,17 +211,17 @@ class DialogManager {
         <div class="p-6 flex items-start gap-4">
           ${this.getIconMarkup(icon)}
           <div class="flex-1 min-w-0">
-            <h3 class="text-lg font-semibold text-gray-900 leading-6">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)] leading-6">
               ${title}
             </h3>
-            <p class="mt-2 text-sm text-gray-600 leading-5">
+            <p class="mt-2 text-sm text-[var(--text-secondary)] leading-5">
               ${message}
             </p>
           </div>
           ${
             showCloseButton
               ? `
-            <button type="button" class="close-btn flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+            <button type="button" class="close-btn flex-shrink-0 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -230,23 +230,24 @@ class DialogManager {
               : ""
           }
         </div>
-        <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
+        <div class="px-6 py-4 bg-[var(--card-secondary-bg)] flex justify-end gap-3 border-t border-[var(--border-color)]">
           <button type="button" class="
             cancel-btn
             px-4 py-2 text-sm font-medium
-            text-gray-700 hover:text-gray-800 hover:bg-gray-100
+            text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
+            bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)]
             rounded-lg transition-colors duration-200
-            border border-gray-300
+            border border-[var(--border-color)]
           ">
             ${cancelText}
           </button>
           <button type="button" class="
             confirm-btn
             px-4 py-2 text-sm font-medium
-            bg-[#0E9D7C] hover:bg-[#1AB394]
-            text-white
+            bg-[var(--btn-success-bg)] hover:bg-[var(--btn-success-hover)]
+            text-[var(--btn-success-text)]
             rounded-lg transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-[#0E9D7C] focus:ring-page-2
+            focus:outline-none focus:ring-2 focus:ring-[var(--success-color)] focus:ring-offset-2
           ">
             ${confirmText}
           </button>
@@ -352,22 +353,22 @@ class DialogManager {
         <div class="p-6 flex items-start gap-4">
           ${this.getIconMarkup(icon)}
           <div class="flex-1 min-w-0">
-            <h3 class="text-lg font-semibold text-gray-900 leading-6">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)] leading-6">
               ${title}
             </h3>
-            <p class="mt-2 text-sm text-gray-600 leading-5">
+            <p class="mt-2 text-sm text-[var(--text-secondary)] leading-5">
               ${message}
             </p>
           </div>
         </div>
-        <div class="px-6 py-4 bg-gray-50 flex justify-end border-t border-gray-200">
+        <div class="px-6 py-4 bg-[var(--card-secondary-bg)] flex justify-end border-t border-[var(--border-color)]">
           <button type="button" class="
             alert-btn
             px-4 py-2 text-sm font-medium
-            bg-[#0E9D7C] hover:bg-[#1AB394]
-            text-white
+            bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)]
+            text-[var(--btn-primary-text)]
             rounded-lg transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-[#0E9D7C] focus:ring-page-2
+            focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2
           ">
             ${buttonText}
           </button>
@@ -509,28 +510,3 @@ export const dialogs = {
       icon: "info",
     }),
 };
-
-// // Basic confirmation
-// const confirmed = await showConfirm({
-//   title: 'Delete Product',
-//   message: 'Are you sure you want to delete this product?',
-//   icon: 'danger'
-// });
-
-// // Pre-configured dialogs
-// const confirmed = await dialogs.delete('iPhone 15 Pro');
-// await dialogs.success('Product created successfully!');
-// await dialogs.error('Failed to save product data.');
-
-// // Alert dialog
-// await showAlert({
-//   title: 'Information',
-//   message: 'Operation completed successfully.',
-//   icon: 'success'
-// });
-
-// // Persistent dialog (cannot be closed by clicking backdrop)
-// const confirmed = await showConfirm({
-//   message: 'This action requires attention.',
-//   persistent: true
-// });

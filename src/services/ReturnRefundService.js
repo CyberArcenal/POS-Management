@@ -173,9 +173,9 @@ class ReturnRefundService {
       );
 
       // If status is 'processed', update stock immediately
-      if (status === "processed") {
-        await this._updateStockFromReturn(savedReturn, user);
-      }
+      // if (status === "processed") {
+      //   await this._updateStockFromReturn(savedReturn, user);
+      // }
 
       return savedReturn;
     } catch (error) {
@@ -369,9 +369,9 @@ class ReturnRefundService {
       const savedReturn = await updateDb(returnRepo, existingReturn);
 
       // If status changed to processed, update stock
-      if (newStatus === "processed" && oldStatus !== "processed") {
-        await this._updateStockFromReturn(savedReturn, user);
-      }
+      // if (newStatus === "processed" && oldStatus !== "processed") {
+      //   await this._updateStockFromReturn(savedReturn, user);
+      // }
 
       await auditLogger.logUpdate(
         "ReturnRefund",
@@ -669,61 +669,6 @@ class ReturnRefundService {
       console.error("Failed to export returns:", error);
       throw error;
     }
-  }
-
-  /**
-   * Private method: Update product stock based on return items
-   * @param {Object} returnRefund - Return entity with items loaded
-   * @param {string} user
-   */
-  async _updateStockFromReturn(returnRefund, user) {
-    const { product: productRepo, inventoryMovement: movementRepo } =
-      await this.getRepositories();
-
-    // @ts-ignore
-    for (const item of returnRefund.items) {
-      const product = item.product;
-      const oldStock = product.stockQty;
-      const newStock = oldStock + item.quantity; // return increases stock
-
-      // Update product stock
-      product.stockQty = newStock;
-      product.updatedAt = new Date();
-      // @ts-ignore
-      await updateDb(productRepo, product);
-
-      // Create inventory movement
-      // @ts-ignore
-      const movement = movementRepo.create({
-        movementType: "refund",
-        qtyChange: item.quantity,
-        // @ts-ignore
-        notes: `Return #${returnRefund.id} - ${returnRefund.referenceNo}`,
-        product,
-        // @ts-ignore
-        sale: returnRefund.sale,
-        timestamp: new Date(),
-      });
-      // @ts-ignore
-      await saveDb(movementRepo, movement);
-
-      await auditLogger.logUpdate(
-        "Product",
-        product.id,
-        { stockQty: oldStock },
-        { stockQty: newStock },
-        user,
-      );
-      await auditLogger.logCreate(
-        "InventoryMovement",
-        movement.id,
-        movement,
-        user,
-      );
-    }
-
-    // @ts-ignore
-    console.log(`Stock updated for return #${returnRefund.id}`);
   }
 }
 

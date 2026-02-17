@@ -4,6 +4,8 @@
 const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateSaleData, calculateSaleTotals } = require("../utils/saleUtils");
+// @ts-ignore
+const { getLoyaltyPointRate } = require("../utils/system");
 
 class SaleService {
   constructor() {
@@ -65,8 +67,6 @@ class SaleService {
       saleItem: saleItemRepo,
       customer: customerRepo,
       product: productRepo,
-      loyaltyTransaction: loyaltyRepo,
-      inventoryMovement: movementRepo,
     } = await this.getRepositories();
 
     try {
@@ -108,16 +108,12 @@ class SaleService {
         });
         if (!product)
           throw new Error(`Product ID ${item.productId} not found or inactive`);
-        // @ts-ignore
-        if (product.stockQty < item.quantity) {
-          throw new Error(
-            `Insufficient stock for product ${product.name}. Available: ${product.stockQty}`,
-          );
-        }
+
         const unitPrice = item.unitPrice || product.price;
         const discount = item.discount || 0;
         const tax = item.tax || 0;
         const lineTotal = unitPrice * item.quantity - discount + tax;
+
         itemDetails.push({
           product,
           quantity: item.quantity,
@@ -129,18 +125,17 @@ class SaleService {
         subtotal += unitPrice * item.quantity;
       }
 
-      // Calculate totals (tax, discount, total)
       const totals = calculateSaleTotals({
         items: itemDetails,
         loyaltyRedeemed,
         subtotal,
       });
 
-      // Create Sale
+      // Create Sale (status = paid by default for checkout)
       // @ts-ignore
       const sale = saleRepo.create({
         timestamp: new Date(),
-        status: "initiated",
+        status: "paid",
         paymentMethod,
         totalAmount: totals.total,
         notes,
@@ -150,7 +145,7 @@ class SaleService {
       // @ts-ignore
       const savedSale = await saveDb(saleRepo, sale);
 
-      // Create SaleItems and update stock
+      // Create SaleItems (no stock or loyalty side effects here)
       for (const det of itemDetails) {
         // @ts-ignore
         const saleItem = saleItemRepo.create({
@@ -165,78 +160,13 @@ class SaleService {
         });
         // @ts-ignore
         await saveDb(saleItemRepo, saleItem);
-
-        // Update product stock (decrease)
-        const oldStock = det.product.stockQty;
-        // @ts-ignore
-        det.product.stockQty -= det.quantity;
-        det.product.updatedAt = new Date();
-        // @ts-ignore
-        await updateDb(productRepo, det.product);
-
-        // Create inventory movement
-        // @ts-ignore
-        const movement = movementRepo.create({
-          movementType: "sale",
-          qtyChange: -det.quantity,
-          notes: `Sale #${savedSale.id}`,
-          product: det.product,
-          sale: savedSale,
-          timestamp: new Date(),
-        });
-        // @ts-ignore
-        await saveDb(movementRepo, movement);
-
-        // Audit stock change
-        await auditLogger.logUpdate(
-          "Product",
-          det.product.id,
-          { stockQty: oldStock },
-          { stockQty: det.product.stockQty },
-          user,
-        );
-      }
-
-      // Handle loyalty points if customer
-      if (customer) {
-        let pointsEarned = Math.floor(totals.subtotal / 10); // e.g., 1 point per 10 spent
-        let pointsChange = pointsEarned - loyaltyRedeemed;
-
-        if (pointsChange !== 0) {
-          // Create loyalty transaction
-          // @ts-ignore
-          const loyaltyTx = loyaltyRepo.create({
-            pointsChange,
-            notes: `Sale #${savedSale.id}`,
-            customer,
-            sale: savedSale,
-            timestamp: new Date(),
-          });
-          // @ts-ignore
-          await saveDb(loyaltyRepo, loyaltyTx);
-
-          // Update customer balance
-          const oldBalance = customer.loyaltyPointsBalance;
-          // @ts-ignore
-          customer.loyaltyPointsBalance += pointsChange;
-          customer.updatedAt = new Date();
-          // @ts-ignore
-          await updateDb(customerRepo, customer);
-
-          await auditLogger.logUpdate(
-            "Customer",
-            customer.id,
-            { loyaltyPointsBalance: oldBalance },
-            { loyaltyPointsBalance: customer.loyaltyPointsBalance },
-            user,
-          );
-        }
       }
 
       // Audit sale creation
       await auditLogger.logCreate("Sale", savedSale.id, savedSale, user);
 
-      console.log(`Sale created: #${savedSale.id} (initiated)`);
+      console.log(`Sale created: #${savedSale.id} (paid)`);
+
       return savedSale;
     } catch (error) {
       // @ts-ignore
@@ -262,11 +192,16 @@ class SaleService {
       }
 
       const oldData = { ...sale };
+
+      // 1. Update status (and optionally payment method if provided)
       sale.status = "paid";
       sale.updatedAt = new Date();
 
+      // 2. Save – this will trigger the subscriber
       // @ts-ignore
       const updatedSale = await updateDb(saleRepo, sale);
+
+      // 3. Log the change (audit)
       await auditLogger.logUpdate("Sale", id, oldData, updatedSale, user);
 
       console.log(`Sale #${id} marked as paid`);
@@ -285,21 +220,13 @@ class SaleService {
    * @param {string} user
    */
   async voidSale(id, reason, user = "system") {
-    const {
-      sale: saleRepo,
-      // @ts-ignore
-      saleItem: saleItemRepo,
-      product: productRepo,
-      inventoryMovement: movementRepo,
-      loyaltyTransaction: loyaltyRepo,
-      customer: customerRepo,
-    } = await this.getRepositories();
+    const { sale: saleRepo } = await this.getRepositories();
 
     try {
       // @ts-ignore
       const sale = await saleRepo.findOne({
         where: { id },
-        relations: ["saleItems", "saleItems.product", "customer"],
+        relations: ["saleItems", "saleItems.product", "customer"], // needed only if you want to keep oldData for audit
       });
       if (!sale) throw new Error(`Sale with ID ${id} not found`);
       if (sale.status !== "initiated") {
@@ -308,84 +235,16 @@ class SaleService {
 
       const oldData = { ...sale };
 
-      // Restore stock for each item
-      // @ts-ignore
-      for (const item of sale.saleItems) {
-        const product = item.product;
-        const oldStock = product.stockQty;
-        product.stockQty += item.quantity;
-        product.updatedAt = new Date();
-        // @ts-ignore
-        await updateDb(productRepo, product);
-
-        // Record inventory movement (adjustment)
-        // @ts-ignore
-        const movement = movementRepo.create({
-          movementType: "adjustment",
-          qtyChange: item.quantity,
-          notes: `Void sale #${id}: ${reason}`,
-          product,
-          sale,
-          timestamp: new Date(),
-        });
-        // @ts-ignore
-        await saveDb(movementRepo, movement);
-        await auditLogger.logUpdate(
-          "Product",
-          product.id,
-          { stockQty: oldStock },
-          { stockQty: product.stockQty },
-          user,
-        );
-      }
-
-      // Reverse loyalty points if any
-      // @ts-ignore
-      if (sale.customer) {
-        // @ts-ignore
-        const loyaltyTxs = await loyaltyRepo.find({ where: { sale: { id } } });
-        for (const tx of loyaltyTxs) {
-          // @ts-ignore
-          const customer = sale.customer;
-          const oldBalance = customer.loyaltyPointsBalance;
-          // @ts-ignore
-          customer.loyaltyPointsBalance -= tx.pointsChange; // reverse
-          customer.updatedAt = new Date();
-          // @ts-ignore
-          await updateDb(customerRepo, customer);
-
-          // Create reversal transaction (optional)
-          // @ts-ignore
-          const reversal = loyaltyRepo.create({
-            // @ts-ignore
-            pointsChange: -tx.pointsChange,
-            notes: `Reversal of voided sale #${id}`,
-            customer,
-            sale,
-            timestamp: new Date(),
-          });
-          // @ts-ignore
-          await saveDb(loyaltyRepo, reversal);
-          await auditLogger.logUpdate(
-            "Customer",
-            customer.id,
-            { loyaltyPointsBalance: oldBalance },
-            { loyaltyPointsBalance: customer.loyaltyPointsBalance },
-            user,
-          );
-        }
-      }
-
-      // Update sale status
       sale.status = "voided";
       sale.notes = sale.notes
         ? `${sale.notes}\nVoided: ${reason}`
         : `Voided: ${reason}`;
       sale.updatedAt = new Date();
+
       // @ts-ignore
       const voidedSale = await updateDb(saleRepo, sale);
-
       await auditLogger.logUpdate("Sale", id, oldData, voidedSale, user);
+
       console.log(`Sale #${id} voided`);
       return voidedSale;
     } catch (error) {
@@ -394,7 +253,6 @@ class SaleService {
       throw error;
     }
   }
-
   /**
    * Process a refund (partial or full)
    * @param {number} id - Original sale ID
@@ -402,16 +260,9 @@ class SaleService {
    * @param {string} reason
    * @param {string} user
    */
+  // @ts-ignore
   async refundSale(id, itemsToRefund, reason, user = "system") {
-    const {
-      sale: saleRepo,
-      // @ts-ignore
-      saleItem: saleItemRepo,
-      product: productRepo,
-      inventoryMovement: movementRepo,
-      loyaltyTransaction: loyaltyRepo,
-      customer: customerRepo,
-    } = await this.getRepositories();
+    const { sale: saleRepo } = await this.getRepositories();
 
     try {
       // @ts-ignore
@@ -424,34 +275,7 @@ class SaleService {
         throw new Error(`Only paid sales can be refunded`);
       }
 
-      // Validate refund items
-      const refundItems = [];
-      for (const req of itemsToRefund) {
-        // @ts-ignore
-        const originalItem = sale.saleItems.find(
-          // @ts-ignore
-          (item) => item.product.id === req.productId,
-        );
-        if (!originalItem)
-          throw new Error(`Product ID ${req.productId} not in original sale`);
-        if (req.quantity > originalItem.quantity) {
-          throw new Error(
-            `Refund quantity exceeds original for product ID ${req.productId}`,
-          );
-        }
-        refundItems.push({
-          ...originalItem,
-          refundQuantity: req.quantity,
-        });
-      }
-
-      const oldData = { ...sale };
-
-      // Create a new refund sale? Or mark original as partially refunded.
-      // We'll create a new sale with status 'refunded' linked to original? For simplicity, we'll update original status to 'refunded' if full, else keep as paid and track via notes.
-      // We'll create a separate refund record? Many POS systems create a refund transaction. We'll create a new Sale with negative items? That might complicate.
-      // Instead, we'll add a 'refunded' flag or status. Let's set sale.status = 'refunded' if full refund, else 'partially_refunded'? We'll keep it simple: create a new Sale with negative items? That would be a separate transaction.
-      // For now, we'll just update original sale status to 'refunded' (full) or leave as paid and record refund in notes and inventory movements. We'll implement full refund only.
+      // @ts-ignore
       const isFullRefund =
         itemsToRefund.every((req) => {
           // @ts-ignore
@@ -462,87 +286,20 @@ class SaleService {
           return orig && req.quantity === orig.quantity;
           // @ts-ignore
         }) && itemsToRefund.length === sale.saleItems.length;
+      if (!isFullRefund) throw new Error("Partial refund not implemented");
 
-      if (!isFullRefund) {
-        throw new Error("Partial refund not implemented yet");
-      }
+      const oldData = { ...sale };
 
-      // Restore stock
-      // @ts-ignore
-      for (const item of sale.saleItems) {
-        const product = item.product;
-        const oldStock = product.stockQty;
-        product.stockQty += item.quantity;
-        product.updatedAt = new Date();
-        // @ts-ignore
-        await updateDb(productRepo, product);
-
-        // @ts-ignore
-        const movement = movementRepo.create({
-          movementType: "refund",
-          qtyChange: item.quantity,
-          notes: `Refund sale #${id}: ${reason}`,
-          product,
-          sale,
-          timestamp: new Date(),
-        });
-        // @ts-ignore
-        await saveDb(movementRepo, movement);
-        await auditLogger.logUpdate(
-          "Product",
-          product.id,
-          { stockQty: oldStock },
-          { stockQty: product.stockQty },
-          user,
-        );
-      }
-
-      // Reverse loyalty points
-      // @ts-ignore
-      if (sale.customer) {
-        // @ts-ignore
-        const loyaltyTxs = await loyaltyRepo.find({ where: { sale: { id } } });
-        for (const tx of loyaltyTxs) {
-          // @ts-ignore
-          const customer = sale.customer;
-          const oldBalance = customer.loyaltyPointsBalance;
-          // @ts-ignore
-          customer.loyaltyPointsBalance -= tx.pointsChange; // reverse
-          customer.updatedAt = new Date();
-          // @ts-ignore
-          await updateDb(customerRepo, customer);
-
-          // @ts-ignore
-          const reversal = loyaltyRepo.create({
-            // @ts-ignore
-            pointsChange: -tx.pointsChange,
-            notes: `Reversal of refunded sale #${id}`,
-            customer,
-            sale,
-            timestamp: new Date(),
-          });
-          // @ts-ignore
-          await saveDb(loyaltyRepo, reversal);
-          await auditLogger.logUpdate(
-            "Customer",
-            customer.id,
-            { loyaltyPointsBalance: oldBalance },
-            { loyaltyPointsBalance: customer.loyaltyPointsBalance },
-            user,
-          );
-        }
-      }
-
-      // Update sale status
       sale.status = "refunded";
       sale.notes = sale.notes
         ? `${sale.notes}\nRefunded: ${reason}`
         : `Refunded: ${reason}`;
       sale.updatedAt = new Date();
+
       // @ts-ignore
       const refundedSale = await updateDb(saleRepo, sale);
-
       await auditLogger.logUpdate("Sale", id, oldData, refundedSale, user);
+
       console.log(`Sale #${id} refunded`);
       return refundedSale;
     } catch (error) {
