@@ -27,8 +27,11 @@ export interface FrontendSystemInfo {
 
 // 📊 POS Management Setting Types
 export const SettingType = {
+  EMAIL: "email",
+  ATTENDANCE: "attendance",
+  DEVICE: "device",
+  INVENTORY_SYNC: "inventory_sync",
   GENERAL: "general",
-  USERS_ROLES: "users_roles",
   INVENTORY: "inventory",
   SALES: "sales",
   CASHIER: "cashier",
@@ -36,7 +39,6 @@ export const SettingType = {
   DATA_REPORTS: "data_reports",
   INTEGRATIONS: "integrations",
   AUDIT_SECURITY: "audit_security",
-  USER_SECURITY: "user_security",
 } as const;
 
 export type SettingType = (typeof SettingType)[keyof typeof SettingType];
@@ -57,7 +59,6 @@ export interface GroupedSettingsData {
   settings: SystemSettingData[];
   grouped_settings: {
     general: GeneralSettings;
-    users_roles: UsersRolesSettings;
     inventory: InventorySettings;
     sales: SalesSettings;
     cashier: CashierSettings;
@@ -65,7 +66,6 @@ export interface GroupedSettingsData {
     data_reports: DataReportsSettings;
     integrations: IntegrationsSettings;
     audit_security: AuditSecuritySettings;
-    user_security: UserSecuritySettings;
   };
   system_info: SystemInfoData;
 }
@@ -79,17 +79,6 @@ export interface GeneralSettings {
   language?: string;
   receipt_footer_message?: string;
   auto_logout_minutes?: number;
-  maintenance_mode?: boolean;
-  system_version?: string;
-}
-
-// 2. USERS & ROLES SETTINGS
-export interface UsersRolesSettings {
-  roles?: string[]; // Admin, Cashier, Manager
-  permissions?: { [role: string]: string[] };
-  default_user_role?: string;
-  allow_user_registration?: boolean;
-  require_approval_for_new_users?: boolean;
 }
 
 // 3. INVENTORY SETTINGS
@@ -135,6 +124,11 @@ export interface NotificationsSettings {
   push_notifications_enabled?: boolean;
   low_stock_alert_enabled?: boolean;
   daily_sales_summary_enabled?: boolean;
+
+  twilio_account_sid?: string;
+  twilio_auth_token?: string;
+  twilio_phone_number?: string;
+  twilio_messaging_service_sid?: string;
 }
 
 // 7. DATA & REPORTS SETTINGS
@@ -174,18 +168,6 @@ export interface AuditSecuritySettings {
   force_https?: boolean;
   session_encryption_enabled?: boolean;
   gdpr_compliance_enabled?: boolean;
-}
-
-// 10. USER SECURITY SETTINGS
-export interface UserSecuritySettings {
-  max_login_attempts?: number;
-  lockout_duration_minutes?: number;
-  password_min_length?: number;
-  password_require_uppercase?: boolean;
-  password_require_numbers?: boolean;
-  enable_two_factor_auth?: boolean;
-  session_timeout_minutes?: number;
-  allow_multiple_sessions?: boolean;
 }
 
 export interface SystemInfoData {
@@ -341,7 +323,7 @@ class SystemConfigAPI {
 
       const response = await window.backendAPI.systemConfig({
         method: "updateGroupedConfig",
-        params: JSON.stringify(configData),
+        params: { configData },
       });
 
       if (response.status) {
@@ -689,35 +671,6 @@ class SystemConfigAPI {
     }
   }
 
-  async getUserSecuritySettings(): Promise<UserSecuritySettings> {
-    try {
-      const config = await this.getGroupedConfig();
-      if (config.data?.grouped_settings?.user_security) {
-        return config.data.grouped_settings.user_security;
-      }
-      return {};
-    } catch (error) {
-      console.error("Error getting general settings:", error);
-      return {};
-    }
-  }
-
-  /**
-   * Get users and roles settings
-   */
-  async getUsersRolesSettings(): Promise<UsersRolesSettings> {
-    try {
-      const config = await this.getGroupedConfig();
-      if (config.data?.grouped_settings?.users_roles) {
-        return config.data.grouped_settings.users_roles;
-      }
-      return {};
-    } catch (error) {
-      console.error("Error getting users & roles settings:", error);
-      return {};
-    }
-  }
-
   /**
    * Get notifications settings
    */
@@ -789,15 +742,6 @@ class SystemConfigAPI {
     settings: Partial<GeneralSettings>,
   ): Promise<SystemConfigResponse> {
     return this.updateCategorySettings("general", settings);
-  }
-
-  /**
-   * Update users and roles settings
-   */
-  async updateUsersRolesSettings(
-    settings: Partial<UsersRolesSettings>,
-  ): Promise<SystemConfigResponse> {
-    return this.updateCategorySettings("users_roles", settings);
   }
 
   /**

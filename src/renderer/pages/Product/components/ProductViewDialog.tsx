@@ -6,7 +6,7 @@ import { type Product } from "../../../api/product";
 import { type InventoryMovement } from "../../../api/inventory";
 import { type ProductSalesReportItem } from "../../../api/product";
 
-// Reuse status badge and stock badge (or define locally)
+// Reuse status badge and stock badge
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => {
   return active ? (
     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[var(--status-completed-bg)] text-[var(--status-completed)]">
@@ -126,6 +126,30 @@ export const ProductViewDialog: React.FC<ProductViewDialogProps> = ({
                     <p className="text-xs text-[var(--text-tertiary)]">Stock</p>
                     <StockBadge qty={product.stockQty} />
                   </div>
+
+                  {/* Reorder Settings */}
+                  <div className="col-span-2 mt-2">
+                    <p className="text-xs text-[var(--text-tertiary)] border-t border-[var(--border-color)] pt-2">
+                      Reorder Settings
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--text-tertiary)]">
+                      Reorder Level
+                    </p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      {product.reorderLevel}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--text-tertiary)]">
+                      Reorder Quantity
+                    </p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      {product.reorderQty}
+                    </p>
+                  </div>
+
                   <div>
                     <p className="text-xs text-[var(--text-tertiary)]">Category</p>
                     <p className="text-sm text-[var(--text-secondary)]">

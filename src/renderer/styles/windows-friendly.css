@@ -1,40 +1,6 @@
 /* I-remove ang invalid Tailwind directives at gumamit ng regular CSS */
 
 /* Windows-like buttons */
-.windows-button {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.windows-button-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.windows-button-primary:hover {
-  background-color: #1d4ed8;
-}
-
-.windows-button-primary:active {
-  background-color: #1e40af;
-}
-
-.windows-button-secondary {
-  background-color: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.windows-button-secondary:hover {
-  background-color: #f9fafb;
-}
-
-.windows-button-secondary:active {
-  background-color: #f3f4f6;
-}
 
 /* Windows-like table */
 .windows-table {
@@ -65,7 +31,9 @@
   background-color: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 /* Windows-like input */
@@ -85,190 +53,111 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-/* Windows-like checkbox */
-.windows-checkbox {
-  height: 1rem;
-  width: 1rem;
-  border-radius: 0.25rem;
-  border-color: #d1d5db;
-}
-
-.windows-checkbox:checked {
-  background-color: #2563eb;
-}
-
-.windows-checkbox:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px #2563eb;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Add these to index.css */
 
-
-
 /* Windows-like Cards */
-.windows-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
 
 .windows-card:hover {
-    border-color: #d1d5db;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-color: #d1d5db;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Windows-like Buttons */
 .windows-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .windows-btn-primary {
-    background-color: #2563eb;
-    color: white;
-    border-color: #2563eb;
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
 }
 
 .windows-btn-primary:hover {
-    background-color: #1d4ed8;
-    border-color: #1d4ed8;
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
 .windows-btn-primary:active {
-    background-color: #1e40af;
-    border-color: #1e40af;
+  background-color: #1e40af;
+  border-color: #1e40af;
 }
 
 .windows-btn-secondary {
-    background-color: white;
-    color: #374151;
-    border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }
 
 .windows-btn-secondary:hover {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
+  background-color: #f9fafb;
+  border-color: #9ca3af;
 }
 
 .windows-btn-secondary:active {
-    background-color: #f3f4f6;
+  background-color: #f3f4f6;
 }
 
 .windows-btn:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
 /* Windows-like Typography */
 .windows-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.025em;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Segoe UI", Tahoma,
+    Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 .windows-text {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.5;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Segoe UI", Tahoma,
+    Geneva, Verdana, sans-serif;
+  line-height: 1.5;
 }
 
 /* Windows-like Tables */
-.windows-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.windows-table th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.windows-table td {
-    padding: 0.75rem 1rem;
-    white-space: nowrap;
-    font-size: 0.875rem;
-    color: #111827;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-/* Windows-like Inputs */
-.windows-input {
-    display: block;
-    width: 100%;
-    border-radius: 0.375rem;
-    border: 1px solid #d1d5db;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    background-color: white;
-}
-
-.windows-input:focus {
-    border-color: #3b82f6;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-}
 
 /* Windows-like Modals */
 .windows-modal {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
 }
 
 /* Animation for Windows-like feel */
 @keyframes windowsFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .windows-fade-in {
-    animation: windowsFadeIn 0.3s ease-out;
+  animation: windowsFadeIn 0.3s ease-out;
 }
-
-
-
-
-
 
 /* Add these to your existing index.css file */
 
@@ -278,7 +167,8 @@
 }
 
 @keyframes pulse-note {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -326,7 +216,7 @@
 }
 
 .status-badge::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 8px;
   top: 50%;
@@ -350,7 +240,11 @@
 
 /* Data highlight for better visibility */
 .data-highlight {
-  background: linear-gradient(120deg, rgba(56, 161, 105, 0.1) 0%, rgba(56, 161, 105, 0.05) 100%);
+  background: linear-gradient(
+    120deg,
+    rgba(56, 161, 105, 0.1) 0%,
+    rgba(56, 161, 105, 0.05) 100%
+  );
   border-left: 3px solid var(--accent-green);
 }
 
@@ -405,4 +299,140 @@
 
 tr.expanded-row {
   animation: expandRow 0.3s ease-out;
+}
+
+/* Windows-like buttons */
+.windows-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.windows-button-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.windows-button-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.windows-button-primary:active {
+  background-color: var(--accent-blue-dark);
+}
+
+.windows-button-secondary {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.windows-button-secondary:hover {
+  background-color: var(--card-hover-bg);
+  border-color: var(--border-dark);
+}
+
+.windows-button-secondary:active {
+  background-color: var(--border-color);
+}
+
+.windows-button:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+/* Windows-like input */
+.windows-input {
+  display: block;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--input-border);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.windows-input:focus {
+  border-color: var(--input-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+/* Windows-like checkbox */
+.windows-checkbox {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  accent-color: var(--primary-color);
+}
+
+.windows-checkbox:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Windows-like card */
+.windows-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Windows-like table */
+.windows-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.windows-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  background-color: var(--table-header-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.windows-table td {
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Animation */
+@keyframes windowsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.windows-fade-in {
+  animation: windowsFadeIn 0.3s ease-out;
 }

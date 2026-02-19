@@ -6,9 +6,13 @@ const InventoryMovement = require("../entities/InventoryMovement");
 const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
 const auditLogger = require("../utils/auditLogger");
 const Sale = require("../entities/Sale");
-const { SystemSetting } = require("../entities/systemSettings");
+// @ts-ignore
+const { SystemSetting, SettingType } = require("../entities/systemSettings");
 const PrinterService = require("../services/PrinterService");
 const CashDrawerService = require("../services/CashDrawerService");
+const PurchaseItem = require("../entities/PurchaseItem");
+const Purchase = require("../entities/Purchase");
+const { getLoyaltyPointRate } = require("../utils/system");
 
 class SaleStateTransitionService {
   /**
@@ -28,22 +32,33 @@ class SaleStateTransitionService {
    */
   async onPay(sale) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
-    // @ts-ignore
-    console.log(`[Transition] Processing paid sale #${sale.id}`);
+    const saleRepo = this.dataSource.getRepository(Sale);
+
+    // Reload sale with items and products
+    const hydratedSale = await saleRepo.findOne({
+      // @ts-ignore
+      where: { id: sale.id },
+      relations: ["saleItems", "saleItems.product", "customer"],
+    });
+
+    if (!hydratedSale) {
+      // @ts-ignore
+      throw new Error(`Sale #${sale.id} not found for hydration`);
+    }
+
+    console.log(`[Transition] Processing paid sale #${hydratedSale.id}`);
 
     // Audit sale status change
     await auditLogger.logUpdate(
       "Sale",
-      // @ts-ignore
-      sale.id,
+      hydratedSale.id,
       { status: "initiated" },
       { status: "paid" },
       "system",
     );
 
     // 1. Decrease stock for each sold item
-    // @ts-ignore
-    for (const item of sale.saleItems) {
+    for (const item of hydratedSale.saleItems) {
       const product = item.product;
       const oldStock = product.stockQty;
       product.stockQty -= item.quantity;
@@ -53,10 +68,9 @@ class SaleStateTransitionService {
       const movement = this.movementRepo.create({
         movementType: "sale",
         qtyChange: -item.quantity,
-        // @ts-ignore
-        notes: `Sale #${sale.id}`,
+        notes: `Sale #${hydratedSale.id}`,
         product,
-        sale,
+        sale: hydratedSale,
         timestamp: new Date(),
       });
       await saveDb(this.movementRepo, movement);
@@ -71,29 +85,21 @@ class SaleStateTransitionService {
     }
 
     // 2. Handle loyalty points
-    // @ts-ignore
-    if (sale.customer) {
-      const rateSetting = await this.dataSource
-        .getRepository(SystemSetting)
-        .findOne({
-          where: { key: "loyalty_points_rate", setting_type: "sales" },
-        });
-      const rate = rateSetting ? parseInt(rateSetting.value, 10) : 20; // default 20 currency per point
-
-      // @ts-ignore
-      const subtotal = sale.saleItems.reduce(
-        (
-          /** @type {number} */ sum,
-          /** @type {{ unitPrice: number; quantity: number; }} */ item,
-        ) => sum + item.unitPrice * item.quantity,
+    if (hydratedSale.customer) {
+      const rate = await getLoyaltyPointRate();
+      const subtotal = hydratedSale.saleItems.reduce(
+        // @ts-ignore
+        (sum, item) => sum + item.lineTotal,
         0,
       );
-      const pointsEarned = Math.floor(subtotal / rate);
+
+      // Only earn points on net cash portion
+      const netCashSpend = subtotal - hydratedSale.loyaltyRedeemed;
+      const pointsEarned = Math.floor(netCashSpend / rate);
 
       if (pointsEarned > 0) {
         const customer = await this.customerRepo.findOne({
-          // @ts-ignore
-          where: { id: sale.customer.id },
+          where: { id: hydratedSale.customer.id },
         });
         if (customer) {
           const oldBalance = customer.loyaltyPointsBalance;
@@ -103,10 +109,10 @@ class SaleStateTransitionService {
 
           const loyaltyTx = this.loyaltyRepo.create({
             pointsChange: pointsEarned,
-            // @ts-ignore
-            notes: `Sale #${sale.id}`,
+            transactionType: "earn",
+            notes: `Sale #${hydratedSale.id}`,
             customer,
-            sale,
+            sale: hydratedSale,
             timestamp: new Date(),
           });
           await saveDb(this.loyaltyRepo, loyaltyTx);
@@ -122,19 +128,62 @@ class SaleStateTransitionService {
       }
     }
 
-    // 3. Print receipt
-    const printer = new PrinterService(); // or inject driver
-    await printer.printReceipt(sale);
+    // 3. check and deduct loyalty
+    await this.checkAndDeductLoyalty(hydratedSale);
 
-    // 4. Open cash drawer (only for cash payments)
-    // @ts-ignore
-    if (sale.paymentMethod === "cash") {
-      const drawer = new CashDrawerService(); // or inject driver
-      await drawer.openDrawer("sale");
+    // 3. Print receipt
+    try {
+      const printer = new PrinterService();
+      await printer.printReceipt(hydratedSale.id);
+
+      // @ts-ignore
+      await auditLogger.log({
+        action: "EVENT",
+        entity: "Printer",
+        entityId: hydratedSale.id,
+        description: "Receipt printed successfully",
+        user: "system",
+      });
+    } catch (err) {
+      // @ts-ignore
+      await auditLogger.log({
+        action: "EVENT",
+        entity: "Printer",
+        entityId: hydratedSale.id,
+        // @ts-ignore
+        description: `Receipt print failed: ${err.message}`,
+        user: "system",
+      });
     }
 
-    // @ts-ignore
-    console.log(`[Transition] Completed paid sale #${sale.id}`);
+    // 4. Open cash drawer (only for cash payments)
+    try {
+      if (hydratedSale.paymentMethod === "cash") {
+        const drawer = new CashDrawerService();
+        await drawer.openDrawer("sale");
+
+        // @ts-ignore
+        await auditLogger.log({
+          action: "EVENT",
+          entity: "CashDrawer",
+          entityId: hydratedSale.id,
+          description: "Cash drawer opened successfully",
+          user: "system",
+        });
+      }
+    } catch (err) {
+      // @ts-ignore
+      await auditLogger.log({
+        action: "EVENT",
+        entity: "CashDrawer",
+        entityId: hydratedSale.id,
+        // @ts-ignore
+        description: `Cash drawer open failed: ${err.message}`,
+        user: "system",
+      });
+    }
+
+    console.log(`[Transition] Completed paid sale #${hydratedSale.id}`);
   }
 
   /**
@@ -196,6 +245,7 @@ class SaleStateTransitionService {
           // Record reversal
           const reversal = this.loyaltyRepo.create({
             pointsChange: -tx.pointsChange,
+            transactionType: "refund",
             // @ts-ignore
             notes: `Reversal of refunded sale #${sale.id}`,
             customer,
@@ -266,6 +316,121 @@ class SaleStateTransitionService {
 
     // @ts-ignore
     console.log(`[Transition] Completed voided sale #${sale.id}`);
+  }
+
+  /**
+   * @param {{ supplier: any; reorderLevel: number; reorderQty: number; stockQty: number; id: any; price: any; sku: any; }} product
+   */
+  async reOrder(product) {
+    const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
+    // 1b. Auto-create purchase if stock reaches reorder level
+    try {
+      const purchaseRepo = this.dataSource.getRepository(Purchase);
+      const purchaseItemRepo = this.dataSource.getRepository(PurchaseItem);
+
+      // Only proceed if product has a supplier, reorderLevel > 0, and reorderQty > 0
+      if (
+        product.supplier &&
+        product.reorderLevel > 0 &&
+        product.reorderQty > 0 &&
+        product.stockQty <= product.reorderLevel
+      ) {
+        // Check if there's already a pending purchase for this product
+        const existingPending = await purchaseRepo
+          .createQueryBuilder("purchase")
+          .innerJoin("purchase.purchaseItems", "item")
+          .where("purchase.status = :status", { status: "pending" })
+          .andWhere("item.productId = :productId", { productId: product.id })
+          .getOne();
+
+        if (!existingPending) {
+          // Generate a simple reference number (you may replace with a more robust generator)
+          const referenceNo = `PO-${Date.now()}-${product.id}`;
+
+          // Create purchase entity
+          const purchase = purchaseRepo.create({
+            referenceNo,
+            supplier: product.supplier,
+            status: "pending",
+            orderDate: new Date(),
+            totalAmount: 0, // will update after item is added
+          });
+
+          // Save purchase first to get an ID
+          const savedPurchase = await saveDb(purchaseRepo, purchase);
+
+          // Create purchase item
+          const unitPrice = product.price; // using current selling price; adjust if you have cost price
+          const subtotal = unitPrice * product.reorderQty;
+
+          const purchaseItem = purchaseItemRepo.create({
+            quantity: product.reorderQty,
+            unitPrice,
+            subtotal,
+            purchase: savedPurchase,
+            product,
+          });
+
+          await saveDb(purchaseItemRepo, purchaseItem);
+
+          // Update purchase totalAmount
+          savedPurchase.totalAmount = subtotal;
+          await updateDb(purchaseRepo, savedPurchase);
+
+          console.log(
+            `[AutoPurchase] Created purchase #${savedPurchase.id} for product ${product.sku} (Qty: ${product.reorderQty})`,
+          );
+        } else {
+          console.log(
+            `[AutoPurchase] Pending purchase already exists for product ${product.sku}, skipping.`,
+          );
+        }
+      }
+    } catch (purchaseError) {
+      // Log error but do not interrupt the sale transition
+      console.error(
+        `[AutoPurchase] Failed to create purchase for product ${product.id}:`,
+        purchaseError,
+      );
+      // @ts-ignore
+      throw new Error("Unable To Create Order.");
+      // Optionally: report to error tracking service
+    }
+  }
+
+  /**
+   * @param {{ usedLoyalty: any; loyaltyRedeemed: number; customer: { id: any; }; id: any; }} hydratedSale
+   */
+  async checkAndDeductLoyalty(hydratedSale) {
+    const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
+    if (hydratedSale.usedLoyalty && hydratedSale.loyaltyRedeemed > 0) {
+      const customer = await this.customerRepo.findOne({
+        where: { id: hydratedSale.customer.id },
+      });
+      if (customer) {
+        const oldBalance = customer.loyaltyPointsBalance;
+        customer.loyaltyPointsBalance -= hydratedSale.loyaltyRedeemed;
+        await updateDb(this.customerRepo, customer);
+
+        const loyaltyTx = this.loyaltyRepo.create({
+          pointsChange: -hydratedSale.loyaltyRedeemed,
+          transactionType: "redeem",
+          notes: `Redeemed on Sale #${hydratedSale.id}`,
+          customer,
+          sale: hydratedSale,
+          timestamp: new Date(),
+        });
+        await saveDb(this.loyaltyRepo, loyaltyTx);
+
+        await auditLogger.logUpdate(
+          "Customer",
+          customer.id,
+          { loyaltyPointsBalance: oldBalance },
+          { loyaltyPointsBalance: customer.loyaltyPointsBalance },
+          "system",
+        );
+      }
+    }
   }
 }
 

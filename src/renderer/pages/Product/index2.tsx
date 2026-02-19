@@ -14,8 +14,29 @@ import { ProductTable } from "./components/ProductTable";
 import { ProductFormDialog } from "./components/ProductFormDialog";
 import { ProductViewDialog } from "./components/ProductViewDialog";
 import { StockAdjustDialog } from "./components/StockAdjustDialog"; // new
+import { PriceEditDialog } from "./components/PriceEditDialog";
+import { ReorderLevelEditDialog } from "./components/ReorderLevelEditDialog";
+import { ReorderQtyEditDialog } from "./components/ReorderQtyEditDialog";
 
 const ProductPage: React.FC = () => {
+  const [priceEditProduct, setPriceEditProduct] = useState<Product | null>(
+    null,
+  );
+  const [reorderLevelEditProduct, setReorderLevelEditProduct] =
+    useState<Product | null>(null);
+  const [reorderQtyEditProduct, setReorderQtyEditProduct] =
+    useState<Product | null>(null);
+
+  const handlePriceEdit = (product: Product) => setPriceEditProduct(product);
+  const handleReorderLevelEdit = (product: Product) =>
+    setReorderLevelEditProduct(product);
+  const handleReorderQtyEdit = (product: Product) =>
+    setReorderQtyEditProduct(product);
+
+  const closePriceEdit = () => setPriceEditProduct(null);
+  const closeReorderLevelEdit = () => setReorderLevelEditProduct(null);
+  const closeReorderQtyEdit = () => setReorderQtyEditProduct(null);
+
   const { products, filters, setFilters, loading, error, categories, reload } =
     useProducts({
       search: "",
@@ -28,7 +49,9 @@ const ProductPage: React.FC = () => {
   const viewDialog = useProductView();
 
   // Stock adjustment dialog state
-  const [stockAdjustProduct, setStockAdjustProduct] = useState<Product | null>(null);
+  const [stockAdjustProduct, setStockAdjustProduct] = useState<Product | null>(
+    null,
+  );
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,7 +93,7 @@ const ProductPage: React.FC = () => {
   const totalPages = Math.ceil(products.length / pageSize);
   const paginatedProducts = products.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   return (
@@ -127,6 +150,9 @@ const ProductPage: React.FC = () => {
               onEdit={formDialog.openEdit}
               onDelete={handleDelete}
               onStockAdjust={handleStockAdjust} // new prop
+              onPriceEdit={handlePriceEdit} // new
+              onReorderLevelEdit={handleReorderLevelEdit} // new
+              onReorderQtyEdit={handleReorderQtyEdit} // new
             />
           </div>
 
@@ -159,10 +185,12 @@ const ProductPage: React.FC = () => {
                     >
                       {page}
                     </button>
-                  )
+                  ),
                 )}
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -201,6 +229,27 @@ const ProductPage: React.FC = () => {
         product={stockAdjustProduct}
         isOpen={!!stockAdjustProduct}
         onClose={closeStockAdjust}
+        onSuccess={reload}
+      />
+
+      <PriceEditDialog
+        product={priceEditProduct}
+        isOpen={!!priceEditProduct}
+        onClose={closePriceEdit}
+        onSuccess={reload}
+      />
+
+      <ReorderLevelEditDialog
+        product={reorderLevelEditProduct}
+        isOpen={!!reorderLevelEditProduct}
+        onClose={closeReorderLevelEdit}
+        onSuccess={reload}
+      />
+
+      <ReorderQtyEditDialog
+        product={reorderQtyEditProduct}
+        isOpen={!!reorderQtyEditProduct}
+        onClose={closeReorderQtyEdit}
         onSuccess={reload}
       />
     </div>

@@ -53,6 +53,8 @@
     "date-fns": "^4.1.0",
     "decimal.js": "^10.6.0",
     "electron": "^39.2.7",
+    "escpos": "^3.0.0-alpha.6",
+    "escpos-usb": "^3.0.0-alpha.4",
     "lucide-react": "^0.562.0",
     "nodemailer": "^8.0.1",
     "p-queue": "^9.1.0",
@@ -65,6 +67,7 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.0.2",
     "tailwind-merge": "^3.4.0",
+    "twilio": "^5.12.2",
     "typeorm": "^0.3.28"
   },
   "devDependencies": {

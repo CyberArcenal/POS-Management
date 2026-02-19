@@ -37,9 +37,11 @@ import {
   RotateCcw,
   ClipboardCheck,
   Building2,
+  ComputerIcon,
 } from "lucide-react";
 import dashboardAPI from "../../api/dashboard";
 import { formatCurrency } from "../../utils/formatters";
+import systemConfigAPI from "../../api/system_config";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -58,6 +60,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
+  const [companyName, setCompanyName] = useState<string>("POS Management");
+
+
+  useEffect(() => {
+    const loadName = async () => {
+      const response = await systemConfigAPI.getGroupedConfig();
+      if(response.status){
+        setCompanyName(response.data?.grouped_settings.general.company_name || "POS Management");
+      }
+
+      loadName();
+    }
+  }, [])
 
   // Stats state
   const [stats, setStats] = useState({
@@ -196,6 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       children: [
         { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
         { path: "/notification-logs", name: "Notification Logs", icon: Bell },
+        {path: "/devices", name: "Device Manager", icon: ComputerIcon},
         { path: "/system/settings", name: "System Settings", icon: Sliders },
         { path: "/system/logs", name: "Application Logs", icon: FileText },
       ],
@@ -369,7 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
           <div className="min-w-0">
             <h2 className="truncate text-lg font-bold text-white">
-              POS Management
+              {companyName}
             </h2>
             <p className="text-xs text-[var(--text-tertiary)]">
               Point of Sale System
@@ -427,7 +443,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             className="w-full bg-gradient-to-r from-[var(--accent-blue)] to-[#3b82f6] text-white text-sm py-2 px-4 rounded-lg text-center hover:from-[var(--accent-blue-hover)] hover:to-[#2563eb] transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
           >
             <ShoppingCart className="w-4 h-4" />
-            New Sale
+            Cashier
           </Link>
         </div>
       </div>

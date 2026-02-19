@@ -1,53 +1,64 @@
-// utils/dbActions.js
+// src/utils/dbActions.js
 // @ts-check
 const { loadSubscribers } = require("./subscriberRegistry");
 const subscribers = loadSubscribers();
 
 /**
- * @param {any} entityClass
+ * Hanapin ang subscriber na naka‑listen sa isang entity class.
+ *
+ * @param {Function} entityClass - Ang entity class (hal. Sale, Product, etc.)
+ * @returns {any | undefined} - Ang subscriber instance kung meron, undefined kung wala.
  */
 function findSubscriber(entityClass) {
   return subscribers.find((sub) => sub.listenTo() === entityClass);
 }
 
 /**
- * @param {{ target: any; save: (arg0: any) => any; findOne: (opts:any)=>any }} repo
- * @param {any} entity
+ * I-save ang entity sa database gamit ang repository at i-trigger ang subscriber lifecycle.
+ *
+ * @template T
+ * @param {{ target: Function; save: (entity: T) => Promise<T>; findOne: (opts: any) => Promise<T | null> }} repo - TypeORM repository object.
+ * @param {T} entity - Ang entity object na ipe-persist.
+ * @returns {Promise<T>} - Ang na-save na entity mula sa database.
  */
 async function saveDb(repo, entity) {
   const subscriber = findSubscriber(repo.target);
 
   if (subscriber?.beforeInsert) {
-    subscriber.beforeInsert(entity);
+    await subscriber.beforeInsert(entity);
   }
 
   const result = await repo.save(entity);
 
   if (subscriber?.afterInsert) {
-    subscriber.afterInsert(result);
+    await subscriber.afterInsert(result);
   }
 
   return result;
 }
 
 /**
- * @param {{ target: any; save: (arg0: any) => any; findOne: (opts:any)=>any }} repo
- * @param {any} entity
+ * I-update ang entity sa database at i-trigger ang subscriber lifecycle.
+ *
+ * @template T
+ * @param {{ target: Function; save: (entity: T) => Promise<T>; findOne: (opts: any) => Promise<T | null> }} repo - TypeORM repository object.
+ * @param {T} entity - Ang entity object na ipe-persist (dapat may `id`).
+ * @returns {Promise<T>} - Ang updated na entity mula sa database.
  */
 async function updateDb(repo, entity) {
   const subscriber = findSubscriber(repo.target);
 
   // Fetch old snapshot from DB for audit clarity
+  // @ts-ignore
   const oldEntity = await repo.findOne({ where: { id: entity.id } });
 
   if (subscriber?.beforeUpdate) {
-    subscriber.beforeUpdate(entity);
+    await subscriber.beforeUpdate(entity);
   }
 
   const result = await repo.save(entity);
 
   if (subscriber?.afterUpdate) {
-    // Pass both old and new entity
     await subscriber.afterUpdate({ databaseEntity: oldEntity, entity: result });
   }
 
@@ -55,23 +66,29 @@ async function updateDb(repo, entity) {
 }
 
 /**
- * @param {{ target: any; remove: (arg0: any) => any; findOne: (opts:any)=>any }} repo
- * @param {any} entity
+ * I-remove ang entity sa database at i-trigger ang subscriber lifecycle.
+ *
+ * @template T
+ * @param {{ target: Function; remove: (entity: T) => Promise<T>; findOne: (opts: any) => Promise<T | null> }} repo - TypeORM repository object.
+ * @param {T} entity - Ang entity object na ipe-persist (dapat may `id`).
+ * @returns {Promise<T>} - Ang na-remove na entity mula sa database.
  */
 async function removeDb(repo, entity) {
   const subscriber = findSubscriber(repo.target);
 
   if (subscriber?.beforeRemove) {
-    subscriber.beforeRemove(entity);
+    await subscriber.beforeRemove(entity);
   }
 
   // Fetch old snapshot for audit clarity
+  // @ts-ignore
   const oldEntity = await repo.findOne({ where: { id: entity.id } });
 
   const result = await repo.remove(entity);
 
   if (subscriber?.afterRemove) {
-    subscriber.afterRemove({ databaseEntity: oldEntity, entityId: result.id });
+    // @ts-ignore
+    await subscriber.afterRemove({ databaseEntity: oldEntity, entityId: result.id });
   }
 
   return result;

@@ -1,22 +1,33 @@
-// src/renderer/pages/Settings/index.tsx
 import React, { useState } from "react";
 import { useSettings } from "./hooks/useSettings";
-import { SettingType } from "../../api/system_config";
+import SettingsHeader from "./components/SettingsHeader";
 import SettingsTabs from "./components/SettingsTabs";
 import GeneralTab from "./components/GeneralTab";
-import UsersRolesTab from "./components/UsersRolesTab";
 import InventoryTab from "./components/InventoryTab";
 import SalesTab from "./components/SalesTab";
-import NotificationsTab from "./components/NotificationsTab";
 import CashierTab from "./components/CashierTab";
+import NotificationsTab from "./components/NotificationsTab";
 import DataReportsTab from "./components/DataReportsTab";
 import IntegrationsTab from "./components/IntegrationsTab";
 import AuditSecurityTab from "./components/AuditSecurityTab";
-import UserSecurityTab from "./components/UserSecurityTab";
-import SettingsHeader from "./components/SettingsHeader";
+import SystemInfoCard from "./components/SystemInfoCard";
+import type { SettingType } from "../../api/system_config";
+
+// Map category keys to display labels
+const TAB_LABELS: Record<string, string> = {
+  general: "General",
+  users_roles: "Users & Roles",
+  inventory: "Inventory",
+  sales: "Sales",
+  cashier: "Cashier",
+  notifications: "Notifications",
+  data_reports: "Data & Reports",
+  integrations: "Integrations",
+  audit_security: "Audit & Security",
+  user_security: "User Security",
+};
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SettingType>("general");
   const {
     groupedConfig,
     systemInfo,
@@ -27,7 +38,6 @@ const SettingsPage: React.FC = () => {
     setError,
     setSuccessMessage,
     updateGeneral,
-    updateUsersRoles,
     updateInventory,
     updateSales,
     updateCashier,
@@ -43,6 +53,13 @@ const SettingsPage: React.FC = () => {
     testSmtpConnection,
     testSmsConnection,
   } = useSettings();
+
+  // Determine which tabs to show based on what the API returned
+  const availableTabs = Object.keys(groupedConfig).filter(
+    (key) => TAB_LABELS[key] // only show if we have a label
+  );
+
+  const [activeTab, setActiveTab] = useState<string>(availableTabs[0] || "general");
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,14 +107,15 @@ const SettingsPage: React.FC = () => {
 
         {/* {systemInfo && <SystemInfoCard info={systemInfo} />} */}
 
-        <SettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <SettingsTabs
+          tabs={availableTabs.map((key) => ({ id: key, label: TAB_LABELS[key] }))}
+          activeTab={activeTab as SettingType}
+          onTabChange={setActiveTab}
+        />
 
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)]/20 rounded-lg p-6">
           {activeTab === "general" && (
             <GeneralTab settings={groupedConfig.general} onUpdate={updateGeneral} />
-          )}
-          {activeTab === "users_roles" && (
-            <UsersRolesTab settings={groupedConfig.users_roles} onUpdate={updateUsersRoles} />
           )}
           {activeTab === "inventory" && (
             <InventoryTab settings={groupedConfig.inventory} onUpdate={updateInventory} />
@@ -124,9 +142,6 @@ const SettingsPage: React.FC = () => {
           )}
           {activeTab === "audit_security" && (
             <AuditSecurityTab settings={groupedConfig.audit_security} onUpdate={updateAuditSecurity} />
-          )}
-          {activeTab === "user_security" && (
-            <UserSecurityTab settings={groupedConfig.user_security} onUpdate={updateUserSecurity} />
           )}
         </div>
       </main>

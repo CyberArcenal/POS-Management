@@ -1,34 +1,101 @@
 // src/services/CashDrawerService.js
 //@ts-check
 const auditLogger = require("../utils/auditLogger");
+const {
+  enableCashDrawer,
+  drawerOpenCode,
+  cashDrawerConnectionType,
+} = require("../utils/system");
 
 class CashDrawerService {
   constructor() {
-    try {
-      // Load driver (hal. RJ11 via printer, USB, o mock driver)
-      this.driver = require("../drivers/cashDrawerDriver");
-      console.log("[CashDrawerService] Driver loaded");
-    } catch (err) {
-      // @ts-ignore
-      console.warn("[CashDrawerService] No cash drawer driver available:", err.message);
-      this.driver = null;
+    this.driver = null;
+    this.isOpen = false;
+  }
+
+  async _loadDriver() {
+    const connectionType = await cashDrawerConnectionType(); // 'printer' or 'usb'
+
+    if (connectionType === "printer") {
+      // Reuse the thermal printer driver (which can send drawer commands)
+      const ThermalDriver = require("../drivers/thermalDriver");
+      return new ThermalDriver();
+    } else if (connectionType === "usb") {
+      // Dedicated USB cash drawer driver (e.g., via serial or HID)
+      // You need to implement this driver based on your hardware
+      const UsbDrawerDriver = require("../drivers/usbDrawerDriver");
+      return new UsbDrawerDriver();
+    } else {
+      throw new Error(
+        `Unsupported cash drawer connection type: ${connectionType}`,
+      );
     }
   }
 
-  async openDrawer(reason = "sale") {
+  async _getDriver() {
     if (!this.driver) {
-      console.error("[CashDrawerService] No driver loaded, cannot open drawer");
-      return;
+      this.driver = await this._loadDriver();
     }
-    try {
-      await this.driver.open();
+    return this.driver;
+  }
 
-      await auditLogger.logCreate("CashDrawerEvent", null, { action: "openDrawer", reason }, "system");
+  /**
+   * Open the cash drawer if enabled.
+   * @param {string} reason - Reason for opening (e.g., "sale", "refund", "test")
+   * @returns {Promise<boolean>}
+   */
+  async openDrawer(reason = "sale") {
+    const drawerEnabled = await enableCashDrawer();
+    if (!drawerEnabled) {
+      console.log("[CashDrawerService] Cash drawer is disabled in settings");
+      throw new Error("Cash drawer is disabled in settings");
+    }
+
+    try {
+      const driver = await this._getDriver();
+      // Check if driver supports openDrawer
+      if (typeof driver.openDrawer !== "function") {
+        console.warn(
+          "[CashDrawerService] Current driver does not support openDrawer",
+        );
+        throw new Error("Current driver does not support openDrawer");
+      }
+
+      const code = await drawerOpenCode(); // e.g., "0" or "1"
+      let pin = 0;
+      if (code) {
+        const parsed = parseInt(code.trim(), 10);
+        if (!isNaN(parsed)) pin = parsed;
+      }
+
+      await driver.openDrawer(pin);
+      this.isOpen = true;
+
+      await auditLogger.logCreate(
+        "CashDrawerEvent",
+        null,
+        { action: "openDrawer", reason },
+        "system",
+      );
       console.log(`[CashDrawerService] Drawer opened (${reason})`);
+      return true;
     } catch (err) {
+      // @ts-ignore
       console.error("[CashDrawerService] Failed to open drawer:", err.message);
+      this.isOpen = false;
       throw err;
     }
+  }
+
+  getStatus() {
+    return {
+      driverLoaded: !!this.driver,
+      isOpen: this.isOpen,
+    };
+  }
+
+  isAvailable() {
+    return !!this.driver;
   }
 }
 

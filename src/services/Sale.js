@@ -5,6 +5,8 @@ const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateSaleData, calculateSaleTotals } = require("../utils/saleUtils");
 // @ts-ignore
+// @ts-ignore
+// @ts-ignore
 const { getLoyaltyPointRate } = require("../utils/system");
 
 class SaleService {
@@ -124,6 +126,9 @@ class SaleService {
         });
         subtotal += unitPrice * item.quantity;
       }
+      /**
+       * @param {number} value
+       */
 
       const totals = calculateSaleTotals({
         items: itemDetails,
@@ -131,17 +136,30 @@ class SaleService {
         subtotal,
       });
 
-      // Create Sale (status = paid by default for checkout)
+      // Create Sale (status = initiated by default)
       // @ts-ignore
       const sale = saleRepo.create({
         timestamp: new Date(),
-        status: "paid",
+        status: "initiated",
         paymentMethod,
-        totalAmount: totals.total,
+        totalAmount: this.round2(totals.total),
         notes,
         customer: customer || null,
         createdAt: new Date(),
+
+        // Flags for promos/redemptions
+        usedLoyalty: loyaltyRedeemed > 0,
+        loyaltyRedeemed,
+        // @ts-ignore
+        usedDiscount: items.some((i) => (i.discount || 0) > 0),
+        // @ts-ignore
+        totalDiscount: items.reduce((sum, i) => sum + (i.discount || 0), 0),
+        // @ts-ignore
+        usedVoucher: !!saleData.voucherCode,
+        // @ts-ignore
+        voucherCode: saleData.voucherCode || null,
       });
+
       // @ts-ignore
       const savedSale = await saveDb(saleRepo, sale);
 
@@ -165,9 +183,13 @@ class SaleService {
       // Audit sale creation
       await auditLogger.logCreate("Sale", savedSale.id, savedSale, user);
 
+      savedSale.status = "paid";
+
+      // @ts-ignore
+      const paidSale = await updateDb(saleRepo, savedSale);
       console.log(`Sale created: #${savedSale.id} (paid)`);
 
-      return savedSale;
+      return paidSale;
     } catch (error) {
       // @ts-ignore
       console.error("Failed to create sale:", error.message);
@@ -367,17 +389,19 @@ class SaleService {
       // Filter by date range
       // @ts-ignore
       if (options.startDate) {
+        // @ts-ignore
+        const start = new Date(options.startDate);
+        start.setHours(0, 0, 0, 0);
         queryBuilder.andWhere("sale.timestamp >= :startDate", {
-          // @ts-ignore
-          startDate: options.startDate,
+          startDate: start,
         });
       }
       // @ts-ignore
       if (options.endDate) {
-        queryBuilder.andWhere("sale.timestamp <= :endDate", {
-          // @ts-ignore
-          endDate: options.endDate,
-        });
+        // @ts-ignore
+        const end = new Date(options.endDate);
+        end.setHours(23, 59, 59, 999);
+        queryBuilder.andWhere("sale.timestamp <= :endDate", { endDate: end });
       }
 
       // Filter by customer
@@ -424,7 +448,11 @@ class SaleService {
         queryBuilder.skip(offset).take(options.limit);
       }
 
-      const sales = await queryBuilder.getMany();
+      // const sales = await queryBuilder.getMany();
+      const sales = await queryBuilder
+        .printSql() // <-- idagdag ito
+        .getMany();
+      console.log("SQL:", queryBuilder.getSql()); // alternative
       await auditLogger.logView("Sale", null, "system");
       return sales;
     } catch (error) {
@@ -613,6 +641,13 @@ class SaleService {
       console.error("Failed to export sales:", error);
       throw error;
     }
+  }
+
+  /**
+   * @param {number} value
+   */
+  round2(value) {
+    return Math.round(value * 100) / 100;
   }
 }
 

@@ -27,6 +27,8 @@ const url = require("url");
 require("reflect-metadata");
 const { AppDataSource } = require("./db/datasource");
 const MigrationManager = require("../utils/dbUtils/migrationManager");
+const PrinterService = require("../services/PrinterService");
+const CashDrawerService = require("../services/CashDrawerService");
 
 // ===================== TYPE DEFINITIONS =====================
 /**
@@ -685,6 +687,8 @@ function showErrorPage(window, title, message, details = "") {
  */
 function registerIpcHandlers() {
   log(LogLevel.INFO, "Registering IPC handlers...");
+  let printerService = new PrinterService();
+  let cashDrawerService = new CashDrawerService();
 
   // Window Control Handlers
   ipcMain.on("window:minimize", () => {
@@ -767,6 +771,48 @@ function registerIpcHandlers() {
       log(LogLevel.ERROR, "Database backup failed:", error);
       // @ts-ignore
       return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("printer:get-status", () => printerService.getStatus());
+  ipcMain.handle("printer:is-available", () => printerService.isAvailable());
+  ipcMain.handle("cashDrawer:get-status", () => cashDrawerService.getStatus());
+  ipcMain.handle("cashDrawer:is-available", () =>
+    cashDrawerService.isAvailable(),
+  );
+
+  ipcMain.handle("printer:reload", () => {
+    printerService = new PrinterService();
+    return printerService.getStatus();
+  });
+  ipcMain.handle("cashDrawer:reload", () => {
+    cashDrawerService = new CashDrawerService();
+    return cashDrawerService.getStatus();
+  });
+
+  ipcMain.handle("printer:print", async (event, sale) => {
+    return await printerService.printReceipt(sale);
+  });
+  ipcMain.handle("cashDrawer:open", async (event, reason) => {
+    return await cashDrawerService.openDrawer(reason);
+  });
+
+  ipcMain.handle("printer:test-print", async () => {
+    try {
+      const testSale = {
+        id: "TEST",
+        saleItems: [
+          { product: { name: "Test Item" }, quantity: 1, lineTotal: 0 },
+        ],
+        totalAmount: 0,
+        paymentMethod: "N/A",
+      };
+      // @ts-ignore
+      return await printerService.printReceipt(testSale);
+    } catch (err) {
+      // @ts-ignore
+      console.error("[IPC] Test print failed:", err.message);
+      return false;
     }
   });
 

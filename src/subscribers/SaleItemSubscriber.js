@@ -1,7 +1,7 @@
 // src/subscribers/SaleItemSubscriber.js
-
 //@ts-check
 const SaleItem = require("../entities/SaleItem");
+const { logger } = require("../utils/logger");
 
 console.log("[Subscriber] Loading SaleItemSubscriber");
 
@@ -11,36 +11,48 @@ class SaleItemSubscriber {
   }
 
   /**
-   * Triggered after a SaleItem is inserted
-   * @param {{ entity: { id: any; quantity: any; unitPrice: any; lineTotal: any; }; }} event
+   * @param {any} entity
    */
-  afterInsert(event) {
-    console.log("[SaleItemSubscriber] afterInsert:", {
-      id: event.entity?.id,
-      quantity: event.entity?.quantity,
-      unitPrice: event.entity?.unitPrice,
-      lineTotal: event.entity?.lineTotal,
-    });
+  async beforeInsert(entity) {
+    console.log("[SaleItemSubscriber] beforeInsert:", { entity });
   }
 
   /**
-   * Triggered after a SaleItem is updated
-   * @param {{ entity: { id: any; }; updatedColumns: any[]; }} event
+   * @param {any} entity
    */
-  afterUpdate(event) {
+  async afterInsert(entity) {
+    console.log("[SaleItemSubscriber] afterInsert:", { entity });
+  }
+
+  /**
+   * @param {any} entity
+   */
+  async beforeUpdate(entity) {
+    console.log("[SaleItemSubscriber] beforeUpdate:", { id: entity.id });
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entity: any }} event
+   */
+  async afterUpdate(event) {
     console.log("[SaleItemSubscriber] afterUpdate:", {
       id: event.entity?.id,
-      updated: event.updatedColumns?.map(c => c.propertyName),
     });
   }
 
   /**
-   * Triggered after a SaleItem is removed
-   * @param {{ entityId: any; entity: { id: any; }; }} event
+   * @param {any} entity
    */
-  afterRemove(event) {
+  async beforeRemove(entity) {
+    console.log("[SaleItemSubscriber] beforeRemove:", { id: entity.id });
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entityId: any }} event
+   */
+  async afterRemove(event) {
     console.log("[SaleItemSubscriber] afterRemove:", {
-      id: event.entityId || event.entity?.id,
+      id: event.entityId,
     });
   }
 }

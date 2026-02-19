@@ -49,7 +49,7 @@ const AuditSecurityTab: React.FC<Props> = ({ settings, onUpdate }) => {
           </label>
           <input
             type="text"
-            value={settings.log_events?.join(", ") || "login, logout, create, update, delete"}
+            value={settings?.log_events?.join(", ") || "login, logout, create, update, delete"}
             onChange={(e) => handleLogEventsChange(e.target.value)}
             className="windows-input w-full"
             placeholder="login, logout, create, update, delete"

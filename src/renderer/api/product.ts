@@ -551,6 +551,8 @@ class ProductAPI {
       name: string;
       price: number;
       stockQty: number;
+      reorderQty: number;
+      reorderLevel: number;
       description: string | null;
       isActive: boolean;
       categoryId: number | null;      // new field

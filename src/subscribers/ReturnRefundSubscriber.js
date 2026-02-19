@@ -1,6 +1,9 @@
 //@ts-check
 const ReturnRefund = require("../entities/ReturnRefund");
-const { ReturnRefundStateTransitionService } = require("../StateTransitionServices/ReturnRefund");
+const {
+  ReturnRefundStateTransitionService,
+} = require("../StateTransitionServices/ReturnRefund");
+const { AppDataSource } = require("../main/db/datasource");
 
 console.log("[Subscriber] Loading ReturnRefundSubscriber");
 
@@ -10,44 +13,50 @@ class ReturnRefundSubscriber {
   }
 
   /**
-   * @param {{ entity: any; manager: any; }} event
+   * @param {import("../entities/ReturnRefund")} entity
    */
-  async afterInsert(event) {
-    const { entity, manager } = event;
+  async afterInsert(entity) {
     if (!entity) return;
 
     console.log("[ReturnRefundSubscriber] afterInsert:", {
+      // @ts-ignore
       id: entity.id,
+      // @ts-ignore
       status: entity.status,
     });
 
-    // If status is not 'pending', we need to trigger the appropriate transition
+    // @ts-ignore
     if (entity.status !== "pending") {
-      const fullReturn = await manager.findOne(ReturnRefund, {
+      const returnRepo = AppDataSource.getRepository(ReturnRefund);
+      const fullReturn = await returnRepo.findOne({
+        // @ts-ignore
         where: { id: entity.id },
         relations: ["items", "items.product", "sale", "customer"],
       });
 
-      const transitionService = new ReturnRefundStateTransitionService(manager.connection);
+      const transitionService = new ReturnRefundStateTransitionService(
+        AppDataSource,
+      );
 
+      // @ts-ignore
       switch (entity.status) {
         case "processed":
+          // @ts-ignore
           await transitionService.onProcess(fullReturn);
           break;
         case "cancelled":
-          // Inserted directly as cancelled – treat as if it was pending before
+          // @ts-ignore
           await transitionService.onCancel(fullReturn, "pending");
           break;
-        // other statuses if any
       }
     }
   }
 
   /**
-   * @param {{ entity: any; databaseEntity: any; manager: any; }} event
+   * @param {{ databaseEntity: any; entity: any }} event
    */
   async afterUpdate(event) {
-    const { entity, databaseEntity, manager } = event;
+    const { entity, databaseEntity } = event;
     if (!entity) return;
 
     console.log("[ReturnRefundSubscriber] afterUpdate:", {
@@ -56,66 +65,72 @@ class ReturnRefundSubscriber {
       newStatus: entity.status,
     });
 
-    // If status didn't change, do nothing
     if (databaseEntity && databaseEntity.status === entity.status) {
       return;
     }
 
-    // Fetch full entity with relations
-    const fullReturn = await manager.findOne(ReturnRefund, {
+    const returnRepo = AppDataSource.getRepository(ReturnRefund);
+    const fullReturn = await returnRepo.findOne({
       where: { id: entity.id },
       relations: ["items", "items.product", "sale", "customer"],
     });
 
-    const transitionService = new ReturnRefundStateTransitionService(manager.connection);
+    const transitionService = new ReturnRefundStateTransitionService(
+      AppDataSource,
+    );
 
     switch (entity.status) {
       case "processed":
+        // @ts-ignore
         await transitionService.onProcess(fullReturn);
         break;
       case "cancelled":
+        // @ts-ignore
         await transitionService.onCancel(fullReturn, databaseEntity.status);
         break;
-      // other statuses if any
     }
   }
 
-  // Keep other hooks for logging if needed
   /**
-   * @param {{ entity: { sale: { id: any; }; status: any; }; }} event
+   * @param {import("../entities/ReturnRefund")} entity
    */
-  beforeInsert(event) {
+  beforeInsert(entity) {
     console.log("[ReturnRefundSubscriber] beforeInsert:", {
-      saleId: event.entity?.sale?.id,
-      status: event.entity?.status,
+      // @ts-ignore
+      saleId: entity?.sale?.id,
+      // @ts-ignore
+      status: entity?.status,
     });
   }
 
   /**
-   * @param {{ entity: { id: any; status: any; }; }} event
+   * @param {import("../entities/ReturnRefund")} entity
    */
-  beforeUpdate(event) {
+  beforeUpdate(entity) {
     console.log("[ReturnRefundSubscriber] beforeUpdate:", {
-      id: event.entity?.id,
-      status: event.entity?.status,
+      // @ts-ignore
+      id: entity?.id,
+      // @ts-ignore
+      status: entity?.status,
     });
   }
 
   /**
-   * @param {{ entity: { id: any; }; }} event
+   * @param {import("../entities/ReturnRefund")} entity
    */
-  beforeRemove(event) {
+  beforeRemove(entity) {
     console.log("[ReturnRefundSubscriber] beforeRemove:", {
-      id: event.entity?.id,
+      // @ts-ignore
+      id: entity?.id,
     });
   }
 
   /**
-   * @param {{ entityId: any; entity: { id: any; }; }} event
+   * @param {{ databaseEntity?: any; entityId: any }} event
    */
   afterRemove(event) {
     console.log("[ReturnRefundSubscriber] afterRemove:", {
-      id: event.entityId || event.entity?.id,
+      id: event.entityId,
     });
   }
 }

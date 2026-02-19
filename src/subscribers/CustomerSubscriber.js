@@ -1,7 +1,7 @@
 // src/subscribers/CustomerSubscriber.js
-
 //@ts-check
 const Customer = require("../entities/Customer");
+const { logger } = require("../utils/logger");
 
 console.log("[Subscriber] Loading CustomerSubscriber");
 
@@ -11,33 +11,98 @@ class CustomerSubscriber {
   }
 
   /**
-   * @param {{ entity: { id: any; name: any; loyaltyPointsBalance: any; }; }} event
+   * @param {any} entity
    */
-  afterInsert(event) {
-    console.log("[CustomerSubscriber] afterInsert:", {
-      id: event.entity?.id,
-      name: event.entity?.name,
-      loyaltyPointsBalance: event.entity?.loyaltyPointsBalance,
-    });
+  async beforeInsert(entity) {
+    try {
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] beforeInsert", {
+        id: entity.id,
+        name: entity.name,
+        loyaltyPointsBalance: entity.loyaltyPointsBalance,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] beforeInsert error", err);
+    }
   }
 
   /**
-   * @param {{ entity: { id: any; }; updatedColumns: any[]; }} event
+   * @param {any} entity
    */
-  afterUpdate(event) {
-    console.log("[CustomerSubscriber] afterUpdate:", {
-      id: event.entity?.id,
-      updated: event.updatedColumns?.map(c => c.propertyName),
-    });
+  async afterInsert(entity) {
+    try {
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] afterInsert", {
+        id: entity.id,
+        name: entity.name,
+        loyaltyPointsBalance: entity.loyaltyPointsBalance,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] afterInsert error", err);
+    }
   }
 
   /**
-   * @param {{ entityId: any; entity: { id: any; }; }} event
+   * @param {any} entity
    */
-  afterRemove(event) {
-    console.log("[CustomerSubscriber] afterRemove:", {
-      id: event.entityId || event.entity?.id,
-    });
+  async beforeUpdate(entity) {
+    try {
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] beforeUpdate", {
+        id: entity.id,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] beforeUpdate error", err);
+    }
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entity: any }} event
+   */
+  async afterUpdate(event) {
+    try {
+      const { entity } = event;
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] afterUpdate", {
+        id: entity.id,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] afterUpdate error", err);
+    }
+  }
+
+  /**
+   * @param {any} entity
+   */
+  async beforeRemove(entity) {
+    try {
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] beforeRemove", {
+        id: entity.id,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] beforeRemove error", err);
+    }
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entityId: any }} event
+   */
+  async afterRemove(event) {
+    try {
+      // @ts-ignore
+      logger.info("[CustomerSubscriber] afterRemove", {
+        id: event.entityId,
+      });
+    } catch (err) {
+      // @ts-ignore
+      logger.error("[CustomerSubscriber] afterRemove error", err);
+    }
   }
 }
 

@@ -1,3 +1,5 @@
+import type { Sale } from "../api/sale";
+
 export {};
 
 declare global {
@@ -62,17 +64,22 @@ declare global {
       onWindowResized?: (callback: (bounds: any) => void) => void;
       onWindowMoved?: (callback: (position: any) => void) => void;
 
-      // Other utilities
-      showAbout: () => Promise<any>;
+      printerPrint: (saleId: number) => Promise<boolean>;
+      cashDrawerOpen: (reason?: string) => Promise<boolean>;
+      printerTestPrint: () => Promise<boolean>;
+      printerReload: () => Promise<{ driverLoaded: boolean; isReady: boolean }>;
+      cashDrawerReload: () => Promise<{
+        driverLoaded: boolean;
+        isOpen: boolean;
+      }>;
 
-      // Setup specific
-      skipSetup: () => Promise<any>;
-
-      // Listeners
-      onSetupComplete: (payload: any) => Promise<any>;
-
-      // Database
-      getSetupStatus: () => Promise<any>;
+      printerStatus: () => Promise<{ driverLoaded: boolean; isReady: boolean }>;
+      printerAvailable: () => Promise<boolean>;
+      cashDrawerStatus: () => Promise<{
+        driverLoaded: boolean;
+        isOpen: boolean;
+      }>;
+      cashDrawerAvailable: () => Promise;
 
       // 🛠️ Logging
       log: {

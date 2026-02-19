@@ -136,7 +136,7 @@ const IntegrationsTab: React.FC<Props> = ({ settings, onUpdate }) => {
         </div>
 
         <div className="space-y-4">
-          {webhooks.map((webhook, index) => (
+          {webhooks.length? webhooks.map((webhook, index) => (
             <div key={index} className="border border-[var(--border-color)] rounded-lg p-4 bg-[var(--card-secondary-bg)]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 flex justify-between items-start">
@@ -203,7 +203,7 @@ const IntegrationsTab: React.FC<Props> = ({ settings, onUpdate }) => {
                 </div>
               </div>
             </div>
-          ))}
+          )) : ''}
         </div>
       </div>
     </div>

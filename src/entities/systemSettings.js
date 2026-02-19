@@ -2,15 +2,18 @@
 const { EntitySchema } = require("typeorm");
 
 const SettingType = {
-  GENERAL: "general",
   EMAIL: "email",
   ATTENDANCE: "attendance",
   DEVICE: "device",
-  NOTIFICATION: "notifications",
+  INVENTORY_SYNC: "inventory_sync",
+  GENERAL: "general",
+  INVENTORY: "inventory",
+  SALES: "sales",
+  CASHIER: "cashier",
+  NOTIFICATIONS: "notifications",
   DATA_REPORTS: "data_reports",
   INTEGRATIONS: "integrations",
-  INVENTORY_SYNC: "inventory_sync", // IDAGDAG ITO
-  SALE: "sales",
+  AUDIT_SECURITY: "audit_security",
 };
 
 const SystemSetting = new EntitySchema({

@@ -1,7 +1,9 @@
 // src/subscribers/SaleSubscriber.js
+//@ts-check
 const Sale = require("../entities/Sale");
 const { AppDataSource } = require("../main/db/datasource");
 const { SaleStateTransitionService } = require("../StateTransitionServices/Sale");
+const { logger } = require("../utils/logger");
 
 console.log("[Subscriber] Loading SaleSubscriber");
 
@@ -14,30 +16,41 @@ class SaleSubscriber {
     return Sale;
   }
 
-  async afterInsert(event) {
-    if (!event.entity) return;
-    console.log("[SaleSubscriber] afterInsert:", { id: event.entity.id, status: event.entity.status });
-    // Optional: handle initial creation if needed (e.g., send notification)
+  /**
+   * @param {any} entity
+   */
+  async beforeInsert(entity) {
+    console.log("[SaleSubscriber] beforeInsert:", { entity });
   }
 
+  /**
+   * @param {any} entity
+   */
+  async afterInsert(entity) {
+    console.log("[SaleSubscriber] afterInsert:", { entity });
+  }
+
+  /**
+   * @param {any} entity
+   */
+  async beforeUpdate(entity) {
+    console.log("[SaleSubscriber] beforeUpdate:", { id: entity.id });
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entity: any }} event
+   */
   async afterUpdate(event) {
     if (!event.entity) return;
+    console.log("[SaleSubscriber] afterUpdate:", { event });
 
-    const oldSale = event.databaseEntity; // the state before update
-    const newSale = event.entity;          // the state after update
+    const oldSale = event.databaseEntity;
+    const newSale = event.entity;
 
-    console.log("[SaleSubscriber] afterUpdate:", {
-      id: newSale.id,
-      oldStatus: oldSale?.status,
-      newStatus: newSale.status,
-    });
-
-    // If status hasn't changed, do nothing
     if (oldSale && oldSale.status === newSale.status) {
       return;
     }
 
-    // Status changed – trigger the appropriate transition
     switch (newSale.status) {
       case "paid":
         await this.transitionService.onPay(newSale);
@@ -49,14 +62,24 @@ class SaleSubscriber {
         await this.transitionService.onCancel(newSale);
         break;
       default:
-        // no action for other statuses (e.g., "initiated")
         break;
     }
   }
 
+  /**
+   * @param {any} entity
+   */
+  async beforeRemove(entity) {
+    console.log("[SaleSubscriber] beforeRemove:", { id: entity.id });
+  }
+
+  /**
+   * @param {{ databaseEntity?: any; entityId: any }} event
+   */
   async afterRemove(event) {
-    console.log("[SaleSubscriber] afterRemove:", { id: event.entityId || event.entity?.id });
-    // Optional: cleanup or archival logic
+    console.log("[SaleSubscriber] afterRemove:", {
+      id: event.entityId,
+    });
   }
 }
 

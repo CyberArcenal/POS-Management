@@ -183,3 +183,19 @@
   --topbar-search-bg: #0f172a;
   --topbar-search-border: #334155;
 }
+
+
+
+/* Pulse animation for card border when reloading */
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.6);
+  }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 1.5s ease-in-out infinite;
+}

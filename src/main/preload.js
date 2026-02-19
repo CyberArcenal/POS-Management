@@ -61,17 +61,17 @@ contextBridge.exposeInMainWorld("backendAPI", {
   onWindowMoved: (callback) =>
     ipcRenderer.on("window:moved", (event, position) => callback(position)),
 
-  // Other utilities
-  showAbout: () => ipcRenderer.send("show-about"),
+  printerReload: () => ipcRenderer.invoke("printer:reload"),
+  cashDrawerReload: () => ipcRenderer.invoke("cashDrawer:reload"),
 
-  // Setup specific
-  skipSetup: () => ipcRenderer.send("skip-setup"),
-
-  // Listeners
-  onSetupComplete: (callback) => ipcRenderer.on("setup-complete", callback),
-
-  // Database
-  getSetupStatus: () => ipcRenderer.invoke("get-setup-status"),
+  printerStatus: () => ipcRenderer.invoke("printer:get-status"),
+  printerAvailable: () => ipcRenderer.invoke("printer:is-available"),
+  cashDrawerStatus: () => ipcRenderer.invoke("cashDrawer:get-status"),
+  cashDrawerAvailable: () => ipcRenderer.invoke("cashDrawer:is-available"),
+  printerPrint: (sale) => ipcRenderer.invoke("printer:print", sale),
+  cashDrawerOpen: (reason = "sale") =>
+    ipcRenderer.invoke("cashDrawer:open", reason),
+  printerTestPrint: () => ipcRenderer.invoke("printer:test-print"),
 
   // 🛠️ Logging
   log: {

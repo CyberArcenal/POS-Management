@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "../layouts/Layout";
 import DashboardPage from "../pages/Analytics/dashboard";
 import Cashier from "../pages/CashierSale";
-import Transactions from "../pages/Transactions/Transactions";
+import Transactions from "../pages/Transactions";
 import ProductPage from "../pages/Product/index2";
 import CustomerPage from "../pages/Customer";
 import CustomerLoyaltyPage from "../pages/CustomerLoyalty";
@@ -21,6 +21,7 @@ import ReturnRefundReportsPage from "../pages/Analytics/ReturnRefundReports";
 import SalesReportsPage from "../pages/Analytics/SalesReports";
 import NotificationLogPage from "../pages/NotificationLog";
 import SettingsPage from "../pages/Settings";
+import DeviceManagerPage from "../pages/DeviceManager";
 
 // Placeholder components
 // const ReturnsPage = () => <div>↩️ Returns & Refunds Page (placeholder)</div>;
@@ -93,6 +94,7 @@ function App() {
         <Route path="system/audit" element={<AuditTrailPage />} />
         <Route path="notification-logs" element={<NotificationLogPage />} />
         <Route path="system/settings" element={<SettingsPage />} />
+        <Route path="/devices" element={<DeviceManagerPage />} />
         <Route path="system/logs" element={<ApplicationLogsPage />} />
 
         {/* 404 Page */}

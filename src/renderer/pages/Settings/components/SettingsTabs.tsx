@@ -4,15 +4,13 @@ import { SettingType } from "../../../api/system_config";
 
 const tabs: { id: SettingType; label: string }[] = [
   { id: "general", label: "General" },
-  { id: "users_roles", label: "Users & Roles" },
   { id: "inventory", label: "Inventory" },
   { id: "sales", label: "Sales" },
   { id: "cashier", label: "Cashier" },
   { id: "notifications", label: "Notifications" },
-  { id: "data_reports", label: "Data & Reports" },
+  // { id: "data_reports", label: "Data & Reports" },
   { id: "integrations", label: "Integrations" },
   { id: "audit_security", label: "Audit & Security" },
-  { id: "user_security", label: "User Security" },
 ];
 
 interface Props {

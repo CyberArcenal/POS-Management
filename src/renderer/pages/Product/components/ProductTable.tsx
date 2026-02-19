@@ -1,3 +1,4 @@
+// src/renderer/pages/Products/components/ProductTable.tsx
 import React from "react";
 import {
   Eye,
@@ -10,11 +11,9 @@ import {
 } from "lucide-react";
 import Decimal from "decimal.js";
 import { type Product } from "../../../api/product";
+import ProductActionsDropdown from "./ProductActionsDropdown"; // new import
 
-// ----------------------------------------------------------------------
-// Helper Components (StatusBadge and StockBadge)
-// ----------------------------------------------------------------------
-
+// Helper components (StatusBadge, StockBadge) remain unchanged
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => {
   return active ? (
     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[var(--status-completed-bg)] text-[var(--status-completed)]">
@@ -47,16 +46,16 @@ const StockBadge: React.FC<{ qty: number }> = ({ qty }) => {
   return <span className="text-[var(--stock-instock)] font-medium">{qty}</span>;
 };
 
-// ----------------------------------------------------------------------
-// Main Component
-// ----------------------------------------------------------------------
-
 interface ProductTableProps {
   products: Product[];
   onView: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onStockAdjust: (product: Product) => void;
+  // New props for dropdown actions
+  onPriceEdit: (product: Product) => void;
+  onReorderLevelEdit: (product: Product) => void;
+  onReorderQtyEdit: (product: Product) => void;
 }
 
 export const ProductTable: React.FC<ProductTableProps> = ({
@@ -65,6 +64,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   onEdit,
   onDelete,
   onStockAdjust,
+  onPriceEdit,
+  onReorderLevelEdit,
+  onReorderQtyEdit,
 }) => {
   if (products.length === 0) {
     return (
@@ -82,7 +84,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
   return (
     <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden flex flex-col">
-      {/* Fixed Header Table - unchanged */}
+      {/* Fixed Header Table */}
       <table className="w-full table-fixed">
         <thead className="bg-[var(--table-header-bg)]">
           <tr>
@@ -113,7 +115,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
       {/* Scrollable Body Table */}
       <div className="flex-1 overflow-auto min-h-0">
-        <table className="w-full table-fixed">
+        <table className="w-full">
           <tbody className="divide-y divide-[var(--border-color)]">
             {products.map((product) => (
               <tr
@@ -141,6 +143,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 </td>
                 <td className="w-1/12 px-4 py-3">
                   <div className="flex items-center justify-center gap-2">
+                    {/* Quick action buttons */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -155,7 +158,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onStockAdjust(product);
-                      }} // new button
+                      }}
                       className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-orange)]"
                       title="Adjust Stock"
                     >
@@ -181,6 +184,14 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+
+                    {/* Dropdown for more actions */}
+                    <ProductActionsDropdown
+                      product={product}
+                      onPriceEdit={onPriceEdit}
+                      onReorderLevelEdit={onReorderLevelEdit}
+                      onReorderQtyEdit={onReorderQtyEdit}
+                    />
                   </div>
                 </td>
               </tr>

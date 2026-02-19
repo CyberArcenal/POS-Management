@@ -306,20 +306,33 @@ const SummaryMetrics: React.FC<{ transactions: Sale[] }> = ({
   transactions,
 }) => {
   const today = format(new Date(), "yyyy-MM-dd");
-  const todayTransactions = transactions.filter(
-    (t) => t.timestamp.startsWith(today) && t.status === "paid",
-  );
+
+  const todayTransactions = transactions.filter((t) => {
+    // Kung ang timestamp ay Date object, kunin ang date part
+    const transactionDate =
+      (t.timestamp as any) instanceof Date
+        ? format(t.timestamp, "yyyy-MM-dd")
+        : (t.timestamp as string).split("T")[0]; // kung string, gamitin ang split
+    return transactionDate === today && t.status === "paid";
+  });
+
   const totalRevenue = todayTransactions.reduce(
     (sum, t) => sum.plus(t.totalAmount),
     new Decimal(0),
   );
+
   const avgValue =
     todayTransactions.length > 0
       ? totalRevenue.div(todayTransactions.length)
       : new Decimal(0);
-  const refundCount = transactions.filter(
-    (t) => t.status === "refunded" && t.timestamp.startsWith(today),
-  ).length;
+
+  const refundCount = transactions.filter((t) => {
+    const transactionDate =
+      (t.timestamp as any) instanceof Date
+        ? format(t.timestamp, "yyyy-MM-dd")
+        : (t.timestamp as string).split("T")[0];
+    return t.status === "refunded" && transactionDate === today;
+  }).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
