@@ -4,6 +4,7 @@ import { dialogs } from '../../../utils/dialogs';
 import type { CartItem, Customer, PaymentMethod } from '../types';
 import Decimal from 'decimal.js';
 import { formatCurrency } from '../../../utils/formatters';
+import { hideLoading, showLoading } from '../../../utils/notification';
 
 export const useCheckout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -17,6 +18,7 @@ export const useCheckout = () => {
     onSuccess: (sale: any) => void
   ) => {
     setIsProcessing(true);
+    showLoading("Processing Checkout..")
     try {
       const items = cart.map((item) => ({
         productId: item.id,
@@ -49,6 +51,7 @@ export const useCheckout = () => {
         message: error.message || 'An unexpected error occurred.',
       });
     } finally {
+      hideLoading();
       setIsProcessing(false);
     }
   };

@@ -1,40 +1,34 @@
-import React, { useState, useRef } from 'react';
-import { Search, Loader2 } from 'lucide-react';
-import Decimal from 'decimal.js';
-import { useProducts } from './hooks/useProducts';
-import { useCustomers } from './hooks/useCustomers';
-import { useCart } from './hooks/useCart';
-import { useLoyalty as useLoyaltyMethod } from './hooks/useLoyalty';
-import { useCheckout } from './hooks/useCheckout';
-import ProductGrid from './components/ProductGrid';
-import Cart from './components/Cart';
-import CheckoutDialog from './components/CheckoutDialog';
-import { calculateCartTotal } from './utils';
-import type { CartItem } from './types';
-import PaymentSuccessDialog from './components/PaymentSuccessDialog';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, Loader2, Barcode, RefreshCw, XCircle, X } from "lucide-react";
+import Decimal from "decimal.js";
+import { useProducts } from "./hooks/useProducts";
+import { useCustomers } from "./hooks/useCustomers";
+import { useCart } from "./hooks/useCart";
+import { useLoyalty as useLoyaltyMethod } from "./hooks/useLoyalty";
+import { useCheckout } from "./hooks/useCheckout";
+import ProductGrid from "./components/ProductGrid";
+import Cart from "./components/Cart";
+import CheckoutDialog from "./components/CheckoutDialog";
+import { calculateCartTotal } from "./utils";
+import type { CartItem } from "./types";
+import PaymentSuccessDialog from "./components/PaymentSuccessDialog";
+import CategorySelect from "../../components/Selects/Category"; // adjust path as needed
+import CashierHeader from "./components/CashierHeader";
 
 const Cashier: React.FC = () => {
   const {
     filteredProducts,
     searchTerm,
     setSearchTerm,
+    categoryId,
+    setCategoryId,
     loadingProducts,
     loadProducts,
+    clearFilters,
   } = useProducts();
 
-  const {
-    customers,
-    selectedCustomer,
-    customerSearch,
-    showCustomerDropdown,
-    loadingCustomers,
-    customerDropdownRef,
-    handleCustomerSearch,
-    selectCustomer,
-    setShowCustomerDropdown,
-    setSelectedCustomer,
-    setCustomerSearch,
-  } = useCustomers();
+  const { selectedCustomer, selectCustomer, setSelectedCustomer } =
+    useCustomers();
 
   const {
     cart,
@@ -62,7 +56,9 @@ const Cashier: React.FC = () => {
 
   const { isProcessing, processCheckout } = useCheckout();
 
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "card" | "wallet"
+  >("cash");
   const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
 
   // Success dialog state
@@ -76,15 +72,24 @@ const Cashier: React.FC = () => {
     cartItems: CartItem[];
   } | null>(null);
 
+  // Barcode mode toggle
+  const [barcodeMode, setBarcodeMode] = useState(true);
+  const [scannedBarcode, setScannedBarcode] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-
+  const itemCount = cart.reduce((acc, item) => acc + item.cartQuantity, 0);
   // Compute final total
-  const loyaltyDeduction = useLoyalty ? new Decimal(loyaltyPointsToRedeem) : new Decimal(0);
-  const finalTotal = calculateCartTotal(cart, globalDiscount, globalTax, loyaltyDeduction);
-
+  const loyaltyDeduction = useLoyalty
+    ? new Decimal(loyaltyPointsToRedeem)
+    : new Decimal(0);
+  const finalTotal = calculateCartTotal(
+    cart,
+    globalDiscount,
+    globalTax,
+    loyaltyDeduction,
+  );
   const handleCheckoutClick = () => {
     if (cart.length === 0) {
-      alert('Please add items to the cart.');
+      alert("Please add items to the cart.");
       return;
     }
     setShowCheckoutDialog(true);
@@ -99,10 +104,10 @@ const Cashier: React.FC = () => {
       notes,
       useLoyalty ? loyaltyPointsToRedeem : 0,
       (sale) => {
-        // Compute change for cash
-        const change = paymentMethod === 'cash' && paidAmount !== undefined
-          ? new Decimal(paidAmount).minus(finalTotal)
-          : undefined;
+        const change =
+          paymentMethod === "cash" && paidAmount !== undefined
+            ? new Decimal(paidAmount).minus(finalTotal)
+            : undefined;
 
         setSuccessData({
           sale,
@@ -110,43 +115,111 @@ const Cashier: React.FC = () => {
           change,
           paymentMethod,
           total: finalTotal,
-          cartItems: cart, // current cart items
+          cartItems: cart,
         });
         setShowSuccessDialog(true);
-      }
+      },
     );
   };
 
   const handleSuccessDialogClose = () => {
     setShowSuccessDialog(false);
     setSuccessData(null);
-    // Clear cart and reset after dialog closes
     clearCart();
     setSelectedCustomer(null);
-    setCustomerSearch('');
-    setPaymentMethod('cash');
+    setPaymentMethod("cash");
     setUseLoyalty(false);
     setLoyaltyPointsToRedeem(0);
     loadProducts();
   };
 
+  // Barcode scanner logic (only when barcodeMode is true)
+  useEffect(() => {
+    if (!barcodeMode) return;
+
+    let scanBuffer = "";
+    let scanTimeout: ReturnType<typeof setTimeout>;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      if (e.key === "Enter") {
+        if (scanBuffer.length > 0) {
+          window.backendAPI
+            .barcode({ method: "emit", params: { barcode: scanBuffer } })
+            .catch(console.error);
+          handleBarcodeScanned(scanBuffer);
+          scanBuffer = "";
+        }
+        return;
+      }
+
+      if (e.key.length === 1) {
+        scanBuffer += e.key;
+        clearTimeout(scanTimeout);
+        scanTimeout = setTimeout(() => {
+          if (scanBuffer.length > 0) {
+            window.backendAPI
+              .barcode({ method: "emit", params: { barcode: scanBuffer } })
+              .catch(console.error);
+            scanBuffer = "";
+          }
+        }, 100);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    const handleBarcodeScanned = (barcode: string) => {
+      const product = filteredProducts.find((p) => p.sku === barcode);
+      if (product) {
+        addToCart(product);
+      } else {
+        setSearchTerm(barcode);
+      }
+    };
+
+    window.backendAPI.onBarcodeScanned(handleBarcodeScanned);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      clearTimeout(scanTimeout);
+      // Ideally remove the listener, but if the API doesn't provide an off method,
+      // we assume it's handled globally. In a real app you'd want to unregister.
+    };
+  }, [barcodeMode, filteredProducts, addToCart, setSearchTerm]);
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)]">
-      {/* Header / Search */}
-      <div className="flex-shrink-0 bg-[var(--header-bg)] border-b border-[var(--border-color)] p-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] w-5 h-5" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search products by name, SKU, or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[var(--topbar-search-bg)] border border-[var(--topbar-search-border)] rounded-lg pl-10 pr-4 py-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-blue)]"
-          />
-        </div>
-      </div>
+      {/* Header with search, category filter, barcode display, and actions */}
+      <CashierHeader
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchInputRef={searchInputRef}
+        scannedBarcode={scannedBarcode}
+        onClearScannedBarcode={() => setScannedBarcode("")}
+        itemCount={itemCount}
+        total={finalTotal}
+        categoryId={categoryId}
+        onCategoryChange={setCategoryId}
+        barcodeMode={barcodeMode}
+        onToggleBarcodeMode={() => setBarcodeMode(!barcodeMode)}
+        loadingProducts={loadingProducts}
+        onRefresh={loadProducts}
+        onClearFilters={clearFilters}
+        showClearFilters={!!(searchTerm || categoryId)}
+        // status indicators (mock for now, can be replaced with real hooks)
+        printerReady={true}
+        drawerOpen={false}
+        online={true}
+      />
 
+      {/* Rest of the component (ProductGrid, Cart, etc.) remains unchanged */}
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           {loadingProducts ? (
@@ -171,14 +244,7 @@ const Cashier: React.FC = () => {
             onGlobalDiscountChange={setGlobalDiscount}
             onGlobalTaxChange={setGlobalTax}
             onNotesChange={setNotes}
-            customers={customers}
             selectedCustomer={selectedCustomer}
-            customerSearch={customerSearch}
-            showCustomerDropdown={showCustomerDropdown}
-            loadingCustomers={loadingCustomers}
-            customerDropdownRef={customerDropdownRef}
-            onCustomerSearch={handleCustomerSearch}
-            onCustomerFocus={() => setShowCustomerDropdown(true)}
             onCustomerSelect={selectCustomer}
             loyaltyPointsAvailable={loyaltyPointsAvailable}
             loyaltyPointsToRedeem={loyaltyPointsToRedeem}

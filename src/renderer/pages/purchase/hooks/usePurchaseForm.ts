@@ -1,15 +1,10 @@
-// src/renderer/pages/purchase/hooks/usePurchaseForm.ts
-import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, type Control } from 'react-hook-form';
-import supplierAPI, { type Supplier } from '../../../api/supplier';
-import productAPI, { type Product } from '../../../api/product';
+import { useForm, useFieldArray } from "react-hook-form";
 
-export type FormMode = 'add' | 'edit';
+export type FormMode = "add" | "edit";
 
 export interface PurchaseFormData {
   supplierId: number;
   orderDate: string;
-  status: 'pending' | 'completed' | 'cancelled';
   notes: string;
   items: {
     productId: number;
@@ -19,59 +14,40 @@ export interface PurchaseFormData {
 }
 
 export function usePurchaseForm(mode: FormMode, initialData?: any) {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const defaultValues: PurchaseFormData =
+    mode === "edit" && initialData
+      ? {
+          supplierId: initialData.supplier?.id || initialData.supplierId,
+          orderDate: initialData.orderDate.split("T")[0],
+          notes: initialData.notes || "",
+          items: initialData.purchaseItems?.map((item: any) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          })) || [{ productId: undefined, quantity: 1, unitPrice: 0 }],
+        }
+      : {
+          supplierId: undefined,
+          orderDate: new Date().toISOString().split("T")[0],
+          notes: "",
+          items: [{ productId: undefined, quantity: 1, unitPrice: 0 }],
+        };
 
   const form = useForm<PurchaseFormData>({
-    defaultValues: initialData || {
-      supplierId: undefined,
-      orderDate: new Date().toISOString().split('T')[0],
-      status: 'pending',
-      notes: '',
-      items: [{ productId: undefined, quantity: 1, unitPrice: 0 }],
-    },
+    defaultValues,
   });
 
-  const { control, watch, setValue } = form;
+  const { control, watch } = form;
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'items',
+    name: "items",
   });
 
-  // Watch items to calculate total
-  const items = watch('items');
-  const totalAmount = items.reduce((sum, item) => {
-    return sum + (item.quantity || 0) * (item.unitPrice || 0);
-  }, 0);
-
-  // Fetch suppliers and products on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [suppliersRes, productsRes] = await Promise.all([
-          supplierAPI.getActive(),
-          productAPI.getActive({ limit: 100 }), // get up to 100 active products
-        ]);
-        if (suppliersRes.status) setSuppliers(suppliersRes.data);
-        if (productsRes.status) setProducts(productsRes.data);
-      } catch (error) {
-        console.error('Failed to fetch form data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // When product selection changes, auto-fill unitPrice from product's price
-  const handleProductChange = (index: number, productId: number) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      setValue(`items.${index}.unitPrice`, product.price);
-    }
-  };
+  const items = watch("items");
+  const totalAmount = items.reduce(
+    (sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0),
+    0,
+  );
 
   return {
     form,
@@ -79,9 +55,5 @@ export function usePurchaseForm(mode: FormMode, initialData?: any) {
     append,
     remove,
     totalAmount,
-    suppliers,
-    products,
-    loading,
-    handleProductChange,
   };
 }

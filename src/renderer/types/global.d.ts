@@ -81,6 +81,13 @@ declare global {
       }>;
       cashDrawerAvailable: () => Promise;
 
+      // In global.d.ts, inside Window.backendAPI add:
+      barcode: (payload: {
+        method: string;
+        params?: any;
+      }) => Promise<{ status: boolean; message?: string }>;
+      onBarcodeScanned: (callback: (barcode: string) => void) => void;
+
       // 🛠️ Logging
       log: {
         info: (message: string, data?: any) => void;

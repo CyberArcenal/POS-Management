@@ -108,21 +108,21 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      {/* Trigger button - isang button lang para hindi lumaki */}
+      {/* Trigger button - single button so it doesn’t get too tall */}
       <button
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={`
-          w-full px-4 py-2 rounded-lg text-left flex items-center gap-2
-          transition-colors duration-200
-          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-800"}
-        `}
+        w-full px-4 py-2 rounded-lg text-left flex items-center gap-2
+        transition-colors duration-200
+        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-800"}
+      `}
         style={{
           backgroundColor: "var(--card-bg)",
           border: "1px solid var(--border-color)",
           color: "var(--text-primary)",
-          minHeight: "42px", // Fixed height para consistent
+          minHeight: "42px", // Fixed height for consistency
         }}
       >
         <Tag
@@ -130,7 +130,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
           style={{ color: "var(--primary-color)" }}
         />
 
-        {/* Content container na may truncation */}
+        {/* Content container with truncation */}
         <div className="flex-1 min-w-0 flex items-center gap-2">
           {selectedCategory ? (
             <>
@@ -156,14 +156,14 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
           )}
         </div>
 
-        {/* Remove button - nasa loob ng main button pero may stopPropagation */}
+        {/* Remove button - inside main button but with stopPropagation */}
         {selectedCategory && !disabled && (
           <button
             type="button"
             onClick={handleClear}
             className="p-1 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0"
             style={{ color: "var(--text-secondary)" }}
-            title="Alisin ang napili"
+            title="Remove selected"
           >
             <X className="w-4 h-4" />
           </button>
@@ -200,7 +200,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Maghanap..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 rounded text-sm"
@@ -220,14 +220,14 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
                 className="p-3 text-center text-sm"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Naglo-load...
+                Loading...
               </div>
             ) : filteredCategories.length === 0 ? (
               <div
                 className="p-3 text-center text-sm"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Walang nakitang kategorya
+                No categories found
               </div>
             ) : (
               filteredCategories.map((category) => (
@@ -236,10 +236,10 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
                   type="button"
                   onClick={() => handleSelect(category)}
                   className={`
-                    w-full px-3 py-2 text-left flex items-center gap-2
-                    transition-colors text-sm cursor-pointer hover:bg-gray-800!
-                    ${category.id === value ? "bg-gray-800" : ""}
-                  `}
+                  w-full px-3 py-2 text-left flex items-center gap-2
+                  transition-colors text-sm cursor-pointer hover:bg-gray-800
+                  ${category.id === value ? "bg-gray-800" : ""}
+                `}
                   style={{ borderBottom: "1px solid var(--border-color)" }}
                 >
                   <Tag
@@ -266,7 +266,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
                             : "var(--status-cancelled)",
                         }}
                       >
-                        {category.isActive ? "Aktibo" : "Hindi"}
+                        {category.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                     {category.description && (

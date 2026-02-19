@@ -3,6 +3,10 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("backendAPI", {
   // 🪟 Window controls
+  barcode: (payload) => ipcRenderer.invoke('barcode', payload),
+  onBarcodeScanned: (callback) => {
+    ipcRenderer.on('barcode-scanned', (event, barcode) => callback(barcode));
+  },
   windowControl: (payload) => ipcRenderer.invoke("window-control", payload),
   activation: (payload) => ipcRenderer.invoke("activation", payload),
   systemConfig: (payload) => ipcRenderer.invoke("systemConfig", payload),

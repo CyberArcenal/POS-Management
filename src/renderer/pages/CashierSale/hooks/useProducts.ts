@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import productAPI, { type Product } from '../../../api/product';
 import { dialogs } from '../../../utils/dialogs';
 
@@ -6,15 +6,23 @@ export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
     try {
-      const response = await productAPI.getActive({ limit: 100 });
+      const params: any = { limit: 100 };
+      if (categoryId) params.categoryId = categoryId;
+      if (searchTerm.trim()) params.search = searchTerm;
+
+      const response = await productAPI.getActive(params);
       if (response.status && response.data) {
         setProducts(response.data);
-        setFilteredProducts(response.data.slice(0, 20));
+        setFilteredProducts(response.data.slice(0, 20)); // simple pagination
+      } else {
+        setProducts([]);
+        setFilteredProducts([]);
       }
     } catch (error) {
       console.error('Failed to load products', error);
@@ -25,35 +33,35 @@ export const useProducts = () => {
     } finally {
       setLoadingProducts(false);
     }
-  };
+  }, [categoryId, searchTerm]);
 
-  // Filter products when searchTerm changes
+  // Debounce search to avoid too many API calls
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredProducts(products.slice(0, 20));
-    } else {
-      const lower = searchTerm.toLowerCase();
-      const filtered = products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(lower) ||
-          p.sku.toLowerCase().includes(lower) ||
-          (p.description && p.description.toLowerCase().includes(lower))
-      );
-      setFilteredProducts(filtered.slice(0, 20));
-    }
-  }, [searchTerm, products]);
+    const handler = setTimeout(() => {
+      loadProducts();
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm, categoryId, loadProducts]);
 
-  // Load once on mount
+  // Initial load
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setCategoryId(null);
+  };
 
   return {
     products,
     filteredProducts,
     searchTerm,
     setSearchTerm,
+    categoryId,
+    setCategoryId,
     loadingProducts,
     loadProducts,
+    clearFilters,
   };
 };

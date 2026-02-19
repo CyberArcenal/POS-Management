@@ -841,6 +841,7 @@ function registerIpcHandlers() {
       "./ipc/analytics/inventoryReports/index.ipc.js",
       "./ipc/analytics/returnRefund/index.ipc.js",
       "./ipc/analytics/sales/index.ipc.js",
+      "./ipc/barcode/index.ipc.js",
     ];
 
     ipcModules.forEach((modulePath) => {
@@ -861,6 +862,7 @@ function registerIpcHandlers() {
   } catch (error) {
     log(LogLevel.ERROR, "Failed to register IPC handlers:", error);
   }
+
 }
 
 // ===================== MAIN APPLICATION FLOW =====================

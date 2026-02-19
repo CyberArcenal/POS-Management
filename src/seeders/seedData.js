@@ -1,5 +1,5 @@
 // seedData.js
-// POS Management System Seeder (Updated with new entities)
+// POS Management System Seeder (Updated with new fields)
 // Run with: npm run seed [options]
 
 const { DataSource } = require("typeorm");
@@ -70,6 +70,15 @@ const random = {
     usedSet.add(sku);
     return sku;
   },
+  // New: generate a unique 13‑digit barcode (EAN‑13 like)
+  barcode: (usedSet) => {
+    let barcode;
+    do {
+      barcode = Array.from({ length: 13 }, () => random.int(0, 9)).join('');
+    } while (usedSet.has(barcode));
+    usedSet.add(barcode);
+    return barcode;
+  },
   phone: () => `+63${random.int(900000000, 999999999)}`,
   name: () => {
     const first = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Maria', 'James', 'Patricia', 'Robert', 'Jennifer'];
@@ -82,6 +91,11 @@ const random = {
     return `${random.element(adjectives)} ${random.element(nouns)}`;
   },
   description: () => random.boolean(0.3) ? `High quality ${random.productName().toLowerCase()} for everyday use.` : null,
+  // Generate a random voucher code
+  voucherCode: () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return `VOUCH-${Array.from({ length: 6 }, () => chars[random.int(0, chars.length - 1)]).join('')}`;
+  },
 };
 
 // ========== SEEDER CLASS ==========
@@ -91,6 +105,7 @@ class POSSeeder {
     this.dataSource = null;
     this.queryRunner = null;
     this.usedSkus = new Set();
+    this.usedBarcodes = new Set(); // for product barcodes
     this.productPriceCache = new Map(); // product id -> price
   }
 
@@ -189,6 +204,7 @@ class POSSeeder {
       const stockQty = random.int(0, 100);
       products.push({
         sku: random.sku(this.usedSkus),
+        barcode: random.barcode(this.usedBarcodes), // NEW field
         name: random.productName(),
         description: random.description(),
         price: price,
@@ -247,11 +263,25 @@ class POSSeeder {
       const itemCount = random.int(1, 5);
       let totalAmount = 0;
 
+      // New sale fields with random values
+      const usedLoyalty = random.boolean(0.3);
+      const loyaltyRedeemed = usedLoyalty ? random.int(10, 200) : 0;
+      const usedDiscount = random.boolean(0.4);
+      const totalDiscount = usedDiscount ? random.float(5, 50) : 0;
+      const usedVoucher = random.boolean(0.2);
+      const voucherCode = usedVoucher ? random.voucherCode() : null;
+
       const sale = {
         timestamp: saleDate,
         status: status,
         paymentMethod: paymentMethod,
         totalAmount: 0,
+        usedLoyalty,
+        loyaltyRedeemed,
+        usedDiscount,
+        totalDiscount,
+        usedVoucher,
+        voucherCode,
         notes: random.boolean(0.2) ? 'Sample note' : null,
         createdAt: saleDate,
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
@@ -302,9 +332,8 @@ class POSSeeder {
 
     for (let i = 0; i < this.config.purchaseCount; i++) {
       const supplier = random.element(suppliers);
-      // IMPORTANT: Use the exact enum values defined in the Purchase entity
-      // The entity has a typo: 'cacelled' instead of 'cancelled'
-      const status = random.element(['pending', 'completed', 'cacelled']);
+      // Include 'approved' in possible statuses (added to match entity enum)
+      const status = random.element(['pending', 'approved', 'completed', 'cacelled']);
       const orderDate = random.pastDate();
       const itemCount = random.int(1, 5);
       let totalAmount = 0;
@@ -410,7 +439,8 @@ class POSSeeder {
   async seedInventoryMovements(products, sales, saleItems) {
     console.log(`📦 Seeding ${this.config.inventoryMovementCount} inventory movements...`);
     const movementRepo = this.dataSource.getRepository(InventoryMovement);
-    const movementTypes = ['sale', 'refund', 'adjustment'];
+    // Include 'purchase' in movement types (added to match entity enum)
+    const movementTypes = ['sale', 'refund', 'adjustment', 'purchase'];
     const movements = [];
 
     // Create movements from sale items (sale type)
@@ -428,7 +458,7 @@ class POSSeeder {
       }
     }
 
-    // Additional random movements
+    // Additional random movements, now including 'purchase'
     while (movements.length < this.config.inventoryMovementCount) {
       const product = random.element(products);
       const sale = random.boolean(0.3) ? random.element(sales) : null;
@@ -436,13 +466,14 @@ class POSSeeder {
       let qtyChange;
       if (movementType === 'sale') qtyChange = -random.int(1, 10);
       else if (movementType === 'refund') qtyChange = random.int(1, 5);
-      else qtyChange = random.int(-20, 20);
+      else if (movementType === 'purchase') qtyChange = random.int(10, 100); // positive for purchase
+      else qtyChange = random.int(-20, 20); // adjustment
 
       movements.push({
         movementType: movementType,
         qtyChange: qtyChange,
         timestamp: random.pastDate(),
-        notes: random.boolean(0.2) ? 'Manual adjustment' : null,
+        notes: movementType === 'purchase' ? 'Stock received from supplier' : (random.boolean(0.2) ? 'Manual adjustment' : null),
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
         product: { id: product.id },
         sale: sale ? { id: sale.id } : null,
@@ -469,7 +500,11 @@ class POSSeeder {
       const pointsChange = random.boolean(0.7) ? random.int(10, 200) : -random.int(5, 50);
       const timestamp = sale ? sale.timestamp : random.pastDate();
 
+      // Set transactionType based on pointsChange sign (earn/redeem)
+      const transactionType = pointsChange > 0 ? 'earn' : 'redeem';
+
       transactions.push({
+        transactionType, // NEW field
         pointsChange: pointsChange,
         timestamp: timestamp,
         notes: pointsChange > 0 ? 'Earned from purchase' : 'Redeemed reward',
@@ -508,13 +543,13 @@ class POSSeeder {
   async seedSystemSettings() {
     console.log('⚙️ Seeding system settings...');
     const settings = [
-      { key: 'store_name', value: 'CyberArcenal POS', setting_type: 'general', description: 'Store display name', is_public: true },
-      { key: 'currency', value: 'PHP', setting_type: 'general', description: 'Currency used for pricing', is_public: true },
-      { key: 'tax_rate', value: '12', setting_type: 'general', description: 'VAT percentage', is_public: false },
-      { key: 'loyalty_points_per_currency', value: '1', setting_type: 'general', description: 'Points earned per unit currency', is_public: false },
-      { key: 'enable_inventory_sync', value: 'true', setting_type: 'general', description: 'Enable external inventory sync', is_public: false },
-      { key: 'default_payment_method', value: 'cash', setting_type: 'general', description: 'Default payment method', is_public: true },
-      { key: 'receipt_footer', value: 'Thank you for shopping!', setting_type: 'general', description: 'Receipt footer message', is_public: true },
+      { key: 'store_name', value: 'CyberArcenal POS', setting_type: 'general', description: 'Store display name', is_public: true, is_deleted: false },
+      { key: 'currency', value: 'PHP', setting_type: 'general', description: 'Currency used for pricing', is_public: true, is_deleted: false },
+      { key: 'tax_rate', value: '12', setting_type: 'general', description: 'VAT percentage', is_public: false, is_deleted: false },
+      { key: 'loyalty_points_per_currency', value: '1', setting_type: 'general', description: 'Points earned per unit currency', is_public: false, is_deleted: false },
+      { key: 'enable_inventory_sync', value: 'true', setting_type: 'general', description: 'Enable external inventory sync', is_public: false, is_deleted: false },
+      { key: 'default_payment_method', value: 'cash', setting_type: 'general', description: 'Default payment method', is_public: true, is_deleted: false },
+      { key: 'receipt_footer', value: 'Thank you for shopping!', setting_type: 'general', description: 'Receipt footer message', is_public: true, is_deleted: false },
     ];
 
     const repo = this.dataSource.getRepository(SystemSetting);

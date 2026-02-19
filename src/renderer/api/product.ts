@@ -29,6 +29,7 @@ export interface Product {
   id: number;
   sku: string;
   name: string;
+  barcode: string;
   description: string | null;
   price: number;                // decimal stored as number
   stockQty: number;
@@ -509,6 +510,7 @@ class ProductAPI {
     productData: {
       sku: string;
       name: string;
+      barcode: string;
       price: number;
       stockQty?: number;
       description?: string | null;
@@ -549,6 +551,7 @@ class ProductAPI {
     updates: Partial<{
       sku: string;
       name: string;
+      barcode: string;
       price: number;
       stockQty: number;
       reorderQty: number;
