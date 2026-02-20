@@ -12,33 +12,28 @@ import { FilterBar } from "./components/FilterBar";
 import { CustomerTable } from "./components/CustomerTable";
 import { CustomerFormDialog } from "./components/CustomerFormDialog";
 import { CustomerViewDialog } from "./components/CustomerViewDialog";
+import Pagination from "../../components/Shared/Pagination1";
 
 // Components
 
 const CustomerPage: React.FC = () => {
-  const {
-    customers,
-    filters,
-    setFilters,
-    loading,
-    error,
-    reload,
-    metrics,
-  } = useCustomers({
-    search: "",
-    status: "all", // 'all' | 'vip' | 'loyal' | 'regular' | 'new'
-    sortBy: "name",
-    sortOrder: "ASC",
-    minPoints: undefined,
-    maxPoints: undefined,
-  });
+  const { customers, filters, setFilters, loading, error, reload, metrics } =
+    useCustomers({
+      search: "",
+      status: "all", // 'all' | 'vip' | 'loyal' | 'regular' | 'new'
+      sortBy: "name",
+      sortOrder: "ASC",
+      minPoints: undefined,
+      maxPoints: undefined,
+    });
 
   const formDialog = useCustomerForm();
   const viewDialog = useCustomerView();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizeOptions = [10, 20, 50, 100];
 
   const handleFilterChange = (key: keyof CustomerFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -65,11 +60,21 @@ const CustomerPage: React.FC = () => {
   };
 
   // Pagination calculations
-  const totalPages = Math.ceil(customers.length / pageSize);
   const paginatedCustomers = customers.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
+
+  const totalItems = customers.length;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // reset to first page
+  };
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
@@ -91,19 +96,29 @@ const CustomerPage: React.FC = () => {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
           <p className="text-sm text-[var(--text-tertiary)]">Total Customers</p>
-          <p className="text-2xl font-bold text-[var(--text-primary)]">{metrics.total}</p>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">
+            {metrics.total}
+          </p>
         </div>
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
           <p className="text-sm text-[var(--text-tertiary)]">VIP</p>
-          <p className="text-2xl font-bold text-[var(--customer-vip)]">{metrics.vipCount}</p>
+          <p className="text-2xl font-bold text-[var(--customer-vip)]">
+            {metrics.vipCount}
+          </p>
         </div>
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
           <p className="text-sm text-[var(--text-tertiary)]">Loyal</p>
-          <p className="text-2xl font-bold text-[var(--customer-loyal)]">{metrics.loyalCount}</p>
+          <p className="text-2xl font-bold text-[var(--customer-loyal)]">
+            {metrics.loyalCount}
+          </p>
         </div>
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
-          <p className="text-sm text-[var(--text-tertiary)]">New (this month)</p>
-          <p className="text-2xl font-bold text-[var(--customer-new)]">{metrics.newThisMonth}</p>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            New (this month)
+          </p>
+          <p className="text-2xl font-bold text-[var(--customer-new)]">
+            {metrics.newThisMonth}
+          </p>
         </div>
       </div>
 
@@ -147,46 +162,15 @@ const CustomerPage: React.FC = () => {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, customers.length)} of{" "}
-                {customers.length} customers
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 border rounded-lg ${
-                        currentPage === page
-                          ? "bg-[var(--accent-blue)] text-white border-[var(--accent-blue)]"
-                          : "border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)]"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSize={true}
+          />
         </>
       )}
 
@@ -200,7 +184,8 @@ const CustomerPage: React.FC = () => {
             ? {
                 name: formDialog.initialData.name,
                 contactInfo: formDialog.initialData.contactInfo || undefined,
-                loyaltyPointsBalance: formDialog.initialData.loyaltyPointsBalance,
+                loyaltyPointsBalance:
+                  formDialog.initialData.loyaltyPointsBalance,
               }
             : undefined
         }

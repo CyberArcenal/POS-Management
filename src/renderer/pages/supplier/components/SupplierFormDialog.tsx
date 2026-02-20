@@ -17,8 +17,9 @@ interface SupplierFormDialogProps {
 
 interface FormData {
   name: string;
-  contactInfo?: string;
-  address?: string;
+  email?: string | null;   // email (API uses 'emain')
+  phone?: string | null;
+  address?: string | null;
   isActive: boolean;
 }
 
@@ -33,7 +34,8 @@ export const SupplierFormDialog: React.FC<SupplierFormDialogProps> = ({
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     defaultValues: {
       name: '',
-      contactInfo: '',
+      email: '',
+      phone: '',
       address: '',
       isActive: true,
       ...Object.fromEntries(Object.entries(initialData || {}).filter(([, v]) => v !== null)),
@@ -44,7 +46,7 @@ export const SupplierFormDialog: React.FC<SupplierFormDialogProps> = ({
     if (isOpen && initialData) {
       reset(initialData);
     } else if (isOpen) {
-      reset({ name: '', contactInfo: '', address: '', isActive: true });
+      reset({ name: '', email: '', phone: '', address: '', isActive: true });
     }
   }, [isOpen, initialData, reset]);
 
@@ -108,11 +110,23 @@ export const SupplierFormDialog: React.FC<SupplierFormDialogProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                Contact Info
+                Email
               </label>
               <input
-                {...register('contactInfo')}
-                placeholder="Phone, email, or contact person"
+                type="email"
+                {...register('email')}
+                placeholder="email@example.com"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                Phone
+              </label>
+              <input
+                {...register('phone')}
+                placeholder="+63 XXX XXX XXXX"
                 className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)]"
               />
             </div>

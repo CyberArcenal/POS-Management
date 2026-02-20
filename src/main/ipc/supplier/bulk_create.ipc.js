@@ -2,6 +2,7 @@
 // @ts-check
 const { logger } = require("../../../utils/logger");
 const auditLogger = require("../../../utils/auditLogger");
+const supplierService = require("../../../services/SupplierService");
 
 /**
  * Bulk create suppliers (transactional)
@@ -23,45 +24,24 @@ module.exports = async (params, queryRunner) => {
   }
 
   try {
-    const Supplier = require("../../../entities/Supplier");
-    const supplierRepo = queryRunner.manager.getRepository(Supplier);
-
+    /**
+     * @type {string | any[]}
+     */
     const created = [];
     const errors = [];
 
     for (const data of suppliers) {
       const { name, contactInfo, address, isActive = true } = data;
+      try {
+        const created = await supplierService.create(data);
 
-      if (!name || typeof name !== "string") {
-        errors.push({ data, error: "Missing or invalid name" });
-        continue;
-      }
-
-      // Check uniqueness within the batch (and existing DB)
-      const existing = await supplierRepo.findOne({ where: { name } });
-      if (existing) {
+        // @ts-ignore
+        created.push(created);
+      } catch (err) {
         errors.push({ data, error: `Name "${name}" already exists` });
-        continue;
       }
-
-      const supplier = supplierRepo.create({
-        name,
-        contactInfo,
-        address,
-        isActive,
-        createdAt: new Date(),
-      });
-      const saved = await supplierRepo.save(supplier);
-      created.push(saved);
     }
 
-    // Audit log for each successful creation
-    for (const sup of created) {
-      // @ts-ignore
-      await auditLogger.logCreate("Supplier", sup.id, sup, user, queryRunner.manager);
-    }
-
-    logger?.info(`Bulk created ${created.length} suppliers, ${errors.length} failed`);
     return {
       status: true,
       data: { created, errors },

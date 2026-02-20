@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { useForm, useFieldArray } from "react-hook-form";
 
 export type FormMode = "add" | "edit";
@@ -18,7 +19,9 @@ export function usePurchaseForm(mode: FormMode, initialData?: any) {
     mode === "edit" && initialData
       ? {
           supplierId: initialData.supplier?.id || initialData.supplierId,
-          orderDate: initialData.orderDate.split("T")[0],
+          orderDate: initialData.orderDate
+            ? format(new Date(initialData.orderDate), "yyyy-MM-dd")
+            : "",
           notes: initialData.notes || "",
           items: initialData.purchaseItems?.map((item: any) => ({
             productId: item.product.id,

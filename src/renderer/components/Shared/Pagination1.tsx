@@ -94,7 +94,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <span className="font-medium text-[var(--text-primary)]">
           {totalItems}
         </span>{" "}
-        rooms
+        items
       </div>
 
       {/* Pagination controls */}

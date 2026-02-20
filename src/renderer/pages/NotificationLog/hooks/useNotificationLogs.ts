@@ -18,7 +18,7 @@ export const useNotificationLogs = (initialParams?: UseNotificationLogsParams) =
   const [pagination, setPagination] = useState<Omit<PaginatedNotifications, 'items'>>({
     total: 0,
     page: 1,
-    limit: 50,
+    limit: 10,
     totalPages: 0,
   });
   const [stats, setStats] = useState<NotificationStats | null>(null);
@@ -26,7 +26,7 @@ export const useNotificationLogs = (initialParams?: UseNotificationLogsParams) =
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<UseNotificationLogsParams>({
     page: 1,
-    limit: 50,
+    limit: 10,
     sortBy: 'created_at',
     sortOrder: 'DESC',
     ...initialParams,
@@ -96,7 +96,7 @@ export const useNotificationLogs = (initialParams?: UseNotificationLogsParams) =
   const clearFilters = useCallback(() => {
     setFilters({
       page: 1,
-      limit: 50,
+      limit: 10,
       sortBy: 'created_at',
       sortOrder: 'DESC',
     });

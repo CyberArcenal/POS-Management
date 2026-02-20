@@ -22,9 +22,11 @@ module.exports = async (params) => {
       data: suppliers,
     };
   } catch (error) {
+    // @ts-ignore
     logger?.error("getAllSuppliers error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to fetch suppliers",
       data: null,
     };

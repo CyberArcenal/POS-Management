@@ -213,7 +213,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { path: "/notification-logs", name: "Notification Logs", icon: Bell },
         {path: "/devices", name: "Device Manager", icon: ComputerIcon},
         { path: "/system/settings", name: "System Settings", icon: Sliders },
-        { path: "/system/logs", name: "Application Logs", icon: FileText },
       ],
     },
   ]);

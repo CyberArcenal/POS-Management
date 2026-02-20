@@ -138,19 +138,6 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
         </div>
 
         {/* Center: Transaction summary */}
-        <div
-          className="text-3xl md:text-4xl font-extrabold px-4 py-2 rounded-lg shadow-md 
-                      border-2 border-[var(--accent-green)] bg-[var(--card-bg)] 
-                      text-center w-full md:w-auto text-[var(--text-tertiary)]"
-        >
-          Total:{" "}
-          <span className="text-[var(--accent-green)]">
-            {new Intl.NumberFormat("en-PH", {
-              style: "currency",
-              currency: "PHP",
-            }).format(total.toNumber())}
-          </span>
-        </div>
 
         {/* Right: Category + actions + status */}
         <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
@@ -239,6 +226,20 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
               )}
               <span className="text-xs hidden sm:inline">Network</span>
             </div>
+          </div>
+
+          <div
+            className="text-3xl md:text-4xl font-extrabold px-4 py-2 rounded-lg shadow-md 
+                      border-2 border-[var(--accent-green)] bg-[var(--card-bg)] 
+                      text-center w-full md:w-auto text-[var(--text-tertiary)]"
+          >
+            Total:{" "}
+            <span className="text-[var(--accent-green)]">
+              {new Intl.NumberFormat("en-PH", {
+                style: "currency",
+                currency: "PHP",
+              }).format(total.toNumber())}
+            </span>
           </div>
         </div>
       </div>

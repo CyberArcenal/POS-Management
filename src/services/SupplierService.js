@@ -56,6 +56,10 @@ class SupplierService {
         // @ts-ignore
         contactInfo = null,
         // @ts-ignore
+        email = null,
+        // @ts-ignore
+        phone = null,
+        // @ts-ignore
         address = null,
         // @ts-ignore
         isActive = true,
@@ -75,6 +79,8 @@ class SupplierService {
       const supplier = supplierRepo.create({
         name,
         contactInfo,
+        email,
+        phone,
         address,
         isActive,
         createdAt: new Date(),

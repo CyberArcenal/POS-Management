@@ -1,11 +1,16 @@
 // src/renderer/pages/purchase/components/PurchaseFormDialog.tsx
-import React, { useEffect } from 'react';
-import { X, Loader2, Plus, Trash2 } from 'lucide-react';
-import { usePurchaseForm, type PurchaseFormData, type FormMode } from '../hooks/usePurchaseForm';
-import SupplierSelect from '../../../components/Selects/Supplier';
-import ProductSelect from '../../../components/Selects/Product';
-import purchaseAPI from '../../../api/purchase';
-import { dialogs } from '../../../utils/dialogs';
+import React, { useEffect } from "react";
+import { X, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  usePurchaseForm,
+  type PurchaseFormData,
+  type FormMode,
+} from "../hooks/usePurchaseForm";
+import SupplierSelect from "../../../components/Selects/Supplier";
+import ProductSelect from "../../../components/Selects/Product";
+import purchaseAPI from "../../../api/purchase";
+import { dialogs } from "../../../utils/dialogs";
+import { format } from "date-fns";
 
 interface PurchaseFormDialogProps {
   isOpen: boolean;
@@ -24,7 +29,10 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { form, fields, append, remove, totalAmount } = usePurchaseForm(mode, initialData);
+  const { form, fields, append, remove, totalAmount } = usePurchaseForm(
+    mode,
+    initialData,
+  );
 
   const {
     register,
@@ -38,22 +46,43 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
   // Reset form when dialog opens or initialData changes
   useEffect(() => {
     if (isOpen) {
-      if (mode === 'edit' && initialData) {
+      if (mode === "edit" && initialData) {
+        // Edit mode: map from API structure (purchaseItems)
         reset({
           supplierId: initialData.supplier?.id || initialData.supplierId,
-          orderDate: initialData.orderDate.split('T')[0],
-          notes: initialData.notes || '',
+    
+orderDate: initialData.orderDate
+  ? format(new Date(initialData.orderDate), "yyyy-MM-dd")
+  : undefined
+,
+          notes: initialData.notes || "",
           items: initialData.purchaseItems?.map((item: any) => ({
             productId: item.product.id,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-          })) || [],
+          })) || [{ productId: undefined, quantity: 1, unitPrice: 0 }],
+        });
+      } else if (mode === "add" && initialData) {
+        // Add mode with prefill (e.g. from Reorder page)
+        reset({
+          supplierId: initialData.supplierId,
+          orderDate:
+            initialData.orderDate || new Date().toISOString().split("T")[0],
+          notes: initialData.notes || "",
+          items: initialData.items?.length
+            ? initialData.items.map((item: any) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              }))
+            : [{ productId: undefined, quantity: 1, unitPrice: 0 }],
         });
       } else {
+        // Default add mode (empty form)
         reset({
           supplierId: undefined,
-          orderDate: new Date().toISOString().split('T')[0],
-          notes: '',
+          orderDate: new Date().toISOString().split("T")[0],
+          notes: "",
           items: [{ productId: undefined, quantity: 1, unitPrice: 0 }],
         });
       }
@@ -62,23 +91,23 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
 
   const onSubmit = async (data: PurchaseFormData) => {
     try {
-      const items = data.items.map(item => ({
+      const items = data.items.map((item) => ({
         productId: item.productId,
         quantity: parseInt(item.quantity as unknown as string),
         unitPrice: item.unitPrice,
       }));
 
       let response;
-      if (mode === 'add') {
+      if (mode === "add") {
         response = await purchaseAPI.create(
           {
             supplierId: data.supplierId,
             orderDate: new Date(data.orderDate).toISOString(),
             notes: data.notes,
             items,
-            status: 'pending',
+            status: "pending",
           },
-          'system'
+          "system",
         );
       } else {
         if (!purchaseId) return;
@@ -90,14 +119,14 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
             notes: data.notes,
             items,
           },
-          'system'
+          "system",
         );
       }
 
       if (response.status) {
         await dialogs.alert({
-          title: 'Success',
-          message: `Purchase order ${mode === 'add' ? 'created' : 'updated'} successfully.`,
+          title: "Success",
+          message: `Purchase order ${mode === "add" ? "created" : "updated"} successfully.`,
         });
         onSuccess();
       } else {
@@ -105,8 +134,8 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
       }
     } catch (error: any) {
       dialogs.alert({
-        title: 'Error',
-        message: error.message || 'An unexpected error occurred.',
+        title: "Error",
+        message: error.message || "An unexpected error occurred.",
       });
     }
   };
@@ -122,12 +151,12 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
         {/* Modal */}
         <div
           className="relative bg-[var(--card-bg)] rounded-lg w-full max-w-3xl p-6 shadow-xl max-h-[90vh] overflow-y-auto"
-          style={{ border: '1px solid var(--border-color)' }}
+          style={{ border: "1px solid var(--border-color)" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-              {mode === 'add' ? 'Create Purchase Order' : 'Edit Purchase Order'}
+              {mode === "add" ? "Create Purchase Order" : "Edit Purchase Order"}
             </h2>
             <button
               onClick={onClose}
@@ -144,14 +173,18 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                 Supplier <span className="text-[var(--accent-red)]">*</span>
               </label>
               <SupplierSelect
-                value={watch('supplierId')}
-                onChange={(id) => setValue('supplierId', id as number, { shouldValidate: true })}
+                value={watch("supplierId")}
+                onChange={(id) =>
+                  setValue("supplierId", id as number, { shouldValidate: true })
+                }
                 disabled={isSubmitting}
                 placeholder="Select supplier"
                 activeOnly
               />
               {errors.supplierId && (
-                <p className="mt-1 text-xs text-[var(--accent-red)]">{errors.supplierId.message}</p>
+                <p className="mt-1 text-xs text-[var(--accent-red)]">
+                  {errors.supplierId.message}
+                </p>
               )}
             </div>
 
@@ -162,21 +195,29 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
               </label>
               <input
                 type="date"
-                {...register('orderDate', { required: 'Order date is required' })}
+                {...register("orderDate", {
+                  required: "Order date is required",
+                })}
                 className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)]"
               />
               {errors.orderDate && (
-                <p className="mt-1 text-xs text-[var(--accent-red)]">{errors.orderDate.message}</p>
+                <p className="mt-1 text-xs text-[var(--accent-red)]">
+                  {errors.orderDate.message}
+                </p>
               )}
             </div>
 
             {/* Items */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Items</label>
+                <label className="text-sm font-medium text-[var(--text-secondary)]">
+                  Items
+                </label>
                 <button
                   type="button"
-                  onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0 })}
+                  onClick={() =>
+                    append({ productId: 0, quantity: 1, unitPrice: 0 })
+                  }
                   className="flex items-center gap-1 px-2 py-1 text-xs bg-[var(--accent-blue)] text-white rounded hover:bg-[var(--accent-blue-hover)] transition-colors"
                 >
                   <Plus className="w-3 h-3" />
@@ -192,11 +233,18 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                       <ProductSelect
                         value={watch(`items.${index}.productId`)}
                         onChange={(id, product) => {
-                          setValue(`items.${index}.productId`, id as number, { shouldValidate: true });
+                          setValue(`items.${index}.productId`, id as number, {
+                            shouldValidate: true,
+                          });
                           if (product) {
-                            const currentPrice = watch(`items.${index}.unitPrice`);
+                            const currentPrice = watch(
+                              `items.${index}.unitPrice`,
+                            );
                             if (!currentPrice || currentPrice === 0) {
-                              setValue(`items.${index}.unitPrice`, product.price);
+                              setValue(
+                                `items.${index}.unitPrice`,
+                                product.price,
+                              );
                             }
                           }
                         }}
@@ -216,8 +264,8 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                       <input
                         type="number"
                         {...register(`items.${index}.quantity`, {
-                          required: 'Qty req',
-                          min: { value: 1, message: 'Min 1' },
+                          required: "Qty req",
+                          min: { value: 1, message: "Min 1" },
                         })}
                         placeholder="Qty"
                         className="w-full px-2 py-1 bg-[var(--input-bg)] border border-[var(--input-border)] rounded text-sm text-[var(--text-primary)]"
@@ -235,8 +283,8 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                         type="number"
                         step="0.01"
                         {...register(`items.${index}.unitPrice`, {
-                          required: 'Price req',
-                          min: { value: 0, message: 'Min 0' },
+                          required: "Price req",
+                          min: { value: 0, message: "Min 0" },
                         })}
                         placeholder="Price"
                         className="w-full px-2 py-1 bg-[var(--input-bg)] border border-[var(--input-border)] rounded text-sm text-[var(--text-primary)]"
@@ -273,7 +321,9 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
 
             {/* Total Amount */}
             <div className="flex justify-end items-center gap-4 pt-2">
-              <span className="text-sm font-medium text-[var(--text-secondary)]">Total:</span>
+              <span className="text-sm font-medium text-[var(--text-secondary)]">
+                Total:
+              </span>
               <span className="text-xl font-bold text-[var(--accent-green)]">
                 ₱{totalAmount.toFixed(2)}
               </span>
@@ -285,7 +335,7 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                 Notes
               </label>
               <textarea
-                {...register('notes')}
+                {...register("notes")}
                 rows={2}
                 className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-blue)] resize-none"
               />
@@ -306,7 +356,7 @@ export const PurchaseFormDialog: React.FC<PurchaseFormDialogProps> = ({
                 className="px-4 py-2 bg-[var(--accent-blue)] text-white rounded-lg text-sm hover:bg-[var(--accent-blue-hover)] disabled:opacity-50 flex items-center gap-2 transition-colors"
               >
                 {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {mode === 'add' ? 'Create' : 'Update'}
+                {mode === "add" ? "Create" : "Update"}
               </button>
             </div>
           </form>

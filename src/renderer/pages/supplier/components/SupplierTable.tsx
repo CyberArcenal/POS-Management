@@ -94,7 +94,7 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({
                   {supplier.name}
                 </td>
                 <td className="w-1/6 px-4 py-3 text-sm text-[var(--text-secondary)] truncate">
-                  {supplier.contactInfo || '—'}
+                  {supplier.phone || supplier.email || "-"}
                 </td>
                 <td className="w-1/6 px-4 py-3 text-sm text-[var(--text-secondary)] truncate">
                   {supplier.address || '—'}

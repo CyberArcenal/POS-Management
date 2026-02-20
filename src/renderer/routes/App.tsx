@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout";
 import DashboardPage from "../pages/Analytics/dashboard";
 import Cashier from "../pages/CashierSale";
 import Transactions from "../pages/Transactions";
-import ProductPage from "../pages/Product/index2";
+import ProductPage from "../pages/Product";
 import CustomerPage from "../pages/Customer";
 import CustomerLoyaltyPage from "../pages/CustomerLoyalty";
 import MovementPage from "../pages/Movement";

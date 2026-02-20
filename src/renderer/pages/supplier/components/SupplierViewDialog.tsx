@@ -99,6 +99,7 @@ export const SupplierViewDialog: React.FC<SupplierViewDialogProps> = ({
               <>
                 {activeTab === 'info' && (
                   <div className="space-y-4">
+                    {/* Basic info grid: 2 columns */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-[var(--card-secondary-bg)] p-4 rounded-lg">
                         <p className="text-sm text-[var(--text-tertiary)]">Name</p>
@@ -111,10 +112,14 @@ export const SupplierViewDialog: React.FC<SupplierViewDialogProps> = ({
                         </p>
                       </div>
                       <div className="bg-[var(--card-secondary-bg)] p-4 rounded-lg">
-                        <p className="text-sm text-[var(--text-tertiary)]">Contact Info</p>
-                        <p className="text-[var(--text-primary)]">{supplier.contactInfo || '—'}</p>
+                        <p className="text-sm text-[var(--text-tertiary)]">Email</p>
+                        <p className="text-[var(--text-primary)]">{supplier.email || '—'}</p>
                       </div>
                       <div className="bg-[var(--card-secondary-bg)] p-4 rounded-lg">
+                        <p className="text-sm text-[var(--text-tertiary)]">Phone</p>
+                        <p className="text-[var(--text-primary)]">{supplier.phone || '—'}</p>
+                      </div>
+                      <div className="bg-[var(--card-secondary-bg)] p-4 rounded-lg col-span-2">
                         <p className="text-sm text-[var(--text-tertiary)]">Address</p>
                         <p className="text-[var(--text-primary)]">{supplier.address || '—'}</p>
                       </div>

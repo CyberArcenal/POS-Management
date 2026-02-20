@@ -48,6 +48,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
               <tr
                 key={log.id}
                 className="hover:bg-[var(--table-row-hover)] transition-colors"
+                 onClick={(e) => {e.stopPropagation(); onView(log)}}
               >
                 <td className="w-16 px-4 py-3 text-sm font-mono text-[var(--text-primary)]">#{log.id}</td>
                 <td className="w-36 px-4 py-3 text-sm text-[var(--text-secondary)]">
@@ -73,7 +74,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
                 </td>
                 <td className="w-20 px-4 py-3 text-center">
                   <button
-                    onClick={() => onView(log)}
+                    onClick={(e) => {e.stopPropagation(); onView(log)}}
                     className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
                     title="View Details"
                   >

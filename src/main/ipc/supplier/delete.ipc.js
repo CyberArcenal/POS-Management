@@ -2,6 +2,7 @@
 // @ts-check
 const { logger } = require("../../../utils/logger");
 const auditLogger = require("../../../utils/auditLogger");
+const supplierService = require("../../../services/SupplierService");
 
 /**
  * Soft-delete a supplier (set isActive = false) (transactional)
@@ -12,54 +13,18 @@ const auditLogger = require("../../../utils/auditLogger");
  * @returns {Promise<{status: boolean, message?: string, data?: any}>}
  */
 module.exports = async (params, queryRunner) => {
-  const { id, user = "system" } = params;
-
-  if (!id || isNaN(Number(id))) {
-    return {
-      status: false,
-      message: "Valid supplier ID is required",
-      data: null,
-    };
-  }
-
   try {
-    const Supplier = require("../../../entities/Supplier");
-    const supplierRepo = queryRunner.manager.getRepository(Supplier);
-
-    const supplier = await supplierRepo.findOne({ where: { id: Number(id) } });
-    if (!supplier) {
-      return {
-        status: false,
-        message: `Supplier with ID ${id} not found`,
-        data: null,
-      };
-    }
-
-    if (!supplier.isActive) {
-      return {
-        status: false,
-        message: `Supplier #${id} is already inactive`,
-        data: null,
-      };
-    }
-
-    const oldData = { ...supplier };
-    supplier.isActive = false;
-    supplier.updatedAt = new Date();
-
-    const updated = await supplierRepo.save(supplier);
-
-    await auditLogger.logDelete("Supplier", id, oldData, user, queryRunner.manager);
-
-    logger?.info(`Supplier deactivated: #${id}`);
+    const updated = await supplierService.delete(params.id);
     return {
       status: true,
       data: updated,
     };
   } catch (error) {
+    // @ts-ignore
     logger?.error("deleteSupplier error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to delete supplier",
       data: null,
     };

@@ -9,6 +9,7 @@ import { LoyaltyTransactionsTable } from "./components/LoyaltyTransactionsTable"
 import { LoyaltyAnalytics } from "./components/LoyaltyAnalytics";
 import { LoyaltyAdjustmentDialog } from "./components/LoyaltyAdjustmentDialog";
 import { CustomerLoyaltyViewDialog } from "./components/CustomerLoyaltyViewDialog";
+import Pagination from "../../components/Shared/Pagination1";
 
 const CustomerLoyaltyPage: React.FC = () => {
   const {
@@ -35,7 +36,8 @@ const CustomerLoyaltyPage: React.FC = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizeOptions = [10, 20, 50, 100];
 
   const handleFilterChange = (key: keyof LoyaltyFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -46,8 +48,19 @@ const CustomerLoyaltyPage: React.FC = () => {
   const totalPages = Math.ceil(transactions.length / pageSize);
   const paginatedTransactions = transactions.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
+
+  const totalItems = transactions.length;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // reset to first page
+  };
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
@@ -99,14 +112,18 @@ const CustomerLoyaltyPage: React.FC = () => {
           <input
             type="date"
             value={filters.startDate || ""}
-            onChange={(e) => handleFilterChange("startDate", e.target.value || undefined)}
+            onChange={(e) =>
+              handleFilterChange("startDate", e.target.value || undefined)
+            }
             className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
           />
           <span className="text-[var(--text-tertiary)]">to</span>
           <input
             type="date"
             value={filters.endDate || ""}
-            onChange={(e) => handleFilterChange("endDate", e.target.value || undefined)}
+            onChange={(e) =>
+              handleFilterChange("endDate", e.target.value || undefined)
+            }
             className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
           />
 
@@ -152,46 +169,15 @@ const CustomerLoyaltyPage: React.FC = () => {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, transactions.length)} of{" "}
-                {transactions.length} transactions
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 border rounded-lg ${
-                        currentPage === page
-                          ? "bg-[var(--accent-blue)] text-white border-[var(--accent-blue)]"
-                          : "border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)]"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSize={true}
+          />
 
           {/* Analytics Section */}
           {/* <div className="mt-8">

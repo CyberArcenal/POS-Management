@@ -16,9 +16,11 @@ module.exports = async (params) => {
       data: stats,
     };
   } catch (error) {
+    // @ts-ignore
     logger?.error("getSupplierStatistics error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to fetch supplier statistics",
       data: null,
     };

@@ -6,30 +6,25 @@ import { SummaryCards } from "./components/SummaryCards";
 import { FilterBar } from "./components/FilterBar";
 import { AuditTable } from "./components/AuditTable";
 import { AuditViewDialog } from "./components/AuditViewDialog";
+import Pagination from "../../components/Shared/Pagination1";
 
 const AuditTrailPage: React.FC = () => {
-  const {
-    logs,
-    filters,
-    setFilters,
-    loading,
-    error,
-    reload,
-    summary,
-  } = useAuditLogs({
-    action: "all",
-    startDate: undefined,
-    endDate: undefined,
-    search: "",
-    entity: undefined,
-    user: undefined, // changed from userId
-  });
+  const { logs, filters, setFilters, loading, error, reload, summary } =
+    useAuditLogs({
+      action: "all",
+      startDate: undefined,
+      endDate: undefined,
+      search: "",
+      entity: undefined,
+      user: undefined, // changed from userId
+    });
 
   const viewDialog = useAuditView();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizeOptions = [10, 20, 50, 100];
 
   const handleFilterChange = (key: keyof AuditFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -37,11 +32,22 @@ const AuditTrailPage: React.FC = () => {
   };
 
   // Pagination calculations
-  const totalPages = Math.ceil(logs.length / pageSize);
   const paginatedLogs = logs.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
+
+  const totalItems = logs.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // reset to first page
+  };
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
@@ -87,53 +93,19 @@ const AuditTrailPage: React.FC = () => {
         <>
           {/* Audit Table */}
           <div className="flex-1">
-            <AuditTable
-              logs={paginatedLogs}
-              onView={viewDialog.open}
-            />
+            <AuditTable logs={paginatedLogs} onView={viewDialog.open} />
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, logs.length)} of{" "}
-                {logs.length} logs
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 border rounded-lg ${
-                        currentPage === page
-                          ? "bg-[var(--accent-blue)] text-white border-[var(--accent-blue)]"
-                          : "border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)]"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSize={true}
+          />
         </>
       )}
 

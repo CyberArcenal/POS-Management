@@ -9,9 +9,11 @@ export interface Supplier {
   id: number;
   name: string;
   contactInfo: string | null;
+  email: string | null;
+  phone: string | null;
   address: string | null;
   isActive: boolean;
-  createdAt: string;        // ISO date
+  createdAt: string; // ISO date
   updatedAt: string | null;
 
   // optional relations (if eager loaded)
@@ -33,7 +35,7 @@ export interface Product {
 export interface SupplierStatistics {
   totalActive: number;
   totalInactive: number;
-  totalProducts: number;                     // total products from active suppliers
+  totalProducts: number; // total products from active suppliers
   suppliersWithProductCount: SupplierWithProductCount[];
 }
 
@@ -63,8 +65,13 @@ export interface BaseResponse<T = any> {
 export interface SuppliersResponse extends BaseResponse<Supplier[]> {}
 export interface SupplierResponse extends BaseResponse<Supplier> {}
 export interface SupplierStatisticsResponse extends BaseResponse<SupplierStatistics> {}
-export interface SuppliersWithProductCountResponse extends BaseResponse<SupplierWithProductCount[]> {}
-export interface DeleteResponse extends BaseResponse<{ success: boolean; id: number }> {}
+export interface SuppliersWithProductCountResponse extends BaseResponse<
+  SupplierWithProductCount[]
+> {}
+export interface DeleteResponse extends BaseResponse<{
+  success: boolean;
+  id: number;
+}> {}
 export interface BulkCreateResponse extends BaseResponse<{
   created: Supplier[];
   errors: Array<{ data: any; error: string }>;
@@ -72,7 +79,7 @@ export interface BulkCreateResponse extends BaseResponse<{
 export interface ExportResult {
   filePath: string;
   format: string;
-  data?: string;           // for CSV export, the actual CSV content may be returned
+  data?: string; // for CSV export, the actual CSV content may be returned
 }
 export interface ExportResponse extends BaseResponse<ExportResult> {}
 
@@ -185,7 +192,9 @@ class SupplierAPI {
       if (response.status) {
         return response;
       }
-      throw new Error(response.message || "Failed to fetch supplier statistics");
+      throw new Error(
+        response.message || "Failed to fetch supplier statistics",
+      );
     } catch (error: any) {
       throw new Error(error.message || "Failed to fetch supplier statistics");
     }
@@ -233,9 +242,13 @@ class SupplierAPI {
       if (response.status) {
         return response;
       }
-      throw new Error(response.message || "Failed to fetch suppliers with product count");
+      throw new Error(
+        response.message || "Failed to fetch suppliers with product count",
+      );
     } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch suppliers with product count");
+      throw new Error(
+        error.message || "Failed to fetch suppliers with product count",
+      );
     }
   }
 
@@ -249,7 +262,8 @@ class SupplierAPI {
    */
   async create(data: {
     name: string;
-    contactInfo?: string | null;
+    email?: string | null;
+    phone?: string | null;
     address?: string | null;
     isActive?: boolean;
   }): Promise<SupplierResponse> {
@@ -281,10 +295,11 @@ class SupplierAPI {
     id: number,
     data: Partial<{
       name: string;
-      contactInfo: string | null;
+      emain: string | null;
+      phone: string | null;
       address: string | null;
       isActive: boolean;
-    }>
+    }>,
   ): Promise<SupplierResponse> {
     try {
       if (!window.backendAPI?.supplier) {
@@ -339,7 +354,7 @@ class SupplierAPI {
       contactInfo?: string | null;
       address?: string | null;
       isActive?: boolean;
-    }>
+    }>,
   ): Promise<BulkCreateResponse> {
     try {
       if (!window.backendAPI?.supplier) {
@@ -399,7 +414,7 @@ class SupplierAPI {
    * Check if the supplier API is available
    */
   async isAvailable(): Promise<boolean> {
-    return !!(window.backendAPI?.supplier);
+    return !!window.backendAPI?.supplier;
   }
 
   /**
@@ -423,7 +438,9 @@ class SupplierAPI {
   async nameExists(name: string): Promise<boolean> {
     try {
       const response = await this.getAll({ search: name, limit: 1 });
-      return response.data.some(s => s.name.toLowerCase() === name.toLowerCase());
+      return response.data.some(
+        (s) => s.name.toLowerCase() === name.toLowerCase(),
+      );
     } catch (error) {
       console.error("Error checking supplier name:", error);
       return false;

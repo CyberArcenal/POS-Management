@@ -8,7 +8,7 @@ import { SummaryCards } from "./components/SummaryCards";
 import { FilterBar } from "./components/FilterBar";
 import { MovementTable } from "./components/MovementTable";
 import { MovementViewDialog } from "./components/MovementViewDialog";
-import { Pagination } from "../../components/Shared/Pagination";
+import Pagination from "../../components/Shared/Pagination1";
 
 const MovementPage: React.FC = () => {
   const {
@@ -30,8 +30,9 @@ const MovementPage: React.FC = () => {
   const viewDialog = useMovementView();
 
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+ const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizeOptions = [10, 20, 50, 100];
 
   const handleFilterChange = (key: keyof MovementFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -39,11 +40,24 @@ const MovementPage: React.FC = () => {
   };
 
   // Pagination calculations
-  const totalPages = Math.ceil(movements.length / pageSize);
   const paginatedMovements = movements.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+
+
+   const totalItems = movements.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // reset to first page
+  };
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
@@ -98,10 +112,12 @@ const MovementPage: React.FC = () => {
           {/* Pagination Component */}
           <Pagination
             currentPage={currentPage}
-            totalPages={totalPages}
+            totalItems={totalItems}
             pageSize={pageSize}
-            totalItems={movements.length}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSize={true}
           />
         </>
       )}

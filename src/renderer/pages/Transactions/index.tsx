@@ -3,7 +3,10 @@ import { PlusCircle, Download, Loader2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 
 // Hooks
-import { useTransactions, type TransactionFilters } from "./hooks/useTransactions";
+import {
+  useTransactions,
+  type TransactionFilters,
+} from "./hooks/useTransactions";
 import { useTransactionDetails } from "./hooks/useTransactionDetails";
 
 // Components
@@ -13,21 +16,25 @@ import { TransactionsTable } from "./components/TransactionsTable";
 import { TransactionDetailsDrawer } from "./components/TransactionDetailsDrawer";
 import { dialogs } from "../../utils/dialogs";
 import saleAPI from "../../api/sale";
+import Pagination from "../../components/Shared/Pagination1";
 
 const TransactionsPage: React.FC = () => {
-  const { transactions, filters, setFilters, loading, error, reload } = useTransactions({
-    startDate: format(new Date(), "yyyy-MM-dd"),
-    endDate: format(new Date(), "yyyy-MM-dd"),
-    search: "",
-    paymentMethod: "",
-    status: "",
-  });
+  const { transactions, filters, setFilters, loading, error, reload } =
+    useTransactions({
+      startDate: format(new Date(), "yyyy-MM-dd"),
+      endDate: format(new Date(), "yyyy-MM-dd"),
+      search: "",
+      paymentMethod: "",
+      status: "",
+    });
 
-  const { selectedTransaction, detailsOpen, openDetails, closeDetails } = useTransactionDetails();
+  const { selectedTransaction, detailsOpen, openDetails, closeDetails } =
+    useTransactionDetails();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const pageSizeOptions = [10, 20, 50, 100];
 
   const handleFilterChange = (key: keyof TransactionFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -82,21 +89,34 @@ const TransactionsPage: React.FC = () => {
   };
 
   // Pagination calculations
-  const totalPages = Math.ceil(transactions.length / pageSize);
   const paginatedTransactions = transactions.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
+
+  const totalItems = transactions.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // reset to first page
+  };
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)] p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Transactions</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+          Transactions
+        </h1>
         <div className="flex gap-2">
           <button
             onClick={handleNewSale}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-blue)] text-white rounded-lg hover:bg-[var(--accent-blue-hover)] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-blue)] text-white rounded-lg hover:bg-[var(--accent-blue-hover)] transition-colors hidden"
           >
             <PlusCircle className="w-4 h-4" />
             New Sale
@@ -115,7 +135,11 @@ const TransactionsPage: React.FC = () => {
       <SummaryMetrics transactions={transactions} />
 
       {/* Filters */}
-      <FilterBar filters={filters} onFilterChange={handleFilterChange} onReload={reload} />
+      <FilterBar
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onReload={reload}
+      />
 
       {/* Transactions Table */}
       {loading ? (
@@ -126,7 +150,9 @@ const TransactionsPage: React.FC = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-[var(--accent-red)]" />
-            <p className="text-[var(--text-primary)] font-medium">Error loading transactions</p>
+            <p className="text-[var(--text-primary)] font-medium">
+              Error loading transactions
+            </p>
             <p className="text-sm text-[var(--text-tertiary)] mt-1">{error}</p>
             <button
               onClick={reload}
@@ -148,44 +174,15 @@ const TransactionsPage: React.FC = () => {
           </div>
 
           {/* Pagination - identical to product page */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, transactions.length)} of {transactions.length}{" "}
-                transactions
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 border rounded-lg ${
-                      currentPage === page
-                        ? "bg-[var(--accent-blue)] text-white border-[var(--accent-blue)]"
-                        : "border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)]"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSize={true}
+          />
         </>
       )}
 
