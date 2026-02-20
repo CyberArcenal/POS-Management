@@ -96,7 +96,9 @@ class SaleStateTransitionService {
       // Only earn points on net cash portion
       const netCashSpend = subtotal - hydratedSale.loyaltyRedeemed;
       const pointsEarned = Math.floor(netCashSpend / rate);
-
+      hydratedSale.pointsEarn = pointsEarned;
+      hydratedSale.updatedAt = new Date();
+      await updateDb(saleRepo, hydratedSale);
       if (pointsEarned > 0) {
         const customer = await this.customerRepo.findOne({
           where: { id: hydratedSale.customer.id },

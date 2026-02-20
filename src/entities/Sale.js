@@ -5,30 +5,31 @@ const Sale = new EntitySchema({
   name: "Sale",
   tableName: "sales",
   columns: {
-    id: { type: Number, primary: true, generated: true },
-    timestamp: { type: Date, default: () => "CURRENT_TIMESTAMP" },
+    id: { type: "integer", primary: true, generated: true },
+    timestamp: { type: "datetime", default: () => "CURRENT_TIMESTAMP" },
     status: {
-      type: "varchar",
+      type: "text",
       enum: ["initiated", "paid", "refunded", "voided"],
       default: "initiated",
     },
     paymentMethod: {
-      type: "varchar",
+      type: "text",
       enum: ["cash", "card", "wallet"],
       default: "cash",
     },
-    totalAmount: { type: "decimal", default: 0.0 },
+    totalAmount: { type: "real", default: 0.0 }, // SQLite: use REAL for amounts
 
-    usedLoyalty: { type: Boolean, default: false },
-    loyaltyRedeemed: { type: Number, default: 0 },
-    usedDiscount: { type: Boolean, default: false },
-    totalDiscount: { type: Number, default: 0 },
-    usedVoucher: { type: Boolean, default: false },
-    voucherCode: { type: "varchar", nullable: true },
+    usedLoyalty: { type: "boolean", default: false },
+    loyaltyRedeemed: { type: "integer", default: 0 },
+    usedDiscount: { type: "boolean", default: false },
+    totalDiscount: { type: "real", default: 0.0 },
+    usedVoucher: { type: "boolean", default: false },
+    voucherCode: { type: "text", nullable: true },
+    pointsEarn: { type: "real", default: 0.0 }, // REAL for fractional points
 
-    notes: { type: String, nullable: true },
-    createdAt: { type: Date, default: () => "CURRENT_TIMESTAMP" },
-    updatedAt: { type: Date, nullable: true },
+    notes: { type: "text", nullable: true },
+    createdAt: { type: "datetime", default: () => "CURRENT_TIMESTAMP" },
+    updatedAt: { type: "datetime", nullable: true },
   },
   relations: {
     customer: {

@@ -145,7 +145,7 @@ export const TransactionDetailsDrawer: React.FC<TransactionDetailsDrawerProps> =
               <div className="bg-[var(--card-secondary-bg)] rounded-lg p-3">
                 <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Loyalty</h3>
                 <p className="text-sm text-[var(--text-tertiary)]">
-                  Points earned: <span className="text-[var(--accent-purple)] font-medium">+???</span>
+                  Points earned: <span className="text-[var(--accent-purple)] font-medium">+{transaction.pointsEarn}</span>
                 </p>
               </div>
             )}

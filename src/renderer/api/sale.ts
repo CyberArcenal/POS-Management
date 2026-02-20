@@ -45,12 +45,22 @@ export interface Sale {
   status: 'initiated' | 'paid' | 'refunded' | 'voided';
   paymentMethod: 'cash' | 'card' | 'wallet';
   totalAmount: number;     // decimal
+  pointsEarn: number;      // earned loyalty points for this sale
+
+  usedLoyalty: boolean;
+  loyaltyRedeemed: number;
+  usedDiscount: boolean;
+  totalDiscount: number;
+  usedVoucher: boolean;
+  voucherCode: string | null;
+
   notes: string | null;
   createdAt: string;
   updatedAt: string | null;
   customer: Customer | null;
   saleItems: SaleItem[];
 }
+
 
 // ----------------------------------------------------------------------
 // 📨 Response Interfaces (mirror IPC response format)
