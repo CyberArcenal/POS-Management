@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type Product } from "../../../api/product";
 
 export interface ProductFormData {
+  barcode: string;
   sku: string;
   name: string;
   price: number;
@@ -19,6 +20,7 @@ export function useProductForm() {
   const [initialData, setInitialData] = useState<ProductFormData>({
     sku: "",
     name: "",
+    barcode: "",
     description: "",
     price: 0,
     stockQty: 0,
@@ -33,6 +35,7 @@ export function useProductForm() {
     setInitialData({
       sku: "",
       name: "",
+      barcode: "",
       description: "",
       price: 0,
       stockQty: 0,
@@ -49,6 +52,7 @@ export function useProductForm() {
     setInitialData({
       sku: product.sku,
       name: product.name,
+      barcode: product.barcode,
       description: product.description || "",
       price:
         typeof product.price === "string"

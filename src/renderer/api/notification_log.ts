@@ -109,11 +109,11 @@ class NotificationLogAPI {
   private async callRaw<
     T extends { status: boolean; message?: string; data?: any },
   >(method: string, params: Record<string, any> = {}): Promise<T> {
-    if (!window.backendAPI?.notification) {
+    if (!window.backendAPI?.notificationLog) {
       throw new Error("Electron API (notification) not available");
     }
 
-    const response = await window.backendAPI.notification({ method, params });
+    const response = await window.backendAPI.notificationLog({ method, params });
 
     if (!response || typeof response !== "object") {
       throw new Error("Invalid response format from backend");
@@ -323,7 +323,7 @@ class NotificationLogAPI {
   }
 
   isAvailable(): boolean {
-    return !!window.backendAPI?.notification;
+    return !!window.backendAPI?.notificationLog;
   }
 }
 

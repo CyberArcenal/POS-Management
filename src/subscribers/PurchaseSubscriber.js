@@ -78,6 +78,10 @@ class PurchaseSubscriber {
     const transitionService = new PurchaseStateTransitionService(AppDataSource);
 
     switch (entity.status) {
+      case "approved":
+        // @ts-ignore
+        await transitionService.onApprove(fullPurchase);
+        break;
       case "completed":
         // @ts-ignore
         await transitionService.onComplete(fullPurchase);

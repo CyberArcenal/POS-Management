@@ -6,9 +6,6 @@ const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateReturnData } = require("../utils/returnUtils");
 
-// 🔧 SETTINGS INTEGRATION: import needed settings getters
-const { allowRefunds, refundWindowDays } = require("../utils/system");
-
 class ReturnRefundService {
   constructor() {
     this.returnRepository = null;
@@ -69,12 +66,6 @@ class ReturnRefundService {
     } = await this.getRepositories();
 
     try {
-      // 🔧 SETTINGS INTEGRATION: check if refunds are allowed globally
-      const refundsAllowed = await allowRefunds();
-      if (!refundsAllowed) {
-        throw new Error("Refunds are disabled in system settings.");
-      }
-
       // Validate return data
       const validation = validateReturnData(returnData);
       if (!validation.valid) {
@@ -100,33 +91,11 @@ class ReturnRefundService {
 
       console.log(`Creating return: Reference ${referenceNo}`);
 
-      // Check sale exists and is eligible for return
+      // Check sale exists
       // @ts-ignore
-      const sale = await saleRepo.findOne({
-        where: { id: saleId },
-      });
+      const sale = await saleRepo.findOne({ where: { id: saleId } });
       if (!sale) {
         throw new Error(`Sale with ID ${saleId} not found`);
-      }
-
-      // 🔧 SETTINGS INTEGRATION: ensure sale is paid
-      if (sale.status !== "paid") {
-        throw new Error(
-          `Only paid sales can be refunded. Current status: ${sale.status}`,
-        );
-      }
-
-      // 🔧 SETTINGS INTEGRATION: check refund window
-      const windowDays = await refundWindowDays();
-      // @ts-ignore
-      const saleDate = new Date(sale.timestamp);
-      const now = new Date();
-      // @ts-ignore
-      const diffDays = Math.floor((now - saleDate) / (1000 * 60 * 60 * 24));
-      if (diffDays > windowDays) {
-        throw new Error(
-          `Refund window is ${windowDays} days. This sale is ${diffDays} days old.`,
-        );
       }
 
       // Check customer exists
@@ -203,6 +172,11 @@ class ReturnRefundService {
         `Return created: #${savedReturn.id} - ${savedReturn.referenceNo}`,
       );
 
+      // If status is 'processed', update stock immediately
+      // if (status === "processed") {
+      //   await this._updateStockFromReturn(savedReturn, user);
+      // }
+
       return savedReturn;
     } catch (error) {
       // @ts-ignore
@@ -244,7 +218,6 @@ class ReturnRefundService {
       }
 
       const oldData = { ...existingReturn };
-      const oldStatus = existingReturn.status;
 
       // Handle sale change (should be rare, but allow if pending)
       // @ts-ignore
@@ -366,7 +339,8 @@ class ReturnRefundService {
         // @ts-ignore
         existingReturn.refundMethod = returnData.refundMethod;
 
-      // Handle status change
+      // Handle status change: if moving to 'processed', need to update stock
+      const oldStatus = existingReturn.status;
       // @ts-ignore
       const newStatus = returnData.status;
       if (newStatus && newStatus !== oldStatus) {
@@ -377,38 +351,15 @@ class ReturnRefundService {
         if (oldStatus === "processed" && newStatus !== "processed") {
           throw new Error("Cannot revert processed return");
         }
-
-        // 🔧 SETTINGS INTEGRATION: if moving to 'processed', re-check refund window and sale status
-        if (newStatus === "processed") {
-          const refundsAllowed = await allowRefunds();
-          if (!refundsAllowed) {
-            throw new Error(
-              "Refunds are disabled in system settings. Cannot process return.",
-            );
-          }
-
-          const windowDays = await refundWindowDays();
-          // @ts-ignore
-          const saleDate = new Date(existingReturn.sale.timestamp);
-          const now = new Date();
-          // @ts-ignore
-          const diffDays = Math.floor((now - saleDate) / (1000 * 60 * 60 * 24));
-          if (diffDays > windowDays) {
-            throw new Error(
-              `Refund window is ${windowDays} days. This sale is ${diffDays} days old. Cannot process.`,
-            );
-          }
-
-          // @ts-ignore
-          if (existingReturn.sale.status !== "paid") {
-            throw new Error(
-              // @ts-ignore
-              `Cannot process return for sale with status ${existingReturn.sale.status}`,
-            );
-          }
+        if (oldStatus === "pending" && newStatus === "processed") {
+          // Will update stock after saving
+          existingReturn.status = newStatus;
+        } else if (oldStatus === "pending" && newStatus === "cancelled") {
+          existingReturn.status = newStatus;
+          // No stock change needed
+        } else {
+          existingReturn.status = newStatus;
         }
-
-        existingReturn.status = newStatus;
       }
 
       existingReturn.updatedAt = new Date();
@@ -416,6 +367,11 @@ class ReturnRefundService {
       // Save updated return
       // @ts-ignore
       const savedReturn = await updateDb(returnRepo, existingReturn);
+
+      // If status changed to processed, update stock
+      // if (newStatus === "processed" && oldStatus !== "processed") {
+      //   await this._updateStockFromReturn(savedReturn, user);
+      // }
 
       await auditLogger.logUpdate(
         "ReturnRefund",
@@ -462,6 +418,9 @@ class ReturnRefundService {
 
       // @ts-ignore
       const savedReturn = await updateDb(returnRepo, returnRefund);
+
+      // Optionally, if return was processed, we might want to reverse stock changes.
+      // For simplicity, we don't auto-reverse; user can manually adjust if needed.
 
       await auditLogger.logDelete("ReturnRefund", id, oldData, user);
 

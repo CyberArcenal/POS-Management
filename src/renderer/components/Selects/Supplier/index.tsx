@@ -1,15 +1,16 @@
-// src/renderer/components/SupplierSelect.tsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, ChevronDown, Loader, Truck, X, Phone, MapPin } from 'lucide-react';
-import supplierAPI from '../../../api/supplier';
-import type { Supplier } from '../../../api/supplier';
+// src/renderer/components/Selects/Supplier/index.tsx
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { Search, ChevronDown, Loader, Truck, X, Phone, MapPin } from "lucide-react";
+import type { Supplier } from "../../../api/supplier";
+import supplierAPI from "../../../api/supplier";
 
 interface SupplierSelectProps {
   value: number | null;
   onChange: (supplierId: number | null, supplier?: Supplier) => void;
   disabled?: boolean;
   placeholder?: string;
-  activeOnly?: boolean;       // show only active suppliers
+  activeOnly?: boolean;
   autoFocus?: boolean;
 }
 
@@ -17,18 +18,21 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
   value,
   onChange,
   disabled = false,
-  placeholder = 'Select a supplier',
+  placeholder = "Select a supplier",
   activeOnly = true,
   autoFocus = true,
 }) => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filtered, setFiltered] = useState<Supplier[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
+  const [dropdownStyle, setDropdownStyle] = useState({ top: 0, left: 0, width: 0 });
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimer = useRef<number | undefined>(undefined);
@@ -44,13 +48,11 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
         const params: any = {
           page: currentPage,
           limit: 15,
-          sortBy: 'name',
-          sortOrder: 'ASC',
+          sortBy: "name",
+          sortOrder: "ASC",
           search,
         };
-        if (activeOnly) {
-          params.isActive = true;
-        }
+        if (activeOnly) params.isActive = true;
 
         const response = await supplierAPI.getAll(params);
         if (response.status && response.data) {
@@ -75,7 +77,7 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
           setTotal(totalItems);
         }
       } catch (error) {
-        console.error('Failed to load suppliers:', error);
+        console.error("Failed to load suppliers:", error);
       } finally {
         setLoading(false);
       }
@@ -100,37 +102,66 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
     }
   }, [isOpen, suppliers.length, loading, loadSuppliers]);
 
-  // Outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Auto‑focus
+  // Focus search when dropdown opens
   useEffect(() => {
     if (isOpen && autoFocus && searchInputRef.current) {
       setTimeout(() => searchInputRef.current?.focus(), 50);
     }
   }, [isOpen, autoFocus]);
 
+  // Update dropdown position
+  const updateDropdownPosition = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateDropdownPosition();
+      window.addEventListener("scroll", updateDropdownPosition, true);
+      window.addEventListener("resize", updateDropdownPosition);
+    }
+    return () => {
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+      window.removeEventListener("resize", updateDropdownPosition);
+    };
+  }, [isOpen]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
   const handleClearSearch = () => {
-    setSearchTerm('');
+    setSearchTerm("");
     loadSuppliers(true);
   };
 
   const handleSelect = (sup: Supplier) => {
     onChange(sup.id, sup);
     setIsOpen(false);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const handleClear = () => {
@@ -146,28 +177,29 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
   const selectedSupplier = suppliers.find((s) => s.id === value);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative">
       {/* Trigger button */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={`
           w-full p-3 rounded-lg text-left flex justify-between items-center text-sm
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           transition-colors duration-200
         `}
         style={{
-          backgroundColor: 'var(--card-bg)',
-          border: '1px solid var(--border-color)',
-          color: 'var(--text-primary)',
-          minHeight: '44px',
+          backgroundColor: "var(--card-bg)",
+          border: "1px solid var(--border-color)",
+          color: "var(--text-primary)",
+          minHeight: "44px",
         }}
       >
         <div className="flex items-center gap-2 truncate">
           {selectedSupplier ? (
             <>
-              <Truck className="w-4 h-4" style={{ color: 'var(--primary-color)' }} />
+              <Truck className="w-4 h-4" style={{ color: "var(--primary-color)" }} />
               <div className="truncate">
                 <div className="font-medium flex items-center gap-2">
                   {selectedSupplier.name}
@@ -175,24 +207,22 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
                     className="px-1.5 py-0.5 text-xs rounded"
                     style={{
                       backgroundColor: selectedSupplier.isActive
-                        ? 'var(--status-completed-bg)'
-                        : 'var(--status-cancelled-bg)',
-                      color: selectedSupplier.isActive
-                        ? 'var(--status-completed)'
-                        : 'var(--status-cancelled)',
+                        ? "var(--status-completed-bg)"
+                        : "var(--status-cancelled-bg)",
+                      color: selectedSupplier.isActive ? "var(--status-completed)" : "var(--status-cancelled)",
                     }}
                   >
-                    {selectedSupplier.isActive ? 'Active' : 'Inactive'}
+                    {selectedSupplier.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <div className="text-xs flex gap-2" style={{ color: 'var(--text-secondary)' }}>
+                <div className="text-xs flex gap-2" style={{ color: "var(--text-secondary)" }}>
                   {selectedSupplier.contactInfo && <span>{selectedSupplier.contactInfo}</span>}
                   {selectedSupplier.address && <span>• {selectedSupplier.address}</span>}
                 </div>
               </div>
             </>
           ) : (
-            <span style={{ color: 'var(--text-secondary)' }}>{placeholder}</span>
+            <span style={{ color: "var(--text-secondary)" }}>{placeholder}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -204,178 +234,181 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
                 handleClear();
               }}
               className="p-1 rounded hover:bg-gray-700 transition-colors"
-              style={{ color: 'var(--primary-hover)' }}
+              style={{ color: "var(--primary-hover)" }}
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-            style={{ color: 'var(--text-secondary)' }}
+            className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            style={{ color: "var(--text-secondary)" }}
           />
         </div>
       </button>
 
-      {/* Dropdown panel */}
-      {isOpen && (
-        <div
-          className="absolute z-50 w-full mt-1 rounded-lg shadow-lg overflow-hidden transition-all duration-200 ease-out transform origin-top"
-          style={{
-            backgroundColor: 'var(--card-bg)',
-            border: '1px solid var(--border-color)',
-            maxHeight: '420px',
-          }}
-        >
-          {/* Search header */}
-          <div className="p-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
-                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                  Find supplier
-                </span>
-              </div>
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="text-xs px-2 py-1 rounded hover:bg-gray-700 transition-colors"
-                  style={{ color: 'var(--primary-color)' }}
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search by name, contact, or address..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-full pl-9 pr-8 py-2 rounded-lg text-sm"
-                style={{
-                  backgroundColor: 'var(--card-bg)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                }}
-              />
-              {loading && (
-                <Loader
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin"
-                  style={{ color: 'var(--primary-color)' }}
-                />
-              )}
-            </div>
-            {total > 0 && (
-              <div className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
-                {total} supplier{total !== 1 ? 's' : ''} total
-              </div>
-            )}
-          </div>
-
-          {/* Supplier list */}
+      {/* Portal dropdown */}
+      {isOpen &&
+        createPortal(
           <div
-            className="overflow-y-auto"
-            style={{ maxHeight: '250px' }}
-            onScroll={(e) => {
-              const target = e.target as HTMLDivElement;
-              const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
-              if (bottom && hasMore && !loading) {
-                handleLoadMore();
-              }
+            ref={dropdownRef}
+            className="fixed z-[9999] rounded-lg shadow-lg overflow-hidden"
+            style={{
+              top: dropdownStyle.top,
+              left: dropdownStyle.left,
+              width: dropdownStyle.width,
+              backgroundColor: "var(--card-bg)",
+              border: "1px solid var(--border-color)",
+              maxHeight: "420px",
             }}
           >
-            {filtered.length === 0 ? (
-              <div className="p-4 text-center">
-                {loading ? (
-                  <Loader className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--primary-color)' }} />
-                ) : (
-                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    No suppliers found
-                  </div>
+            {/* Search header */}
+            <div className="p-3 border-b" style={{ borderColor: "var(--border-color)" }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4" style={{ color: "var(--text-secondary)" }} />
+                  <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                    Find supplier
+                  </span>
+                </div>
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="text-xs px-2 py-1 rounded hover:bg-gray-700 transition-colors"
+                    style={{ color: "var(--primary-color)" }}
+                  >
+                    Clear
+                  </button>
                 )}
               </div>
-            ) : (
-              <>
-                {filtered.map((sup) => (
-                  <button
-                    key={sup.id}
-                    type="button"
-                    onClick={() => handleSelect(sup)}
-                    className={`
-                      w-full p-3 text-left transition-colors flex items-start gap-3
-                      hover:bg-gray-800
-                      ${sup.id === value ? 'bg-gray-800' : ''}
-                    `}
-                    style={{
-                      borderBottom: '1px solid var(--border-color)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {/* Selection indicator */}
-                    <div
-                      className={`
-                        w-4 h-4 rounded-full border flex-shrink-0 mt-1 flex items-center justify-center
-                        ${sup.id === value ? 'border-primary' : 'border-gray-600'}
-                      `}
-                    >
-                      {sup.id === value && <div className="w-2 h-2 rounded-full bg-white"></div>}
-                    </div>
-
-                    <Truck className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: 'var(--primary-color)' }} />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm flex items-center gap-2">
-                        {sup.name}
-                        <span
-                          className="px-1.5 py-0.5 text-xs rounded"
-                          style={{
-                            backgroundColor: sup.isActive
-                              ? 'var(--status-completed-bg)'
-                              : 'var(--status-cancelled-bg)',
-                            color: sup.isActive ? 'var(--status-completed)' : 'var(--status-cancelled)',
-                          }}
-                        >
-                          {sup.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      <div className="text-xs mt-0.5 space-y-0.5">
-                        {sup.contactInfo && (
-                          <div className="flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                            <Phone className="w-3 h-3" /> {sup.contactInfo}
-                          </div>
-                        )}
-                        {sup.address && (
-                          <div className="flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                            <MapPin className="w-3 h-3" /> {sup.address}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Load more */}
-                {hasMore && (
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    className="w-full p-2 text-center text-sm transition-colors hover:bg-gray-800"
-                    style={{ color: 'var(--primary-color)' }}
-                  >
-                    {loading ? (
-                      <Loader className="w-4 h-4 animate-spin mx-auto" />
-                    ) : (
-                      'Load more...'
-                    )}
-                  </button>
+              <div className="relative">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search by name, contact, or address..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full pl-9 pr-8 py-2 rounded-lg text-sm"
+                  style={{
+                    backgroundColor: "var(--card-bg)",
+                    border: "1px solid var(--border-color)",
+                    color: "var(--text-primary)",
+                  }}
+                />
+                {loading && (
+                  <Loader
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin"
+                    style={{ color: "var(--primary-color)" }}
+                  />
                 )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              </div>
+              {total > 0 && (
+                <div className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
+                  {total} supplier{total !== 1 ? "s" : ""} total
+                </div>
+              )}
+            </div>
+
+            {/* Supplier list */}
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "250px" }}
+              onScroll={(e) => {
+                const target = e.target as HTMLDivElement;
+                const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+                if (bottom && hasMore && !loading) {
+                  handleLoadMore();
+                }
+              }}
+            >
+              {filtered.length === 0 ? (
+                <div className="p-4 text-center">
+                  {loading ? (
+                    <Loader className="w-5 h-5 animate-spin mx-auto" style={{ color: "var(--primary-color)" }} />
+                  ) : (
+                    <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                      No suppliers found
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {filtered.map((sup) => (
+                    <button
+                      key={sup.id}
+                      type="button"
+                      onClick={() => handleSelect(sup)}
+                      className={`
+                        w-full p-3 text-left transition-colors flex items-start gap-3
+                        hover:bg-gray-800
+                        ${sup.id === value ? "bg-gray-800" : ""}
+                      `}
+                      style={{ borderBottom: "1px solid var(--border-color)", color: "var(--text-primary)" }}
+                    >
+                      {/* Selection indicator */}
+                      <div
+                        className={`
+                          w-4 h-4 rounded-full border flex-shrink-0 mt-1 flex items-center justify-center
+                          ${sup.id === value ? "border-primary" : "border-gray-600"}
+                        `}
+                      >
+                        {sup.id === value && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                      </div>
+
+                      <Truck className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: "var(--primary-color)" }} />
+
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm flex items-center gap-2">
+                          {sup.name}
+                          <span
+                            className="px-1.5 py-0.5 text-xs rounded"
+                            style={{
+                              backgroundColor: sup.isActive
+                                ? "var(--status-completed-bg)"
+                                : "var(--status-cancelled-bg)",
+                              color: sup.isActive ? "var(--status-completed)" : "var(--status-cancelled)",
+                            }}
+                          >
+                            {sup.isActive ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                        <div className="text-xs mt-0.5 space-y-0.5">
+                          {sup.contactInfo && (
+                            <div className="flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
+                              <Phone className="w-3 h-3" /> {sup.contactInfo}
+                            </div>
+                          )}
+                          {sup.address && (
+                            <div className="flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
+                              <MapPin className="w-3 h-3" /> {sup.address}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+
+                  {/* Load more */}
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      className="w-full p-2 text-center text-sm transition-colors hover:bg-gray-800"
+                      style={{ color: "var(--primary-color)" }}
+                    >
+                      {loading ? (
+                        <Loader className="w-4 h-4 animate-spin mx-auto" />
+                      ) : (
+                        "Load more..."
+                      )}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

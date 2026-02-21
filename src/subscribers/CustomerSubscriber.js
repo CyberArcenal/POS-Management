@@ -1,5 +1,5 @@
 // src/subscribers/CustomerSubscriber.js
-//@ts-check
+// @ts-check
 const Customer = require("../entities/Customer");
 const { logger } = require("../utils/logger");
 
@@ -17,9 +17,7 @@ class CustomerSubscriber {
     try {
       // @ts-ignore
       logger.info("[CustomerSubscriber] beforeInsert", {
-        id: entity.id,
-        name: entity.name,
-        loyaltyPointsBalance: entity.loyaltyPointsBalance,
+        entity: JSON.parse(JSON.stringify(entity)),
       });
     } catch (err) {
       // @ts-ignore
@@ -34,9 +32,7 @@ class CustomerSubscriber {
     try {
       // @ts-ignore
       logger.info("[CustomerSubscriber] afterInsert", {
-        id: entity.id,
-        name: entity.name,
-        loyaltyPointsBalance: entity.loyaltyPointsBalance,
+        entity: JSON.parse(JSON.stringify(entity)),
       });
     } catch (err) {
       // @ts-ignore
@@ -51,7 +47,7 @@ class CustomerSubscriber {
     try {
       // @ts-ignore
       logger.info("[CustomerSubscriber] beforeUpdate", {
-        id: entity.id,
+        entity: JSON.parse(JSON.stringify(entity)),
       });
     } catch (err) {
       // @ts-ignore
@@ -67,7 +63,7 @@ class CustomerSubscriber {
       const { entity } = event;
       // @ts-ignore
       logger.info("[CustomerSubscriber] afterUpdate", {
-        id: entity.id,
+        entity: JSON.parse(JSON.stringify(entity)),
       });
     } catch (err) {
       // @ts-ignore
@@ -82,7 +78,7 @@ class CustomerSubscriber {
     try {
       // @ts-ignore
       logger.info("[CustomerSubscriber] beforeRemove", {
-        id: entity.id,
+        entity: JSON.parse(JSON.stringify(entity)),
       });
     } catch (err) {
       // @ts-ignore
@@ -97,7 +93,7 @@ class CustomerSubscriber {
     try {
       // @ts-ignore
       logger.info("[CustomerSubscriber] afterRemove", {
-        id: event.entityId,
+        event: JSON.parse(JSON.stringify(event)),
       });
     } catch (err) {
       // @ts-ignore

@@ -15,6 +15,7 @@ declare global {
       activation: (payload: any) => Promise<any>;
       category: (payload: any) => Promise<any>;
       notification: (payload: any) => Promise<any>;
+      notificationLog: (payload: any) => Promise<any>;
       supplier: (payload: any) => Promise<any>;
       purchase: (payload: any) => Promise<any>;
       returnRefund: (payload: any) => Promise<any>;

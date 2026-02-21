@@ -12,21 +12,6 @@ const SalesTab: React.FC<Props> = ({ settings, onUpdate }) => {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[var(--text-primary)]">Sales Settings</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-            Tax Rate (%)
-          </label>
-          <input
-            type="number"
-            value={settings.tax_rate ?? 0}
-            onChange={(e) => onUpdate("tax_rate", parseFloat(e.target.value) || 0)}
-            className="windows-input w-full"
-            min="0"
-            max="100"
-            step="0.1"
-          />
-        </div>
-
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

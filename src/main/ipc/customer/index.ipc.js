@@ -47,6 +47,10 @@ class CustomerHandler {
     // 📄 REPORT HANDLERS
     this.generateCustomerReport = this.importHandler("./generate_report.ipc");
     this.generateLoyaltyReport = this.importHandler("./loyalty_report.ipc");
+
+    this.getTotalSpentForCustomers = this.importHandler(
+      "./get/total_spent_for_customers.ipc",
+    );
   }
 
   /**
@@ -192,6 +196,9 @@ class CustomerHandler {
 
         case "generateLoyaltyReport":
           return await this.generateLoyaltyReport(enrichedParams);
+
+        case "getTotalSpentForCustomers":
+          return await this.getTotalSpentForCustomers(enrichedParams);
 
         default:
           return {

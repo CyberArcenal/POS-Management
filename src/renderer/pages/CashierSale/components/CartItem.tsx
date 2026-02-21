@@ -11,6 +11,7 @@ interface CartItemProps {
   onRemove: (id: number) => void;
   onUpdateDiscount: (id: number, discount: number) => void;
   onUpdateTax: (id: number, tax: number) => void;
+  maxDiscount?: number; // ✅ opsyonal, kung hindi ipasa ay 100 na lang
 }
 
 const CartItem: React.FC<CartItemProps> = ({
@@ -19,6 +20,7 @@ const CartItem: React.FC<CartItemProps> = ({
   onRemove,
   onUpdateDiscount,
   onUpdateTax,
+  maxDiscount = 100, // default kung walang ipinasa
 }) => {
   const lineTotal = calculateLineTotal(item);
 
@@ -66,7 +68,7 @@ const CartItem: React.FC<CartItemProps> = ({
           <input
             type="number"
             min="0"
-            max="100"
+            max={maxDiscount} // ✅ gumagamit ng maxDiscount
             value={item.lineDiscount}
             onChange={(e) => onUpdateDiscount(item.id, parseFloat(e.target.value) || 0)}
             className="w-16 bg-[var(--input-bg)] border border-[var(--input-border)] rounded px-1 py-0.5 text-[var(--text-primary)]"

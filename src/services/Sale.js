@@ -4,10 +4,18 @@
 const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validateSaleData, calculateSaleTotals } = require("../utils/saleUtils");
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-const { getLoyaltyPointRate } = require("../utils/system");
+// 🔧 SETTINGS INTEGRATION: import all needed settings getters
+const {
+  // @ts-ignore
+  getLoyaltyPointRate,
+  taxRate,
+  discountEnabled,
+  maxDiscountPercent,
+  allowRefunds,
+  refundWindowDays,
+  loyaltyPointsEnabled,
+  allowNegativeStock,
+} = require("../utils/system");
 
 class SaleService {
   constructor() {
@@ -91,6 +99,35 @@ class SaleService {
         loyaltyRedeemed = 0,
       } = saleData;
 
+      // 🔧 SETTINGS INTEGRATION: check if discount is enabled globally
+      const isDiscountEnabled = await discountEnabled();
+      // @ts-ignore
+      const hasDiscount = items.some((i) => (i.discount || 0) > 0);
+      if (hasDiscount && !isDiscountEnabled) {
+        throw new Error("Discounts are disabled in system settings.");
+      }
+
+      // 🔧 SETTINGS INTEGRATION: check max discount percent per item
+      const maxDiscount = await maxDiscountPercent();
+      for (const item of items) {
+        if (item.discount && item.discount > 0) {
+          // Assume item.unitPrice and item.quantity are provided
+          const itemSubtotal = item.unitPrice * item.quantity;
+          const discountPercent = (item.discount / itemSubtotal) * 100;
+          if (discountPercent > maxDiscount) {
+            throw new Error(
+              `Discount exceeds maximum allowed (${maxDiscount}%) for product ID ${item.productId}`,
+            );
+          }
+        }
+      }
+
+      // 🔧 SETTINGS INTEGRATION: check if loyalty redemption is allowed
+      const isLoyaltyEnabled = await loyaltyPointsEnabled();
+      if (loyaltyRedeemed > 0 && !isLoyaltyEnabled) {
+        throw new Error("Loyalty points are disabled in system settings.");
+      }
+
       // Check customer if provided
       let customer = null;
       if (customerId) {
@@ -99,6 +136,9 @@ class SaleService {
         if (!customer)
           throw new Error(`Customer with ID ${customerId} not found`);
       }
+
+      // 🔧 SETTINGS INTEGRATION: get default tax rate (integer percentage)
+      const defaultTaxRate = await taxRate();
 
       // Validate items and calculate totals
       const itemDetails = [];
@@ -113,7 +153,16 @@ class SaleService {
 
         const unitPrice = item.unitPrice || product.price;
         const discount = item.discount || 0;
-        const tax = item.tax || 0;
+
+        // 🔧 SETTINGS INTEGRATION: apply default tax if not provided
+        let tax = item.tax;
+        if (tax === undefined || tax === null) {
+          tax =
+            defaultTaxRate > 0
+              ? (unitPrice * item.quantity * defaultTaxRate) / 100
+              : 0;
+        }
+
         const lineTotal = unitPrice * item.quantity - discount + tax;
 
         itemDetails.push({
@@ -126,9 +175,20 @@ class SaleService {
         });
         subtotal += unitPrice * item.quantity;
       }
-      /**
-       * @param {number} value
-       */
+
+      // 🔧 SETTINGS INTEGRATION: check stock availability if negative stock not allowed
+      const negativeStockAllowed = await allowNegativeStock();
+      if (!negativeStockAllowed) {
+        for (const det of itemDetails) {
+          // @ts-ignore
+          if (det.product.stockQuantity < det.quantity) {
+            throw new Error(
+              // @ts-ignore
+              `Insufficient stock for product ${det.product.name}. Available: ${det.product.stockQuantity}, Requested: ${det.quantity}`,
+            );
+          }
+        }
+      }
 
       const totals = calculateSaleTotals({
         items: itemDetails,
@@ -215,15 +275,12 @@ class SaleService {
 
       const oldData = { ...sale };
 
-      // 1. Update status (and optionally payment method if provided)
       sale.status = "paid";
       sale.updatedAt = new Date();
 
-      // 2. Save – this will trigger the subscriber
       // @ts-ignore
       const updatedSale = await updateDb(saleRepo, sale);
 
-      // 3. Log the change (audit)
       await auditLogger.logUpdate("Sale", id, oldData, updatedSale, user);
 
       console.log(`Sale #${id} marked as paid`);
@@ -248,7 +305,7 @@ class SaleService {
       // @ts-ignore
       const sale = await saleRepo.findOne({
         where: { id },
-        relations: ["saleItems", "saleItems.product", "customer"], // needed only if you want to keep oldData for audit
+        relations: ["saleItems", "saleItems.product", "customer"],
       });
       if (!sale) throw new Error(`Sale with ID ${id} not found`);
       if (sale.status !== "initiated") {
@@ -275,6 +332,7 @@ class SaleService {
       throw error;
     }
   }
+
   /**
    * Process a refund (partial or full)
    * @param {number} id - Original sale ID
@@ -287,6 +345,12 @@ class SaleService {
     const { sale: saleRepo } = await this.getRepositories();
 
     try {
+      // 🔧 SETTINGS INTEGRATION: check if refunds are allowed
+      const refundsAllowed = await allowRefunds();
+      if (!refundsAllowed) {
+        throw new Error("Refunds are disabled in system settings.");
+      }
+
       // @ts-ignore
       const sale = await saleRepo.findOne({
         where: { id },
@@ -295,6 +359,19 @@ class SaleService {
       if (!sale) throw new Error(`Sale with ID ${id} not found`);
       if (sale.status !== "paid") {
         throw new Error(`Only paid sales can be refunded`);
+      }
+
+      // 🔧 SETTINGS INTEGRATION: check refund window
+      const windowDays = await refundWindowDays();
+      // @ts-ignore
+      const saleDate = new Date(sale.timestamp);
+      const now = new Date();
+      // @ts-ignore
+      const diffDays = Math.floor((now - saleDate) / (1000 * 60 * 60 * 24));
+      if (diffDays > windowDays) {
+        throw new Error(
+          `Refund window is ${windowDays} days. This sale is ${diffDays} days old.`,
+        );
       }
 
       // @ts-ignore
@@ -448,11 +525,7 @@ class SaleService {
         queryBuilder.skip(offset).take(options.limit);
       }
 
-      // const sales = await queryBuilder.getMany();
-      const sales = await queryBuilder
-        .printSql() // <-- idagdag ito
-        .getMany();
-      console.log("SQL:", queryBuilder.getSql()); // alternative
+      const sales = await queryBuilder.getMany();
       await auditLogger.logView("Sale", null, "system");
       return sales;
     } catch (error) {

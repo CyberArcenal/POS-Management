@@ -45,7 +45,6 @@ const SettingsPage: React.FC = () => {
     updateDataReports,
     updateIntegrations,
     updateAuditSecurity,
-    updateUserSecurity,
     saveSettings,
     resetToDefaults,
     exportSettings,
@@ -108,7 +107,6 @@ const SettingsPage: React.FC = () => {
         {/* {systemInfo && <SystemInfoCard info={systemInfo} />} */}
 
         <SettingsTabs
-          tabs={availableTabs.map((key) => ({ id: key, label: TAB_LABELS[key] }))}
           activeTab={activeTab as SettingType}
           onTabChange={setActiveTab}
         />

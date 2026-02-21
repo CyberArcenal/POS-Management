@@ -14,18 +14,24 @@ import { CustomerFormDialog } from "./components/CustomerFormDialog";
 import { CustomerViewDialog } from "./components/CustomerViewDialog";
 import Pagination from "../../components/Shared/Pagination1";
 
-// Components
-
 const CustomerPage: React.FC = () => {
-  const { customers, filters, setFilters, loading, error, reload, metrics } =
-    useCustomers({
-      search: "",
-      status: "all", // 'all' | 'vip' | 'loyal' | 'regular' | 'new'
-      sortBy: "name",
-      sortOrder: "ASC",
-      minPoints: undefined,
-      maxPoints: undefined,
-    });
+  const {
+    customers,
+    filters,
+    setFilters,
+    loading,
+    error,
+    reload,
+    metrics,
+    totalsMap,
+  } = useCustomers({
+    search: "",
+    status: "all",
+    sortBy: "name",
+    sortOrder: "ASC",
+    minPoints: undefined,
+    maxPoints: undefined,
+  });
 
   const formDialog = useCustomerForm();
   const viewDialog = useCustomerView();
@@ -73,7 +79,7 @@ const CustomerPage: React.FC = () => {
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
-    setCurrentPage(1); // reset to first page
+    setCurrentPage(1);
   };
 
   return (
@@ -92,7 +98,7 @@ const CustomerPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Summary Metrics */}
+      {/* Summary Metrics – updated to use eliteCount */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
           <p className="text-sm text-[var(--text-tertiary)]">Total Customers</p>
@@ -107,9 +113,9 @@ const CustomerPage: React.FC = () => {
           </p>
         </div>
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
-          <p className="text-sm text-[var(--text-tertiary)]">Loyal</p>
+          <p className="text-sm text-[var(--text-tertiary)]">Elite</p>
           <p className="text-2xl font-bold text-[var(--customer-loyal)]">
-            {metrics.loyalCount}
+            {metrics.eliteCount}
           </p>
         </div>
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
@@ -158,6 +164,7 @@ const CustomerPage: React.FC = () => {
               onView={viewDialog.open}
               onEdit={formDialog.openEdit}
               onDelete={handleDelete}
+              getTotalSpent={(customerId: number) => totalsMap[customerId] || 0}
             />
           </div>
 
@@ -183,7 +190,8 @@ const CustomerPage: React.FC = () => {
           formDialog.initialData
             ? {
                 name: formDialog.initialData.name,
-                contactInfo: formDialog.initialData.contactInfo || undefined,
+                email: formDialog.initialData.email || undefined,
+                phone: formDialog.initialData.phone || undefined,
                 loyaltyPointsBalance:
                   formDialog.initialData.loyaltyPointsBalance,
               }

@@ -9,7 +9,8 @@ interface CustomerFormDialogProps {
   customerId?: number;
   initialData?: Partial<{
     name: string;
-    contactInfo: string;
+    email: string;
+    phone: string;
     loyaltyPointsBalance: number;
   }>;
   onClose: () => void;
@@ -26,7 +27,8 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     name: "",
-    contactInfo: "",
+    email: "",
+    phone: "",
     loyaltyPointsBalance: 0,
   });
   const [loading, setLoading] = useState(false);
@@ -36,11 +38,12 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
     if (initialData) {
       setFormData({
         name: initialData.name || "",
-        contactInfo: initialData.contactInfo || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
         loyaltyPointsBalance: initialData.loyaltyPointsBalance || 0,
       });
     } else {
-      setFormData({ name: "", contactInfo: "", loyaltyPointsBalance: 0 });
+      setFormData({ name: "", email: "", phone: "", loyaltyPointsBalance: 0 });
     }
     setErrors({});
   }, [initialData, isOpen]);
@@ -48,6 +51,14 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
+    // Optional: email format validation
+    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+    // Optional: phone validation (basic)
+    if (formData.phone && !/^[\d\s\+\-\(\)]+$/.test(formData.phone)) {
+      newErrors.phone = "Invalid phone number";
+    }
     return newErrors;
   };
 
@@ -62,20 +73,35 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
     setLoading(true);
     try {
       if (mode === "add") {
-        await customerAPI.create({
-          name: formData.name,
-          contactInfo: formData.contactInfo || undefined,
-          loyaltyPointsBalance: formData.loyaltyPointsBalance,
-        }, "system");
-        dialogs.alert({ title: "Success", message: "Customer created successfully." });
+        await customerAPI.create(
+          {
+            name: formData.name,
+            email: formData.email || undefined,
+            phone: formData.phone || undefined,
+            loyaltyPointsBalance: formData.loyaltyPointsBalance,
+          },
+          "system"
+        );
+        dialogs.alert({
+          title: "Success",
+          message: "Customer created successfully.",
+        });
       } else {
         if (!customerId) throw new Error("Customer ID missing for edit");
-        await customerAPI.update(customerId, {
-          name: formData.name,
-          contactInfo: formData.contactInfo,
-          loyaltyPointsBalance: formData.loyaltyPointsBalance,
-        }, "system");
-        dialogs.alert({ title: "Success", message: "Customer updated successfully." });
+        await customerAPI.update(
+          customerId,
+          {
+            name: formData.name,
+            email: formData.email || undefined,
+            phone: formData.phone || undefined,
+            loyaltyPointsBalance: formData.loyaltyPointsBalance,
+          },
+          "system"
+        );
+        dialogs.alert({
+          title: "Success",
+          message: "Customer updated successfully.",
+        });
       }
       onSuccess();
     } catch (err: any) {
@@ -120,18 +146,42 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
               )}
             </div>
 
-            {/* Contact Info */}
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                Contact Info (email/phone)
+                Email
               </label>
               <input
-                type="text"
-                value={formData.contactInfo}
-                onChange={(e) => setFormData({ ...formData, contactInfo: e.target.value })}
-                className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
-                placeholder="e.g., customer@example.com or +1234567890"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className={`w-full bg-[var(--input-bg)] border ${
+                  errors.email ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
+                } rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]`}
+                placeholder="customer@example.com"
               />
+              {errors.email && (
+                <p className="mt-1 text-xs text-[var(--accent-red)]">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className={`w-full bg-[var(--input-bg)] border ${
+                  errors.phone ? "border-[var(--accent-red)]" : "border-[var(--input-border)]"
+                } rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]`}
+                placeholder="+1234567890"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-xs text-[var(--accent-red)]">{errors.phone}</p>
+              )}
             </div>
 
             {/* Loyalty Points */}
@@ -143,7 +193,9 @@ export const CustomerFormDialog: React.FC<CustomerFormDialogProps> = ({
                 type="number"
                 min="0"
                 value={formData.loyaltyPointsBalance}
-                onChange={(e) => setFormData({ ...formData, loyaltyPointsBalance: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({ ...formData, loyaltyPointsBalance: Number(e.target.value) })
+                }
                 className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
               />
             </div>

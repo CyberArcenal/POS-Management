@@ -82,7 +82,7 @@ ${company}`;
     const htmlBody = textBody.replace(/\n/g, "<br>");
 
     // Send email using the robust EmailSender (queued, retried, logged)
-    if (notifySupplierWithEmail) {
+    if (notifySupplierWithEmail && supplier.email) {
       try {
         await emailSender.send(
           supplier.email,
@@ -103,23 +103,21 @@ ${company}`;
         );
       }
     }
-
-    if (notifySupplierWithSms) {
+    const smsEnabled = await enableSmsAlerts(); // import from system
+    if (notifySupplierWithSms && smsEnabled && supplier.phone) {
       // Optional: Send SMS if supplier has phone number and SMS is enabled
-      const smsEnabled = await enableSmsAlerts(); // import from system
-      if (smsEnabled && supplier.phone) {
-        try {
-          await smsSender.send(
-            supplier.phone,
-            `Purchase #${fullPurchase.referenceNo} approved. Please check your email for details.`,
-          );
-        } catch (error) {
-          logger.error(
-            `[Transition] SMS failed for supplier ${supplier.phone}`,
-            // @ts-ignore
-            error,
-          );
-        }
+
+      try {
+        await smsSender.send(
+          supplier.phone,
+          `Purchase #${fullPurchase.referenceNo} approved. Please check your email for details.`,
+        );
+      } catch (error) {
+        logger.error(
+          `[Transition] SMS failed for supplier ${supplier.phone}`,
+          // @ts-ignore
+          error,
+        );
       }
     }
 
@@ -352,10 +350,10 @@ ${company}`;
           movement,
           user,
         );
-      };
+      }
     }
 
-    if(oldStatus === "pending")return;
+    if (oldStatus === "pending") return;
 
     // --- Notify supplier about the cancellation (especially if it was approved/completed) ---
     // @ts-ignore
@@ -377,9 +375,10 @@ ${company}`;
 
       const textBody = `Dear ${supplier.name},
 
-We regret to inform you that purchase order #${fullPurchase.
-// @ts-ignore
-referenceNo} has been cancelled.
+We regret to inform you that purchase order #${
+        // @ts-ignore
+        fullPurchase.referenceNo
+      } has been cancelled.
 
 Order details (cancelled):
 ${itemsList}

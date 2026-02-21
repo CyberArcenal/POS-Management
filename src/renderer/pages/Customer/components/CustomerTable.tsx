@@ -2,12 +2,18 @@ import React from "react";
 import { Eye, Edit, Trash2, Users, Mail, Phone } from "lucide-react";
 import { type Customer } from "../../../api/customer";
 
-// Helper to determine status badge
-const getCustomerStatus = (points: number): { label: string; color: string } => {
-  if (points >= 1000) return { label: "VIP", color: "var(--customer-vip)" };
-  if (points >= 500) return { label: "Loyal", color: "var(--customer-loyal)" };
-  if (points >= 100) return { label: "Regular", color: "var(--customer-regular)" };
-  return { label: "New", color: "var(--customer-new)" };
+// Helper to determine status badge – now uses the actual status field
+const getCustomerStatus = (customer: Customer): { label: string; color: string } => {
+  switch (customer.status) {
+    case "vip":
+      return { label: "VIP", color: "var(--customer-vip)" };
+    case "elite":
+      return { label: "Elite", color: "var(--customer-loyal)" };
+    case "regular":
+      return { label: "Regular", color: "var(--customer-regular)" };
+    default:
+      return { label: "Regular", color: "var(--customer-regular)" };
+  }
 };
 
 interface CustomerTableProps {
@@ -15,6 +21,7 @@ interface CustomerTableProps {
   onView: (customer: Customer) => void;
   onEdit: (customer: Customer) => void;
   onDelete: (customer: Customer) => void;
+  getTotalSpent: (customerId: number) => number;
 }
 
 export const CustomerTable: React.FC<CustomerTableProps> = ({
@@ -22,6 +29,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
   onView,
   onEdit,
   onDelete,
+  getTotalSpent,
 }) => {
   if (customers.length === 0) {
     return (
@@ -59,9 +67,12 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
         <table className="w-full table-fixed">
           <tbody className="divide-y divide-[var(--border-color)]">
             {customers.map((customer) => {
-              const status = getCustomerStatus(customer.loyaltyPointsBalance);
-              // For total spent, we could fetch or compute; placeholder for now
-              const totalSpent = 0; // TODO: compute from sales
+              const status = getCustomerStatus(customer);
+              const totalSpent = getTotalSpent(customer.id);
+
+              // Determine which contact to show: email > phone > none
+              const contactIcon = customer.email ? <Mail className="w-3 h-3" /> : customer.phone ? <Phone className="w-3 h-3" /> : null;
+              const contactText = customer.email || customer.phone || null;
 
               return (
                 <tr
@@ -76,14 +87,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({
                     {customer.name}
                   </td>
                   <td className="w-1/4 px-4 py-3 text-sm text-[var(--text-secondary)]">
-                    {customer.contactInfo ? (
+                    {contactText ? (
                       <div className="flex items-center gap-1">
-                        {customer.contactInfo.includes('@') ? (
-                          <Mail className="w-3 h-3" />
-                        ) : (
-                          <Phone className="w-3 h-3" />
-                        )}
-                        <span>{customer.contactInfo}</span>
+                        {contactIcon}
+                        <span className="truncate">{contactText}</span>
                       </div>
                     ) : (
                       <span className="text-[var(--text-tertiary)]">—</span>

@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld("backendAPI", {
   loyalty: (payload) => ipcRenderer.invoke("loyalty", payload),
 
   category: (payload) => ipcRenderer.invoke("category", payload),
+  notificationLog: (payload) => ipcRenderer.invoke("notificationLog", payload),
   notification: (payload) => ipcRenderer.invoke("notification", payload),
   supplier: (payload) => ipcRenderer.invoke("supplier", payload),
   purchase: (payload) => ipcRenderer.invoke("purchase", payload),

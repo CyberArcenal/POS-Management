@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Save } from "lucide-react";
+import { X, Loader2, Save, Barcode } from "lucide-react";
 import productAPI from "../../../api/product";
 import { dialogs } from "../../../utils/dialogs";
 import { type ProductFormData } from "../hooks/useProductForm";
@@ -23,15 +23,38 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [formData, setFormData] = useState<ProductFormData>(initialData);
+  const [formData, setFormData] = useState<ProductFormData>({
+    ...initialData,
+    barcode: initialData.barcode || "",
+  });
   const [errors, setErrors] = useState<
     Partial<Record<keyof ProductFormData, string>>
   >({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setFormData(initialData);
+    setFormData({
+      ...initialData,
+      barcode: initialData.barcode || "",
+    });
   }, [initialData]);
+
+  // Barcode scanner integration
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleBarcodeScanned = (barcode: string) => {
+      setFormData((prev) => ({ ...prev, barcode }));
+    };
+
+    if (window.backendAPI?.onBarcodeScanned) {
+      window.backendAPI.onBarcodeScanned(handleBarcodeScanned);
+    }
+
+    return () => {
+      // Cleanup would go here if API supports unregistering
+    };
+  }, [isOpen]);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -49,19 +72,18 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
     setSaving(true);
     try {
       const user = "system";
+      const productPayload = {
+        sku: formData.sku,
+        name: formData.name,
+        barcode: formData.barcode,
+        description: formData.description || undefined,
+        price: formData.price,
+        isActive: formData.isActive,
+        categoryId: formData.categoryId || undefined,
+      };
 
       if (mode === "add") {
-        await productAPI.create(
-          {
-            sku: formData.sku,
-            name: formData.name,
-            description: formData.description || undefined,
-            price: formData.price,
-            isActive: formData.isActive,
-            // stockQty intentionally omitted – use stock adjustment dialog
-          },
-          user,
-        );
+        await productAPI.create(productPayload, user);
       } else {
         if (!productId) throw new Error("Product ID missing");
         await productAPI.update(
@@ -69,12 +91,13 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
           {
             sku: formData.sku,
             name: formData.name,
+            barcode: formData.barcode || undefined,
             description: formData.description || undefined,
             price: formData.price,
             isActive: formData.isActive,
-            // stockQty intentionally omitted – use stock adjustment dialog
+            categoryId: formData.categoryId || undefined,
           },
-          user,
+          user
         );
       }
 
@@ -99,7 +122,7 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
           className="fixed inset-0 bg-black/50 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="relative bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -113,55 +136,80 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
             </button>
           </div>
 
-          {/* Form */}
+          {/* Form with 2-column layout */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                SKU <span className="text-[var(--accent-red)]">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.sku}
-                onChange={(e) =>
-                  setFormData({ ...formData, sku: e.target.value })
-                }
-                className={`w-full bg-[var(--input-bg)] border ${
-                  errors.sku
-                    ? "border-[var(--accent-red)]"
-                    : "border-[var(--input-border)]"
-                } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
-              />
-              {errors.sku && (
-                <p className="mt-1 text-xs text-[var(--accent-red)]">
-                  {errors.sku}
-                </p>
-              )}
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* SKU */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                  SKU <span className="text-[var(--accent-red)]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.sku}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sku: e.target.value })
+                  }
+                  className={`w-full bg-[var(--input-bg)] border ${
+                    errors.sku
+                      ? "border-[var(--accent-red)]"
+                      : "border-[var(--input-border)]"
+                  } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
+                />
+                {errors.sku && (
+                  <p className="mt-1 text-xs text-[var(--accent-red)]">
+                    {errors.sku}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                Product Name <span className="text-[var(--accent-red)]">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className={`w-full bg-[var(--input-bg)] border ${
-                  errors.name
-                    ? "border-[var(--accent-red)]"
-                    : "border-[var(--input-border)]"
-                } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
-              />
-              {errors.name && (
-                <p className="mt-1 text-xs text-[var(--accent-red)]">
-                  {errors.name}
+              {/* Barcode */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                  Barcode
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.barcode || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, barcode: e.target.value })
+                    }
+                    placeholder="Scan or enter barcode"
+                    className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 pl-10 text-[var(--text-primary)]"
+                  />
+                  <Barcode className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+                </div>
+                <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                  Scanner active while dialog is open.
                 </p>
-              )}
-            </div>
+              </div>
 
-            <div className="grid grid-cols-1 gap-4">
+              {/* Product Name */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                  Product Name <span className="text-[var(--accent-red)]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className={`w-full bg-[var(--input-bg)] border ${
+                    errors.name
+                      ? "border-[var(--accent-red)]"
+                      : "border-[var(--input-border)]"
+                  } rounded-lg px-3 py-2 text-[var(--text-primary)]`}
+                />
+                {errors.name && (
+                  <p className="mt-1 text-xs text-[var(--accent-red)]">
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Category */}
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                   Category
@@ -171,7 +219,7 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   activeOnly
                   onChange={(
                     categoryId: number | null,
-                    category?: Category,
+                    category?: Category
                   ) => {
                     setFormData({
                       ...formData,
@@ -180,23 +228,8 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                   }}
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                Description
-              </label>
-              <textarea
-                value={formData.description as string}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-                className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+              {/* Price */}
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                   Price (₱) <span className="text-[var(--accent-red)]">*</span>
@@ -225,29 +258,43 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
                 )}
               </div>
 
-              {/* Stock quantity input removed – use stock adjustment dialog */}
-            </div>
+              {/* Description (full width) */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description as string}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  rows={3}
+                  className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
+                />
+              </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                className="rounded border-[var(--border-color)] bg-[var(--input-bg)]"
-              />
-              <label
-                htmlFor="isActive"
-                className="text-sm text-[var(--text-primary)]"
-              >
-                Active (available for sale)
-              </label>
+              {/* Active checkbox */}
+              <div className="md:col-span-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
+                  className="rounded border-[var(--border-color)] bg-[var(--input-bg)]"
+                />
+                <label
+                  htmlFor="isActive"
+                  className="text-sm text-[var(--text-primary)]"
+                >
+                  Active (available for sale)
+                </label>
+              </div>
             </div>
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-4 border-t border-[var(--border-color)]">
               <button
                 type="button"
                 onClick={onClose}

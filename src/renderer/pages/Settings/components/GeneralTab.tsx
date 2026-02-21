@@ -84,18 +84,7 @@ const GeneralTab: React.FC<Props> = ({ settings, onUpdate }) => {
             className="windows-input w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="maintenance_mode"
-            checked={settings.maintenance_mode || false}
-            onChange={(e) => onUpdate("maintenance_mode", e.target.checked)}
-            className="windows-checkbox"
-          />
-          <label htmlFor="maintenance_mode" className="text-sm text-[var(--text-secondary)]">
-            Maintenance Mode
-          </label>
-        </div>
+
         <div>
           <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
             Receipt Footer Message

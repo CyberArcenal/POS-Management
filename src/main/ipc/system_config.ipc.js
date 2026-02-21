@@ -3,6 +3,9 @@
 const { ipcMain } = require("electron");
 // @ts-ignore
 // @ts-ignore
+// @ts-ignore
+// @ts-ignore
+// @ts-ignore
 const path = require("path");
 const { logger } = require("../../utils/logger");
 const { SystemSetting, SettingType } = require("../../entities/systemSettings");
@@ -60,6 +63,9 @@ class SystemConfigHandler {
    * @param {Electron.IpcMainInvokeEvent} event
    * @param {{ method: any; params: {}; userId?: number; }} payload // MODIFIED: Added userId
    */
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   // @ts-ignore
   // @ts-ignore
@@ -328,6 +334,18 @@ class SystemConfigHandler {
       this._clearCache();
       const systemData = await this.getGroupedConfig();
 
+      if (updateResult.errors.length > 0) {
+        return {
+          status: false,
+          message: `System configuration updated with ${updateResult.errors.length} error(s)`,
+          data: systemData.data,
+          details: {
+            updated: updateResult.updatedSettings,
+            errors: updateResult.errors,
+          },
+        };
+      }
+
       // @ts-ignore
       logger.info("System configuration updated successfully", {
         updatedCategories: Object.keys(configData),
@@ -340,10 +358,7 @@ class SystemConfigHandler {
         status: true,
         message: "System configuration updated successfully",
         data: systemData.data,
-        details: {
-          updated: updateResult.updatedSettings,
-          errors: updateResult.errors,
-        },
+        details: { updated: updateResult.updatedSettings, errors: [] },
       };
     } catch (error) {
       // @ts-ignore
@@ -510,6 +525,9 @@ class SystemConfigHandler {
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
   // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   async createSetting(settingData, userId = 1) {
     // MODIFIED: Added userId parameter
     try {
@@ -543,6 +561,13 @@ class SystemConfigHandler {
           // @ts-ignore
           this.normalizeBoolean(settingData.is_public) === 1;
       }
+
+      // @ts-ignore
+      if (settingData.value !== undefined) {
+        // @ts-ignore
+        settingData.value = this._prepareValueForStorage(settingData.value);
+      }
+
       // @ts-ignore
       if (settingData.is_deleted !== undefined) {
         // @ts-ignore
@@ -588,6 +613,9 @@ class SystemConfigHandler {
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
   // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   async updateSetting(id, settingData, userId = 1) {
     // MODIFIED: Added userId parameter
     try {
@@ -619,6 +647,9 @@ class SystemConfigHandler {
 
       // Record old values for audit log
       // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
       const oldValues = {
         key: existingSetting.key,
         value: existingSetting.value,
@@ -627,7 +658,9 @@ class SystemConfigHandler {
         // @ts-ignore
         is_public: this.dbToBoolean(existingSetting.is_public),
       };
-
+      if (settingData.value !== undefined) {
+        settingData.value = this._prepareValueForStorage(settingData.value);
+      }
       // Normalize boolean fields
       if (settingData.is_public !== undefined) {
         settingData.is_public =
@@ -676,6 +709,9 @@ class SystemConfigHandler {
    * @param {any} id
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   async deleteSetting(id, userId = 1) {
     // MODIFIED: Added userId parameter
@@ -819,6 +855,9 @@ class SystemConfigHandler {
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
   // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   async setValueByKey(key, value, options = {}, userId = 1) {
     // MODIFIED: Added userId parameter
     try {
@@ -841,6 +880,8 @@ class SystemConfigHandler {
         options.is_public = this.normalizeBoolean(options.is_public) === 1;
       }
 
+      const valueToSave = this._prepareValueForStorage(value);
+
       // Check if setting exists
       // @ts-ignore
       const existing = await this.systemSettingRepository.findOne({
@@ -855,15 +896,21 @@ class SystemConfigHandler {
       let setting;
       // @ts-ignore
       // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
       let action = "update"; // Default action
 
       if (existing) {
         // Record old value for audit log
         // @ts-ignore
+        // @ts-ignore
+        // @ts-ignore
+        // @ts-ignore
         const oldValue = existing.value;
 
         // Update existing
-        existing.value = value;
+        existing.value = valueToSave;
         // @ts-ignore
         if (options.is_public !== undefined) {
           // @ts-ignore
@@ -883,7 +930,7 @@ class SystemConfigHandler {
         // @ts-ignore
         const newSetting = this.systemSettingRepository.create({
           key,
-          value,
+          value: valueToSave,
           // @ts-ignore
           setting_type: options.setting_type || "general",
           // @ts-ignore
@@ -928,6 +975,9 @@ class SystemConfigHandler {
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
   // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   async bulkUpdate(settingsData, userId = 1) {
     // MODIFIED: Added userId parameter
     try {
@@ -956,9 +1006,12 @@ class SystemConfigHandler {
 
       for (const settingData of settingsData) {
         try {
+          const valueToSave = this._prepareValueForStorage(settingData.value);
+
           // Normalize boolean fields in each setting
           const normalizedSetting = {
             ...settingData,
+            value: valueToSave,
             is_public:
               settingData.is_public !== undefined
                 ? this.normalizeBoolean(settingData.is_public) === 1
@@ -1082,6 +1135,9 @@ class SystemConfigHandler {
    * @param {string | any[]} ids
    * @param {number} [userId=1] // ADDED: User ID for audit logging
    */
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   // @ts-ignore
   async bulkDelete(ids, userId = 1) {
     // MODIFIED: Added userId parameter
@@ -1286,62 +1342,43 @@ class SystemConfigHandler {
   async _groupSettingsWithBooleanConversion(settings) {
     const grouped = {};
 
-    // List of known boolean settings by type
-    const booleanSettings = {
-      email: ["use_ssl", "use_tls"],
-      tax: ["round_tax_at_subtotal", "prices_include_tax", "enabled"],
-      supplier_tax: ["enabled"],
-      shipping: ["threshold_activate"],
-      inventory: ["requireReason", "allowNegative"],
-    };
-
-    // List of known numeric settings by type
-    const numericSettings = {
-      general: ["cache_timeout"],
-      email: ["port"],
-      tax: [
-        "tax_rate",
-        "vat_rate",
-        "import_duty_rate",
-        "excise_tax_rate",
-        "digital_services_tax_rate",
-        "tax_flat_amount",
-      ],
-      supplier_tax: ["rate"],
-      inventory: ["reorderLevel", "lowStockThreshold"],
-    };
-
     if (settings && Array.isArray(settings)) {
       settings.forEach((setting) => {
-        // @ts-ignore
-        if (!grouped[setting.setting_type]) {
-          // @ts-ignore
-          grouped[setting.setting_type] = {};
-        }
-
-        let value = setting.value;
-
-        // Convert known boolean settings
-        if (
-          // @ts-ignore
-          booleanSettings[setting.setting_type] &&
-          // @ts-ignore
-          booleanSettings[setting.setting_type].includes(setting.key)
-        ) {
-          value = this.dbToBoolean(value);
-        }
-        // Convert known numeric settings
-        else if (
-          // @ts-ignore
-          numericSettings[setting.setting_type] &&
-          // @ts-ignore
-          numericSettings[setting.setting_type].includes(setting.key)
-        ) {
-          value = parseFloat(value) || 0;
-        }
+        const type = setting.setting_type;
+        const key = setting.key;
+        const rawValue = setting.value;
 
         // @ts-ignore
-        grouped[setting.setting_type][setting.key] = value;
+        if (!grouped[type]) {
+          // @ts-ignore
+          grouped[type] = {};
+        }
+
+        let value = rawValue;
+
+        // Only process if it's a string
+        if (typeof rawValue === "string") {
+          const trimmed = rawValue.trim().toLowerCase();
+
+          // 1. Boolean strings
+          if (trimmed === "true") {
+            value = true;
+          } else if (trimmed === "false") {
+            value = false;
+          }
+          // 2. Looks like a JSON array or object
+          else if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+            try {
+              value = JSON.parse(rawValue);
+            } catch {
+              // keep as string if parsing fails
+            }
+          }
+          // 3. For everything else, keep the original string
+        }
+
+        // @ts-ignore
+        grouped[type][key] = value;
       });
     }
 
@@ -1373,13 +1410,24 @@ class SystemConfigHandler {
   async _serializeSettingWithBooleanConversion(setting) {
     if (!setting) return null;
 
+    // Convert value if it's a string representing a boolean
+    // @ts-ignore
+    let value = setting.value;
+    if (typeof value === "string") {
+      const lower = value.toLowerCase();
+      if (lower === "true") {
+        value = true;
+      } else if (lower === "false") {
+        value = false;
+      }
+    }
+
     return {
       // @ts-ignore
       id: setting.id,
       // @ts-ignore
       key: setting.key,
-      // @ts-ignore
-      value: setting.value,
+      value: value, // now possibly boolean
       // @ts-ignore
       setting_type: setting.setting_type,
       // @ts-ignore
@@ -1452,6 +1500,13 @@ class SystemConfigHandler {
               newValue: result.data.value,
               created: !existing,
             });
+          } else {
+            // ❗ Capture the failure
+            errors.push({
+              category,
+              key,
+              error: result.message || "Unknown error",
+            });
           }
 
           // @ts-ignore
@@ -1486,7 +1541,7 @@ class SystemConfigHandler {
    */
   async _getSystemInfo() {
     return {
-      version: "1.0.0",
+      version: "0.0.0",
       name: "Electron POS System",
       environment: "production",
       debug_mode: process.env.NODE_ENV === "development",
@@ -1517,6 +1572,23 @@ class SystemConfigHandler {
   _clearCache() {
     this._settingsCache = null;
     this._lastCacheUpdate = null;
+  }
+
+  // Add this helper method inside SystemConfigHandler class
+  /**
+   * @param {null | undefined} value
+   */
+  _prepareValueForStorage(value) {
+    if (value === null || value === undefined) {
+      return "";
+    }
+    if (typeof value === "boolean") {
+      return value ? "true" : "false";
+    }
+    if (typeof value === "object") {
+      return JSON.stringify(value);
+    }
+    return String(value);
   }
 }
 

@@ -10,10 +10,9 @@ import systemConfigAPI, {
   type DataReportsSettings,
   type IntegrationsSettings,
   type AuditSecuritySettings,
-  type UserSecuritySettings,
 } from "../../../api/system_config";
 import { dialogs } from "../../../utils/dialogs";
-
+import { useSettings as useSettings1 } from "../../../contexts/SettingsContext";
 // ========== Default values for every category ==========
 const DEFAULT_GENERAL: GeneralSettings = {
   company_name: "POS Management",
@@ -35,7 +34,6 @@ const DEFAULT_INVENTORY: InventorySettings = {
 };
 
 const DEFAULT_SALES: SalesSettings = {
-  tax_rate: 0,
   discount_enabled: true,
   max_discount_percent: 50,
   allow_refunds: true,
@@ -68,6 +66,16 @@ const DEFAULT_NOTIFICATIONS: NotificationsSettings = {
   twilio_auth_token: "",
   twilio_phone_number: "",
   twilio_messaging_service_sid: "",
+  notify_supplier_with_sms: false,
+  notify_supplier_with_email: false,
+  notify_supplier_on_complete_email: false,
+  notify_supplier_on_complete_sms: false,
+  notify_supplier_on_cancel_email: false,
+  notify_supplier_on_cancel_sms: false,
+  notify_customer_return_processed_email: false,
+  notify_customer_return_processed_sms: false,
+  notify_customer_return_cancelled_email: false,
+  notify_customer_return_cancelled_sms: false,
 };
 
 const DEFAULT_DATA_REPORTS: DataReportsSettings = {
@@ -99,17 +107,6 @@ const DEFAULT_AUDIT_SECURITY: AuditSecuritySettings = {
   gdpr_compliance_enabled: false,
 };
 
-const DEFAULT_USER_SECURITY: UserSecuritySettings = {
-  max_login_attempts: 5,
-  lockout_duration_minutes: 15,
-  password_min_length: 8,
-  password_require_uppercase: true,
-  password_require_numbers: true,
-  enable_two_factor_auth: false,
-  session_timeout_minutes: 30,
-  allow_multiple_sessions: false,
-};
-
 // Combined defaults
 const DEFAULTS = {
   general: DEFAULT_GENERAL,
@@ -120,7 +117,6 @@ const DEFAULTS = {
   data_reports: DEFAULT_DATA_REPORTS,
   integrations: DEFAULT_INTEGRATIONS,
   audit_security: DEFAULT_AUDIT_SECURITY,
-  user_security: DEFAULT_USER_SECURITY,
 };
 
 // Allowed keys per category – derived from the interfaces
@@ -130,18 +126,22 @@ const ALLOWED_KEYS: Record<keyof typeof DEFAULTS, string[]> = {
     "language", "receipt_footer_message", "auto_logout_minutes"
   ],
   inventory: ["auto_reorder_enabled", "reorder_level_default", "reorder_qty_default", "stock_alert_threshold", "allow_negative_stock", "inventory_sync_enabled"],
-  sales: ["tax_rate", "discount_enabled", "max_discount_percent", "allow_refunds", "refund_window_days", "loyalty_points_enabled", "loyalty_points_rate"],
+  sales: ["discount_enabled", "max_discount_percent", "allow_refunds", "refund_window_days", "loyalty_points_enabled", "loyalty_points_rate"],
   cashier: ["enable_cash_drawer", "drawer_open_code", "enable_receipt_printing", "receipt_printer_type", "enable_barcode_scanning", "enable_touchscreen_mode", "quick_sale_enabled"],
   notifications: [
     "email_enabled", "email_smtp_host", "email_smtp_port", "email_from_address",
     "sms_enabled", "sms_provider", "push_notifications_enabled", "low_stock_alert_enabled",
     "daily_sales_summary_enabled", "twilio_account_sid", "twilio_auth_token",
-    "twilio_phone_number", "twilio_messaging_service_sid"
+    "twilio_phone_number", "twilio_messaging_service_sid",
+    "notify_supplier_with_sms", "notify_supplier_with_email",
+    "notify_supplier_on_complete_email", "notify_supplier_on_complete_sms",
+    "notify_supplier_on_cancel_email", "notify_supplier_on_cancel_sms",
+    "notify_customer_return_processed_email", "notify_customer_return_processed_sms",
+    "notify_customer_return_cancelled_email", "notify_customer_return_cancelled_sms"
   ],
   data_reports: ["export_formats", "default_export_format", "auto_backup_enabled", "backup_schedule", "backup_location", "data_retention_days"],
   integrations: ["accounting_integration_enabled", "accounting_api_url", "accounting_api_key", "payment_gateway_enabled", "payment_gateway_provider", "payment_gateway_api_key", "webhooks_enabled", "webhooks"],
   audit_security: ["audit_log_enabled", "log_retention_days", "log_events", "force_https", "session_encryption_enabled", "gdpr_compliance_enabled"],
-  user_security: ["max_login_attempts", "lockout_duration_minutes", "password_min_length", "password_require_uppercase", "password_require_numbers", "enable_two_factor_auth", "session_timeout_minutes", "allow_multiple_sessions"],
 };
 
 // Helper to sanitize an object to only allowed keys
@@ -159,6 +159,7 @@ function sanitizeSettings<T extends Record<string, any>>(
 }
 
 export const useSettings = () => {
+ const {refreshSettings} = useSettings1();
   const [groupedConfig, setGroupedConfig] = useState(DEFAULTS);
   const [systemInfo, setSystemInfo] = useState<SystemInfoData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -186,7 +187,6 @@ export const useSettings = () => {
           data_reports: { ...DEFAULTS.data_reports, ...apiSettings.data_reports },
           integrations: { ...DEFAULTS.integrations, ...apiSettings.integrations },
           audit_security: { ...DEFAULTS.audit_security, ...apiSettings.audit_security },
-          user_security: { ...DEFAULTS.user_security, ...apiSettings.user_security },
         });
       }
       const infoRes = await systemConfigAPI.getSystemInfo();
@@ -235,8 +235,6 @@ export const useSettings = () => {
     updateCategoryField("integrations", field, value);
   const updateAuditSecurity = (field: keyof AuditSecuritySettings, value: any) =>
     updateCategoryField("audit_security", field, value);
-  const updateUserSecurity = (field: keyof UserSecuritySettings, value: any) =>
-    updateCategoryField("user_security", field, value);
 
   // Save settings: send each category individually, but only the allowed fields
   const saveSettings = async () => {
@@ -264,6 +262,7 @@ export const useSettings = () => {
     }
 
     setSaving(false);
+    refreshSettings();
   };
 
   const resetToDefaults = async () => {
@@ -363,7 +362,6 @@ export const useSettings = () => {
     updateDataReports,
     updateIntegrations,
     updateAuditSecurity,
-    updateUserSecurity,
     saveSettings,
     resetToDefaults,
     exportSettings,

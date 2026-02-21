@@ -842,6 +842,7 @@ function registerIpcHandlers() {
       "./ipc/analytics/returnRefund/index.ipc.js",
       "./ipc/analytics/sales/index.ipc.js",
       "./ipc/barcode/index.ipc.js",
+      "./ipc/notification/index.ipc.js",
     ];
 
     ipcModules.forEach((modulePath) => {

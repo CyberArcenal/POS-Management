@@ -1,4 +1,3 @@
-// src/renderer/pages/Settings/components/DataReportsTab.tsx
 import React from "react";
 import type { DataReportsSettings } from "../../../api/system_config";
 
@@ -13,6 +12,48 @@ const DataReportsTab: React.FC<Props> = ({ settings, onUpdate }) => {
     onUpdate("export_formats", formats);
   };
 
+  // Safely convert export_formats to a display string
+  const getExportFormatsDisplay = (): string => {
+    const formats = settings.export_formats;
+
+    // If it's already an array, join it
+    if (Array.isArray(formats)) {
+      return formats.join(", ");
+    }
+
+    // If it's a string, try to parse JSON, else treat as comma-separated
+    if (typeof formats === "string") {
+      try {
+        const parsed = JSON.parse(formats);
+        // If parsed result is an array, join it
+        if (Array.isArray(parsed)) {
+          return parsed.join(", ");
+        }
+        // If parsed result is an object (e.g., {0: "CSV", 1: "Excel"}), extract its values
+        if (parsed && typeof parsed === "object") {
+          const values = Object.values(parsed).filter(v => typeof v === "string");
+          if (values.length > 0) {
+            return values.join(", ");
+          }
+        }
+      } catch {
+        // Not JSON – assume it's a plain comma-separated string
+        return formats;
+      }
+    }
+
+    // If it's an object but not a string (e.g., directly stored as object)
+    if (formats && typeof formats === "object") {
+      const values = Object.values(formats).filter(v => typeof v === "string");
+      if (values.length > 0) {
+        return values.join(", ");
+      }
+    }
+
+    // Fallback default
+    return "CSV, Excel, PDF";
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-[var(--text-primary)]">Data & Reports Settings</h3>
@@ -23,7 +64,7 @@ const DataReportsTab: React.FC<Props> = ({ settings, onUpdate }) => {
           </label>
           <input
             type="text"
-            value={settings.export_formats?.join(", ") || "CSV, Excel, PDF"}
+            value={getExportFormatsDisplay()}
             onChange={(e) => handleExportFormatsChange(e.target.value)}
             className="windows-input w-full"
             placeholder="CSV, Excel, PDF"

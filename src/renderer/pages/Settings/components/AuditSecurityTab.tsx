@@ -1,4 +1,3 @@
-// src/renderer/pages/Settings/components/AuditSecurityTab.tsx
 import React from "react";
 import type { AuditSecuritySettings } from "../../../api/system_config";
 
@@ -11,6 +10,28 @@ const AuditSecurityTab: React.FC<Props> = ({ settings, onUpdate }) => {
   const handleLogEventsChange = (value: string) => {
     const events = value.split(",").map((e) => e.trim()).filter(Boolean);
     onUpdate("log_events", events);
+  };
+
+  // Safely convert log_events to a display string
+  const getLogEventsDisplay = (): string => {
+    const logEvents = settings.log_events;
+    if (Array.isArray(logEvents)) {
+      return logEvents.join(", ");
+    }
+    if (typeof logEvents === "string") {
+      // Try to parse as JSON, fallback to raw string
+      try {
+        const parsed = JSON.parse(logEvents);
+        if (Array.isArray(parsed)) {
+          return parsed.join(", ");
+        }
+      } catch {
+        // Not JSON, return as is (may be comma-separated)
+        return logEvents;
+      }
+    }
+    // Default placeholder
+    return "login, logout, create, update, delete";
   };
 
   return (
@@ -49,7 +70,7 @@ const AuditSecurityTab: React.FC<Props> = ({ settings, onUpdate }) => {
           </label>
           <input
             type="text"
-            value={settings?.log_events?.join(", ") || "login, logout, create, update, delete"}
+            value={getLogEventsDisplay()}
             onChange={(e) => handleLogEventsChange(e.target.value)}
             className="windows-input w-full"
             placeholder="login, logout, create, update, delete"

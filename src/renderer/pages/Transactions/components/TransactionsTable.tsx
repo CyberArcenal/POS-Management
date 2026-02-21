@@ -15,6 +15,8 @@ import Decimal from "decimal.js";
 import { format } from "date-fns";
 import type { Sale } from "../../../api/sale";
 import type { PaymentMethod, SaleStatus } from "../hooks/useTransactions";
+import { useSettings } from "../../../contexts/SettingsContext";
+import { useIsRefundable } from "../../../utils/posUtils";
 
 // Helper components (StatusBadge, PaymentMethodIcon) – can be moved to separate files if desired
 export const StatusBadge: React.FC<{ status: SaleStatus }> = ({ status }) => {
@@ -83,6 +85,8 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   onPrint,
   onRefund,
 }) => {
+  const { settings, getSetting, updateSetting } = useSettings();
+  const refundWindowDays = getSetting("sales", "refund_window_days", 7);
   if (transactions.length === 0) {
     return (
       <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-8 text-center">
@@ -168,7 +172,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                         e.stopPropagation();
                         onViewDetails(tx);
                       }}
-                      className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)]"
+                      className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-blue)] hidden"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
@@ -189,7 +193,10 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                           e.stopPropagation();
                           onRefund(tx);
                         }}
-                        className="p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-red)]"
+                        disabled={!useIsRefundable(tx)}
+                        className={`p-1 hover:bg-[var(--card-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--accent-red)] ${
+                          !useIsRefundable(tx) ? "hidden" : ""
+                        }`}
                         title="Refund"
                       >
                         <RotateCcw className="w-4 h-4" />

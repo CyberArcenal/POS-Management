@@ -126,9 +126,9 @@ const handler = new NotificationLogHandler();
 
 // Register IPC handler with error handling middleware
 ipcMain.handle(
-  "notification",
+  "notificationLog",
   // @ts-ignore
-  withErrorHandling(handler.handleRequest.bind(handler), "IPC:notification")
+  withErrorHandling(handler.handleRequest.bind(handler), "IPC:notificationLog")
 );
 
 module.exports = { NotificationLogHandler, notificationHandler: handler };

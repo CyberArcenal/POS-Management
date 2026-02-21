@@ -6,19 +6,6 @@ const auditLogger = require("../utils/auditLogger");
 const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
 const { validatePurchaseData } = require("../utils/purchaseUtils");
 
-// 🔧 SETTINGS INTEGRATION: import needed settings getters
-const {
-  // Notification settings (for future use, but we don't implement notifications)
-  emailEnabled,
-  smsEnabled,
-  getNotifySupplierOnConfirmedWithEmail,
-  getNotifySupplierOnConfirmedWithSms,
-  getNotifySupplierOnCompleteWithEmail,
-  getNotifySupplierOnCompleteWithSms,
-  // Inventory settings
-  inventorySyncEnabled,
-} = require("../utils/system");
-
 class PurchaseService {
   constructor() {
     this.purchaseRepository = null;
@@ -169,15 +156,6 @@ class PurchaseService {
         `Purchase created: #${savedPurchase.id} - ${savedPurchase.referenceNo}`,
       );
 
-      // 🔧 SETTINGS INTEGRATION: Log if notifications would be sent (but don't actually send)
-      if (status === "confirmed") {
-        const emailNotif = await getNotifySupplierOnConfirmedWithEmail();
-        const smsNotif = await getNotifySupplierOnConfirmedWithSms();
-        console.log(
-          `[SETTINGS] Would send confirmed notifications: email=${emailNotif}, sms=${smsNotif}`,
-        );
-      }
-
       return savedPurchase;
     } catch (error) {
       // @ts-ignore
@@ -218,7 +196,6 @@ class PurchaseService {
       }
 
       const oldData = { ...existingPurchase };
-      const oldStatus = existingPurchase.status;
 
       // Handle supplier change
       if (
@@ -285,6 +262,8 @@ class PurchaseService {
           // @ts-ignore
           existingPurchase.purchaseItems.length > 0
         ) {
+          // Note: with cascade, removing from array and saving will delete them if orphaned? Better to manually remove.
+          // For simplicity, we'll just overwrite; TypeORM cascade should handle removal if set.
           // @ts-ignore
           existingPurchase.purchaseItems = [];
         }
@@ -327,7 +306,8 @@ class PurchaseService {
         // @ts-ignore
         existingPurchase.notes = purchaseData.notes;
 
-      // Handle status change
+      // Handle status change: if moving to 'completed', need to update stock
+      const oldStatus = existingPurchase.status;
       // @ts-ignore
       const newStatus = purchaseData.status;
       if (newStatus && newStatus !== oldStatus) {
@@ -338,33 +318,14 @@ class PurchaseService {
         if (oldStatus === "completed" && newStatus !== "completed") {
           throw new Error("Cannot revert completed purchase");
         }
-
-        // Update status
-        existingPurchase.status = newStatus;
-
-        // 🔧 SETTINGS INTEGRATION: Log based on settings but don't perform new actions
-        if (newStatus === "confirmed") {
-          const emailNotif = await getNotifySupplierOnConfirmedWithEmail();
-          const smsNotif = await getNotifySupplierOnConfirmedWithSms();
-          console.log(
-            `[SETTINGS] Would send confirmed notifications: email=${emailNotif}, sms=${smsNotif}`,
-          );
-        }
-
-        if (newStatus === "completed") {
-          // 🔧 SETTINGS INTEGRATION: Check if inventory sync is enabled (but don't actually sync)
-          const syncEnabled = await inventorySyncEnabled();
-          console.log(
-            // @ts-ignore
-            `[SETTINGS] Inventory sync enabled: ${syncEnabled}. Would update stock for ${existingPurchase.purchaseItems.length} items.`,
-          );
-
-          // Log completion notifications
-          const emailNotif = await getNotifySupplierOnCompleteWithEmail();
-          const smsNotif = await getNotifySupplierOnCompleteWithSms();
-          console.log(
-            `[SETTINGS] Would send completed notifications: email=${emailNotif}, sms=${smsNotif}`,
-          );
+        if (oldStatus === "pending" && newStatus === "completed") {
+          // Will update stock after saving
+          existingPurchase.status = newStatus;
+        } else if (oldStatus === "pending" && newStatus === "cancelled") {
+          existingPurchase.status = newStatus;
+          // Optionally revert stock if needed, but we don't have stock changes yet
+        } else {
+          existingPurchase.status = newStatus;
         }
       }
 
@@ -377,7 +338,6 @@ class PurchaseService {
       await auditLogger.logUpdate("Purchase", id, oldData, savedPurchase, user);
 
       console.log(`Purchase updated: #${id}`);
-
       return savedPurchase;
     } catch (error) {
       // @ts-ignore
@@ -414,6 +374,9 @@ class PurchaseService {
 
       // @ts-ignore
       const savedPurchase = await updateDb(purchaseRepo, purchase);
+
+      // Optionally, if purchase was completed, we might want to reverse stock changes.
+      // For simplicity, we don't auto-reverse; user can manually adjust if needed.
 
       await auditLogger.logDelete("Purchase", id, oldData, user);
 
@@ -667,3 +630,5 @@ function generateReferenceNumber() {
     .padStart(4, "0");
   return `${prefix}-${timestamp}-${random}`;
 }
+
+

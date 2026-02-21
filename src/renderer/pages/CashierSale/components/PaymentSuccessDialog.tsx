@@ -1,16 +1,19 @@
-import React from 'react';
-import { CheckCircle, X, Printer } from 'lucide-react';
-import Decimal from 'decimal.js';
-import type { CartItem } from '../types';
-import { formatCurrency } from '../../../utils/formatters';
+import React, { useState } from "react";
+import { CheckCircle, X, Printer } from "lucide-react";
+import Decimal from "decimal.js";
+import type { CartItem } from "../types";
+import { formatCurrency } from "../../../utils/formatters";
+import { useReceiptPrintingEnabled } from "../../../utils/posUtils"; // ✅
+import { hideLoading, showLoading } from "../../../utils/notification";
+import { dialogs } from "../../../utils/dialogs";
 
 interface PaymentSuccessDialogProps {
   isOpen: boolean;
   onClose: () => void;
   saleId: number;
   total: Decimal;
-  paidAmount?: number;      // only for cash
-  change?: Decimal;         // only for cash
+  paidAmount?: number;
+  change?: Decimal;
   paymentMethod: string;
   items: CartItem[];
 }
@@ -25,9 +28,12 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
   paymentMethod,
   items,
 }) => {
+  const receiptPrintingEnabled = useReceiptPrintingEnabled(); // ✅
+  const [isLoading, setIsloading] = useState(false);
+
   if (!isOpen) return null;
 
-  const isCash = paymentMethod === 'cash';
+  const isCash = paymentMethod === "cash";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
@@ -53,9 +59,11 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
         {/* Body – large numbers */}
         <div className="p-8 space-y-8">
           <div className="text-center">
-            <div className="text-sm text-[var(--text-tertiary)] mb-1">Sale #</div>
+            <div className="text-sm text-[var(--text-tertiary)] mb-1">
+              Sale #
+            </div>
             <div className="text-4xl font-mono font-bold text-[var(--accent-blue)]">
-              {saleId.toString().padStart(6, '0')}
+              {saleId.toString().padStart(6, "0")}
             </div>
           </div>
 
@@ -70,16 +78,20 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
             {isCash && (
               <>
                 <div className="text-center">
-                  <div className="text-sm text-[var(--text-tertiary)]">Amount Paid</div>
+                  <div className="text-sm text-[var(--text-tertiary)]">
+                    Amount Paid
+                  </div>
                   <div className="text-5xl font-bold text-[var(--accent-green)]">
                     {formatCurrency((paidAmount || 0).toFixed(2))}
                   </div>
                 </div>
 
                 <div className="text-center col-span-2">
-                  <div className="text-sm text-[var(--text-tertiary)]">Change</div>
+                  <div className="text-sm text-[var(--text-tertiary)]">
+                    Change
+                  </div>
                   <div className="text-7xl font-bold text-[var(--accent-amber)]">
-                    {formatCurrency(change?.toFixed(2) || '0.00')}
+                    {formatCurrency(change?.toFixed(2) || "0.00")}
                   </div>
                 </div>
               </>
@@ -87,7 +99,9 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
 
             {!isCash && (
               <div className="text-center col-span-2">
-                <div className="text-sm text-[var(--text-tertiary)]">Payment Method</div>
+                <div className="text-sm text-[var(--text-tertiary)]">
+                  Payment Method
+                </div>
                 <div className="text-4xl font-bold text-[var(--accent-purple)] capitalize">
                   {paymentMethod}
                 </div>
@@ -97,7 +111,9 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
 
           {/* Item list */}
           <div className="bg-[var(--card-secondary-bg)] rounded-lg p-4 max-h-48 overflow-y-auto notes-scrollbar">
-            <p className="text-sm font-medium text-[var(--text-tertiary)] mb-2">Items</p>
+            <p className="text-sm font-medium text-[var(--text-tertiary)] mb-2">
+              Items
+            </p>
             {items.map((item) => (
               <div key={item.id} className="flex justify-between text-sm py-1">
                 <span className="text-[var(--text-secondary)]">
@@ -105,7 +121,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
                 </span>
                 <span className="text-[var(--text-primary)] font-mono">
                   {formatCurrency(
-                    new Decimal(item.price).times(item.cartQuantity).toFixed(2)
+                    new Decimal(item.price).times(item.cartQuantity).toFixed(2),
                   )}
                 </span>
               </div>
@@ -121,16 +137,31 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
           >
             Close
           </button>
-          {/* <button
-            onClick={() => {
-              // TODO: print receipt functionality
-              onClose();
-            }}
-            className="flex-1 px-4 py-3 rounded-lg bg-[var(--accent-blue)] text-white font-semibold hover:bg-[var(--accent-blue-hover)] transition-colors flex items-center justify-center gap-2"
-          >
-            <Printer className="w-5 h-5" />
-            Print Receipt
-          </button> */}
+          {receiptPrintingEnabled && ( // ✅ kondisyonal na print button
+            <button
+              onClick={async () => {
+                // TODO: print receipt functionality
+                onClose();
+                try {
+                  setIsloading(true);
+                  showLoading("Printing Receipt..");
+                  await window.backendAPI.printerPrint(saleId);
+                } catch (err) {
+                  hideLoading();
+                  setIsloading(false);
+                  await dialogs.error("Printer Unavailable.", "Print Failed.");
+                } finally {
+                  setIsloading(false);
+                  hideLoading();
+                }
+              }}
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 rounded-lg bg-[var(--accent-blue)] text-white font-semibold hover:bg-[var(--accent-blue-hover)] transition-colors flex items-center justify-center gap-2"
+            >
+              <Printer className="w-5 h-5" />
+              {isLoading ? `Printing...` : `Print Receipt`}
+            </button>
+          )}
         </div>
       </div>
     </div>

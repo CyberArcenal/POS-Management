@@ -11,7 +11,7 @@ const Purchase = new EntitySchema({
     status: {
       type: String,
       default: "pending",
-      enum: ["pending", "approved", "completed", "cacelled"],
+      enum: ["pending", "approved", "completed", "cancelled"],
     }, // pending, completed, cancelled
     totalAmount: { type: "decimal", default: 0 },
     createdAt: { type: Date, default: () => "CURRENT_TIMESTAMP" },

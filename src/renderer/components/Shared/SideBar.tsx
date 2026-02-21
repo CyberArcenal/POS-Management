@@ -42,6 +42,7 @@ import {
 import dashboardAPI from "../../api/dashboard";
 import { formatCurrency } from "../../utils/formatters";
 import systemConfigAPI from "../../api/system_config";
+import { useSettings } from "../../contexts/SettingsContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -57,22 +58,15 @@ interface MenuItem {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const location = useLocation();
+  const { settings, getSetting, updateSetting } = useSettings();
+  const companyName = getSetting('general', 'company_name', 'Default Name');
+
+
+
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
-  const [companyName, setCompanyName] = useState<string>("POS Management");
 
-
-  useEffect(() => {
-    const loadName = async () => {
-      const response = await systemConfigAPI.getGroupedConfig();
-      if(response.status){
-        setCompanyName(response.data?.grouped_settings.general.company_name || "POS Management");
-      }
-
-      loadName();
-    }
-  }, [])
 
   // Stats state
   const [stats, setStats] = useState({

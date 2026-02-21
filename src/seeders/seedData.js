@@ -333,7 +333,7 @@ class POSSeeder {
     for (let i = 0; i < this.config.purchaseCount; i++) {
       const supplier = random.element(suppliers);
       // Include 'approved' in possible statuses (added to match entity enum)
-      const status = random.element(['pending', 'approved', 'completed', 'cacelled']);
+      const status = random.element(['pending', 'approved', 'completed', 'cancelled']);
       const orderDate = random.pastDate();
       const itemCount = random.int(1, 5);
       let totalAmount = 0;

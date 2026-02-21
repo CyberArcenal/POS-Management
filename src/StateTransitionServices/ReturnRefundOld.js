@@ -13,9 +13,6 @@ const {
   notifyCustomerOnReturnProcessedWithSms,
   notifyCustomerOnReturnCancelledWithEmail,
   notifyCustomerOnReturnCancelledWithSms,
-  // 🔧 SETTINGS INTEGRATION: bagong settings para sa stock updates
-  autoUpdateStockOnReturnProcessed,
-  autoReverseStockOnReturnCancel,
 } = require("../utils/system");
 const ReturnRefund = require("../entities/ReturnRefund");
 
@@ -58,55 +55,45 @@ class ReturnRefundStateTransitionService {
       return;
     }
 
-    // 🔧 SETTINGS INTEGRATION: suriin kung pinapayagan ang auto stock update
-    const shouldUpdateStock = await autoUpdateStockOnReturnProcessed();
+    // --- Stock updates and inventory movements ---
+    // @ts-ignore
+    for (const item of fullReturn.items) {
+      const product = item.product;
+      const oldStock = product.stockQty;
+      const newStock = oldStock + item.quantity;
 
-    // --- Stock updates and inventory movements (kung pinapayagan) ---
-    if (shouldUpdateStock) {
-      // @ts-ignore
-      for (const item of fullReturn.items) {
-        const product = item.product;
-        const oldStock = product.stockQty;
-        const newStock = oldStock + item.quantity;
+      product.stockQty = newStock;
+      product.updatedAt = new Date();
+      await updateDb(this.productRepo, product);
 
-        product.stockQty = newStock;
-        product.updatedAt = new Date();
-        await updateDb(this.productRepo, product);
-
-        const movement = this.movementRepo.create({
-          movementType: "refund",
-          qtyChange: item.quantity,
-          // @ts-ignore
-          notes: `Return #${fullReturn.id} - ${fullReturn.referenceNo}`,
-          product,
-          // @ts-ignore
-          sale: fullReturn.sale,
-          timestamp: new Date(),
-        });
-        await saveDb(this.movementRepo, movement);
-
-        await auditLogger.logUpdate(
-          "Product",
-          product.id,
-          { stockQty: oldStock },
-          { stockQty: newStock },
-          user,
-        );
-        await auditLogger.logCreate(
-          "InventoryMovement",
-          movement.id,
-          movement,
-          user,
-        );
-      }
-    } else {
-      logger.info(
+      const movement = this.movementRepo.create({
+        movementType: "refund",
+        qtyChange: item.quantity,
         // @ts-ignore
-        `[Transition] Stock update skipped for return #${fullReturn.id} (disabled by settings)`,
+        notes: `Return #${fullReturn.id} - ${fullReturn.referenceNo}`,
+        product,
+        // @ts-ignore
+        sale: fullReturn.sale,
+        timestamp: new Date(),
+      });
+      await saveDb(this.movementRepo, movement);
+
+      await auditLogger.logUpdate(
+        "Product",
+        product.id,
+        { stockQty: oldStock },
+        { stockQty: newStock },
+        user,
+      );
+      await auditLogger.logCreate(
+        "InventoryMovement",
+        movement.id,
+        movement,
+        user,
       );
     }
 
-    // --- Notify customer about processed return (laging ginagawa, kontrolado ng settings) ---
+    // --- Notify customer about processed return ---
     // @ts-ignore
     if (fullReturn.customer) {
       await this._notifyCustomer(fullReturn, "processed");
@@ -123,7 +110,7 @@ class ReturnRefundStateTransitionService {
 
   /**
    * Handle side effects when a return is cancelled
-   * If it was previously processed, reverse the stock (subtract) – kung pinapayagan ng settings
+   * If it was previously processed, reverse the stock (subtract)
    * @param {Object} returnRefund - Full return entity
    * @param {string} oldStatus - Previous status
    * @param {string} user
@@ -154,11 +141,8 @@ class ReturnRefundStateTransitionService {
       return;
     }
 
-    // 🔧 SETTINGS INTEGRATION: suriin kung pinapayagan ang auto stock reversal
-    const shouldReverseStock = await autoReverseStockOnReturnCancel();
-
-    // --- Reverse stock if the return was previously processed at pinapayagan ng settings ---
-    if (oldStatus === "processed" && shouldReverseStock) {
+    // --- Reverse stock if the return was previously processed ---
+    if (oldStatus === "processed") {
       // @ts-ignore
       for (const item of fullReturn.items) {
         const product = item.product;
@@ -195,14 +179,9 @@ class ReturnRefundStateTransitionService {
           user,
         );
       }
-    } else if (oldStatus === "processed" && !shouldReverseStock) {
-      logger.info(
-        // @ts-ignore
-        `[Transition] Stock reversal skipped for return #${fullReturn.id} (disabled by settings)`,
-      );
     }
 
-    // --- Notify customer about cancellation (laging ginagawa, kontrolado ng settings) ---
+    // --- Notify customer about cancellation ---
     // @ts-ignore
     if (fullReturn.customer) {
       // @ts-ignore

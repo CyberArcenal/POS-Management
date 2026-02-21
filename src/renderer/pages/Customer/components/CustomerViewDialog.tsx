@@ -14,11 +14,17 @@ interface CustomerViewDialogProps {
   onClose: () => void;
 }
 
-const getCustomerStatus = (points: number): { label: string; color: string } => {
-  if (points >= 1000) return { label: "VIP", color: "var(--customer-vip)" };
-  if (points >= 500) return { label: "Loyal", color: "var(--customer-loyal)" };
-  if (points >= 100) return { label: "Regular", color: "var(--customer-regular)" };
-  return { label: "New", color: "var(--customer-new)" };
+const getCustomerStatus = (customer: Customer): { label: string; color: string } => {
+  switch (customer.status) {
+    case "vip":
+      return { label: "VIP", color: "var(--customer-vip)" };
+    case "elite":
+      return { label: "Elite", color: "var(--customer-loyal)" };
+    case "regular":
+      return { label: "Regular", color: "var(--customer-regular)" };
+    default:
+      return { label: "Regular", color: "var(--customer-regular)" };
+  }
 };
 
 export const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
@@ -31,7 +37,7 @@ export const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const status = customer ? getCustomerStatus(customer.loyaltyPointsBalance) : null;
+  const status = customer ? getCustomerStatus(customer) : null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -59,15 +65,17 @@ export const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-lg font-semibold text-[var(--text-primary)]">{customer.name}</h3>
-                      <div className="flex items-center gap-4 mt-2 text-sm">
-                        {customer.contactInfo && (
+                      <div className="flex flex-col gap-1 mt-2 text-sm">
+                        {customer.email && (
                           <div className="flex items-center gap-1 text-[var(--text-secondary)]">
-                            {customer.contactInfo.includes('@') ? (
-                              <Mail className="w-4 h-4" />
-                            ) : (
-                              <Phone className="w-4 h-4" />
-                            )}
-                            <span>{customer.contactInfo}</span>
+                            <Mail className="w-4 h-4" />
+                            <span>{customer.email}</span>
+                          </div>
+                        )}
+                        {customer.phone && (
+                          <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                            <Phone className="w-4 h-4" />
+                            <span>{customer.phone}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-1 text-[var(--text-secondary)]">

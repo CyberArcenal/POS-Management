@@ -10,7 +10,7 @@ export interface Customer {
   name: string;
   contactInfo: string | null;
   loyaltyPointsBalance: number;
-  createdAt: string;       // ISO datetime
+  createdAt: string; // ISO datetime
   updatedAt: string | null;
 }
 
@@ -19,7 +19,7 @@ export interface Product {
   sku: string;
   name: string;
   description: string | null;
-  price: number;           // decimal
+  price: number; // decimal
   stockQty: number;
   isActive: boolean;
   createdAt: string;
@@ -29,23 +29,23 @@ export interface Product {
 export interface SaleItem {
   id: number;
   quantity: number;
-  unitPrice: number;       // decimal
-  discount: number;        // decimal
-  tax: number;             // decimal
-  lineTotal: number;       // decimal
+  unitPrice: number; // decimal
+  discount: number; // decimal
+  tax: number; // decimal
+  lineTotal: number; // decimal
   createdAt: string;
   updatedAt: string | null;
-  product: Product;        // populated relation
-  saleId?: number;         // for reference
+  product: Product; // populated relation
+  saleId?: number; // for reference
 }
 
 export interface Sale {
   id: number;
-  timestamp: string;       // ISO datetime
-  status: 'initiated' | 'paid' | 'refunded' | 'voided';
-  paymentMethod: 'cash' | 'card' | 'wallet';
-  totalAmount: number;     // decimal
-  pointsEarn: number;      // earned loyalty points for this sale
+  timestamp: string; // ISO datetime
+  status: "initiated" | "paid" | "refunded" | "voided";
+  paymentMethod: "cash" | "card" | "wallet";
+  totalAmount: number; // decimal
+  pointsEarn: number; // earned loyalty points for this sale
 
   usedLoyalty: boolean;
   loyaltyRedeemed: number;
@@ -61,7 +61,6 @@ export interface Sale {
   saleItems: SaleItem[];
 }
 
-
 // ----------------------------------------------------------------------
 // 📨 Response Interfaces (mirror IPC response format)
 // ----------------------------------------------------------------------
@@ -69,13 +68,13 @@ export interface Sale {
 export interface SaleResponse {
   status: boolean;
   message: string;
-  data: Sale;               // single sale
+  data: Sale; // single sale
 }
 
 export interface SalesResponse {
   status: boolean;
   message: string;
-  data: Sale[];             // array of sales
+  data: Sale[]; // array of sales
 }
 
 export interface StatisticsResponse {
@@ -129,8 +128,8 @@ export interface ExportResponse {
   status: boolean;
   message: string;
   data: {
-    format: 'csv' | 'json';
-    data: string;           // CSV string or JSON string
+    format: "csv" | "json";
+    data: string; // CSV string or JSON string
     filename: string;
   };
 }
@@ -138,7 +137,7 @@ export interface ExportResponse {
 export interface BulkOperationResponse {
   status: boolean;
   message: string;
-  data: Sale[];             // array of created/updated sales
+  data: Sale[]; // array of created/updated sales
 }
 
 export interface DeleteResponse {
@@ -172,7 +171,7 @@ class SaleAPI {
     paymentMethod?: string;
     search?: string;
     sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC';
+    sortOrder?: "ASC" | "DESC";
     page?: number;
     limit?: number;
   }): Promise<SalesResponse> {
@@ -187,7 +186,7 @@ class SaleAPI {
       });
 
       if (response.status) {
-        console.log(response)
+        console.log(response);
         return response as SalesResponse;
       }
       throw new Error(response.message || "Failed to fetch sales");
@@ -273,9 +272,41 @@ class SaleAPI {
       if (response.status) {
         return response as SalesResponse;
       }
-      throw new Error(response.message || "Failed to fetch sales by date range");
+      throw new Error(
+        response.message || "Failed to fetch sales by date range",
+      );
     } catch (error: any) {
       throw new Error(error.message || "Failed to fetch sales by date range");
+    }
+  }
+
+  // Add this method sa SaleAPI class
+
+  /**
+   * Get total amount spent for multiple customers (batch request).
+   * @param customerIds - Array of customer IDs
+   * @returns Record mapping customerId to total spent
+   */
+  async getTotalSpentForCustomers(
+    customerIds: number[],
+  ): Promise<Record<number, number>> {
+    try {
+      if (!window.backendAPI?.customer) {
+        // Tandaan: nasa customer channel ito, hindi sale
+        throw new Error("Electron API (customer) not available");
+      }
+
+      const response = await window.backendAPI.customer({
+        method: "getTotalSpentForCustomers",
+        params: { customerIds },
+      });
+
+      if (response.status) {
+        return response.data;
+      }
+      throw new Error(response.message || "Failed to fetch total spent");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch total spent");
     }
   }
 
@@ -283,7 +314,10 @@ class SaleAPI {
    * Get all initiated (active) sales.
    * @param params - Optional pagination
    */
-  async getActive(params?: { page?: number; limit?: number }): Promise<SalesResponse> {
+  async getActive(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<SalesResponse> {
     try {
       if (!window.backendAPI?.sale) {
         throw new Error("Electron API (sale) not available");
@@ -373,16 +407,16 @@ class SaleAPI {
       items: Array<{
         productId: number;
         quantity: number;
-        unitPrice?: number;   // if not provided, uses product's price
+        unitPrice?: number; // if not provided, uses product's price
         discount?: number;
         tax?: number;
       }>;
       customerId?: number;
-      paymentMethod?: 'cash' | 'card' | 'wallet';
+      paymentMethod?: "cash" | "card" | "wallet";
       notes?: string;
       loyaltyRedeemed?: number;
     },
-    user: string = "system"
+    user: string = "system",
   ): Promise<SaleResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -411,8 +445,8 @@ class SaleAPI {
    */
   async update(
     id: number,
-    updates: { paymentMethod?: 'cash' | 'card' | 'wallet'; notes?: string },
-    user: string = "system"
+    updates: { paymentMethod?: "cash" | "card" | "wallet"; notes?: string },
+    user: string = "system",
   ): Promise<SaleResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -489,7 +523,11 @@ class SaleAPI {
    * @param reason - Reason for voiding
    * @param user - Optional username
    */
-  async void(id: number, reason: string, user: string = "system"): Promise<SaleResponse> {
+  async void(
+    id: number,
+    reason: string,
+    user: string = "system",
+  ): Promise<SaleResponse> {
     try {
       if (!window.backendAPI?.sale) {
         throw new Error("Electron API (sale) not available");
@@ -520,7 +558,7 @@ class SaleAPI {
     id: number,
     items: Array<{ productId: number; quantity: number }>,
     reason: string,
-    user: string = "system"
+    user: string = "system",
   ): Promise<SaleResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -549,7 +587,10 @@ class SaleAPI {
    * Get daily sales summary.
    * @param params - date range (optional)
    */
-  async getDailySales(params?: { startDate?: string; endDate?: string }): Promise<SalesResponse> {
+  async getDailySales(params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<SalesResponse> {
     try {
       if (!window.backendAPI?.sale) {
         throw new Error("Electron API (sale) not available");
@@ -573,7 +614,10 @@ class SaleAPI {
    * Get total revenue (paid sales).
    * @param params - date range (optional)
    */
-  async getRevenue(params?: { startDate?: string; endDate?: string }): Promise<StatisticsResponse> {
+  async getRevenue(params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<StatisticsResponse> {
     try {
       if (!window.backendAPI?.sale) {
         throw new Error("Electron API (sale) not available");
@@ -632,13 +676,19 @@ class SaleAPI {
    */
   async bulkCreate(
     sales: Array<{
-      items: Array<{ productId: number; quantity: number; unitPrice?: number; discount?: number; tax?: number }>;
+      items: Array<{
+        productId: number;
+        quantity: number;
+        unitPrice?: number;
+        discount?: number;
+        tax?: number;
+      }>;
       customerId?: number;
-      paymentMethod?: 'cash' | 'card' | 'wallet';
+      paymentMethod?: "cash" | "card" | "wallet";
       notes?: string;
       loyaltyRedeemed?: number;
     }>,
-    user: string = "system"
+    user: string = "system",
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -665,8 +715,11 @@ class SaleAPI {
    * @param user - Optional username
    */
   async bulkUpdate(
-    updates: Array<{ id: number; updates: { paymentMethod?: string; notes?: string } }>,
-    user: string = "system"
+    updates: Array<{
+      id: number;
+      updates: { paymentMethod?: string; notes?: string };
+    }>,
+    user: string = "system",
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -692,7 +745,10 @@ class SaleAPI {
    * @param csvData - Raw CSV content
    * @param user - Optional username
    */
-  async importCSV(csvData: string, user: string = "system"): Promise<BulkOperationResponse> {
+  async importCSV(
+    csvData: string,
+    user: string = "system",
+  ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.sale) {
         throw new Error("Electron API (sale) not available");
@@ -779,8 +835,8 @@ class SaleAPI {
   async generateReport(params?: {
     startDate?: string;
     endDate?: string;
-    format?: 'pdf' | 'csv' | 'json';
-    groupBy?: 'day' | 'week' | 'month';
+    format?: "pdf" | "csv" | "json";
+    groupBy?: "day" | "week" | "month";
   }): Promise<ExportResponse> {
     try {
       if (!window.backendAPI?.sale) {
@@ -809,7 +865,7 @@ class SaleAPI {
    * Check if the backend sale API is available.
    */
   async isAvailable(): Promise<boolean> {
-    return !!(window.backendAPI?.sale);
+    return !!window.backendAPI?.sale;
   }
 }
 

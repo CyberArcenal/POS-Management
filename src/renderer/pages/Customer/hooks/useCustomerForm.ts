@@ -21,7 +21,8 @@ export const useCustomerForm = () => {
     setCustomerId(customer.id);
     setInitialData({
       name: customer.name,
-      contactInfo: customer.contactInfo || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
       loyaltyPointsBalance: customer.loyaltyPointsBalance,
     });
     setIsOpen(true);

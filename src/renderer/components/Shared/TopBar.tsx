@@ -8,8 +8,10 @@ import {
   Bell,
   Calendar,
 } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import notificationAPI from "../../api/notification";
+import { NotificationDrawer } from "./NotificationDrawer";
 
 interface RouteInfo {
   path: string;
@@ -25,6 +27,30 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  // Replace with actual user id from your auth context
+  const currentUserId = 1; // ⚠️ TEMP – get from real auth
+
+  // Fetch unread count periodically
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const fetchUnread = async () => {
+      try {
+        const response = await notificationAPI.getUnreadCount(currentUserId);
+        if (response.status) {
+          setUnreadCount(response.data.unreadCount);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread count", error);
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // every 30s
+    return () => clearInterval(interval);
+  }, [currentUserId]);
 
   // Define searchable routes for POS
   const allRoutes: RouteInfo[] = useMemo(
@@ -300,24 +326,30 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
 
       {/* Right Section - Actions & Profile */}
       <div className="flex items-center gap-3">
-        {/* Notification Bell */}
-        <button className="relative p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)] transition-colors duration-200 group">
+        {/* Notification bell */}
+        <button
+          onClick={() => setNotificationsOpen(true)}
+          className="relative p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)] transition-colors duration-200 group"
+        >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--accent-red)] rounded-full border border-[var(--sidebar-bg)]"></span>
-          <div className="absolute top-full right-0 mt-2 w-64 bg-[var(--sidebar-bg)] border border-[var(--sidebar-border)] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-            <div className="p-3 border-b border-[var(--sidebar-border)]">
-              <div className="text-sm font-semibold text-[var(--sidebar-text)]">
-                Notifications
-              </div>
-            </div>
-            <div className="p-4 text-center">
-              <div className="text-sm text-[var(--text-tertiary)]">
-                No new notifications
-              </div>
-            </div>
-          </div>
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-[var(--accent-red)] text-white text-xs font-bold rounded-full px-1 border border-[var(--sidebar-bg)]">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </button>
+
+        {/* User avatar placeholder */}
+        <button className="p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)]">
+          <User className="w-5 h-5" />
         </button>
       </div>
+      {/* Notification Drawer */}
+      <NotificationDrawer
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        userId={currentUserId}
+      />
     </header>
   );
 };

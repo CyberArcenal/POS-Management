@@ -7,7 +7,6 @@ import type {
   PaymentMethod,
 } from "../types";
 import CartItem from "./CartItem";
-import CustomerSearch from "./CustomerSearch";
 import LoyaltyRedemption from "./LoyaltyRedemption";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import TotalsDisplay from "./TotalsDisplay";
@@ -18,6 +17,11 @@ import {
   calculateMaxRedeemable,
 } from "../utils";
 import CustomerSelect from "../../../components/Selects/Customer";
+import {
+  useDiscountEnabled,
+  useLoyaltyPointsEnabled,
+  useMaxDiscountPercent,   // ✅ bagong hook
+} from "../../../utils/posUtils";
 
 interface CartProps {
   cart: CartItemType[];
@@ -33,7 +37,6 @@ interface CartProps {
   onNotesChange: (value: string) => void;
 
   selectedCustomer: Customer | null;
-
   onCustomerSelect: (customer: Customer | null) => void;
 
   loyaltyPointsAvailable: number;
@@ -90,15 +93,16 @@ const Cart: React.FC<CartProps> = ({
     globalTax,
   );
 
-  // 👉 Ref for scroll container
   const cartContainerRef = useRef<HTMLDivElement | null>(null);
+  const discountEnabled = useDiscountEnabled();
+  const isPointEnabled = useLoyaltyPointsEnabled();
+  const maxDiscount = useMaxDiscountPercent(); // ✅ maximum discount mula sa settings
 
-  // 👉 Auto scroll to bottom when cart changes (smooth)
   useEffect(() => {
     if (cartContainerRef.current) {
       cartContainerRef.current.scrollTo({
         top: cartContainerRef.current.scrollHeight,
-        behavior: "smooth", // 👈 smooth scroll
+        behavior: "smooth",
       });
     }
   }, [cart]);
@@ -131,6 +135,7 @@ const Cart: React.FC<CartProps> = ({
               onRemove={onRemove}
               onUpdateDiscount={onUpdateDiscount}
               onUpdateTax={onUpdateTax}
+              maxDiscount={maxDiscount} // ✅ ipinapasa sa bawat CartItem
             />
           ))
         )}
@@ -146,7 +151,7 @@ const Cart: React.FC<CartProps> = ({
           placeholder="Select customer..."
         />
 
-        {selectedCustomer && (
+        {selectedCustomer && isPointEnabled && (
           <div className="flex items-center justify-between text-xs">
             <span className="text-[var(--text-tertiary)]">Loyalty points:</span>
             <span className="font-medium text-[var(--accent-purple)]">
@@ -154,16 +159,17 @@ const Cart: React.FC<CartProps> = ({
             </span>
           </div>
         )}
-
-        <LoyaltyRedemption
-          selectedCustomer={!!selectedCustomer}
-          loyaltyPointsAvailable={loyaltyPointsAvailable}
-          useLoyalty={useLoyalty}
-          loyaltyPointsToRedeem={loyaltyPointsToRedeem}
-          maxRedeemable={maxRedeemable}
-          onUseLoyaltyChange={onUseLoyaltyChange}
-          onPointsChange={onLoyaltyPointsChange}
-        />
+        {isPointEnabled && (
+          <LoyaltyRedemption
+            selectedCustomer={!!selectedCustomer}
+            loyaltyPointsAvailable={loyaltyPointsAvailable}
+            useLoyalty={useLoyalty}
+            loyaltyPointsToRedeem={loyaltyPointsToRedeem}
+            maxRedeemable={maxRedeemable}
+            onUseLoyaltyChange={onUseLoyaltyChange}
+            onPointsChange={onLoyaltyPointsChange}
+          />
+        )}
 
         <PaymentMethodSelector
           paymentMethod={paymentMethod}
@@ -173,15 +179,18 @@ const Cart: React.FC<CartProps> = ({
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-xs text-[var(--text-tertiary)] mb-1">
-              Discount %
+              Discount % {discountEnabled ? "" : "(Disabled)"}
             </label>
             <input
               type="number"
               min="0"
-              max="100"
+              max={maxDiscount} // ✅ max mula sa settings
+              disabled={!discountEnabled}
               value={globalDiscount}
               onChange={(e) =>
-                onGlobalDiscountChange(parseFloat(e.target.value) || 0)
+                onGlobalDiscountChange(
+                  Math.min(maxDiscount, parseFloat(e.target.value) || 0)
+                )
               }
               className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-[var(--text-primary)]"
             />

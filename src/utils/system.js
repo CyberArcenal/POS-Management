@@ -245,11 +245,6 @@ async function enableSmsAlerts() {
   return getValue("enable_sms_alerts", SettingType.NOTIFICATION, "false");
 }
 
-async function adminAlerts() {
-  // @ts-ignore
-  return getValue("admin_alerts", SettingType.NOTIFICATION, "false");
-}
-
 async function reminderIntervalHours() {
   // @ts-ignore
   return getValue("reminder_interval_hours", SettingType.NOTIFICATION, "24");
@@ -374,7 +369,7 @@ async function auditTrailEnabled() {
 }
 
 async function getLoyaltyPointRate() {
-  return getInt("loyalty_points_rate", SettingType.SALES, 20);
+  return getInt("loyalty_points_rate", SettingType.SALES, 100);
 }
 
 // ============================================================
@@ -710,6 +705,16 @@ async function cashDrawerDevicePath() {
   return getValue("cash_drawer_device_path", SettingType.CASHIER, "");
 }
 
+
+// Sa system.js (kung gusto mo)
+async function autoUpdateStockOnReturnProcessed() {
+  return getBool("auto_update_stock_on_return", SettingType.INVENTORY, true);
+}
+
+async function autoReverseStockOnReturnCancel() {
+  return getBool("auto_reverse_stock_on_return_cancel", SettingType.INVENTORY, true);
+}
+
 async function getGeneralSettings() {
   const [
     company_name,
@@ -979,6 +984,10 @@ async function getAuditSecuritySettings() {
 // ============================================================
 
 module.exports = {
+  autoUpdateStockOnReturnProcessed,
+  autoReverseStockOnReturnCancel,
+
+  
   getNotifySupplierOnConfirmedWithSms,
   getNotifySupplierOnConfirmedWithEmail,
   getNotifySupplierOnCompleteWithEmail,
@@ -1038,7 +1047,6 @@ module.exports = {
   // Notifications settings (original)
   enableEmailAlerts,
   enableSmsAlerts,
-  adminAlerts,
   reminderIntervalHours,
   smtpHost,
   smtpPort,

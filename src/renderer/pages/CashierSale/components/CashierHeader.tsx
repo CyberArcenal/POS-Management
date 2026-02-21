@@ -15,6 +15,11 @@ import {
 import Decimal from "decimal.js";
 import CategorySelect from "../../../components/Selects/Category"; // adjust path as needed
 import { formatCurrency } from "../../../utils/formatters";
+import {
+  useBarcodeEnabled,
+  useCashDrawerEnabled,
+  useReceiptPrintingEnabled,
+} from "../../../utils/posUtils";
 
 interface CashierHeaderProps {
   // Search
@@ -46,8 +51,6 @@ interface CashierHeaderProps {
   printerReady?: boolean;
   drawerOpen?: boolean;
   online?: boolean;
-
-  // Hotkeys (optional, can be static inside component)
 }
 
 const CashierHeader: React.FC<CashierHeaderProps> = ({
@@ -70,6 +73,10 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
   drawerOpen = false,
   online = true,
 }) => {
+  const isBarcodeEnabled = useBarcodeEnabled();
+  const cashDrawerEnabled = useCashDrawerEnabled(); // ✅
+  const receiptPrintingEnabled = useReceiptPrintingEnabled(); // ✅
+
   return (
     <div className="flex-shrink-0 bg-[var(--header-bg)] border-b border-[var(--border-color)] p-3">
       {/* Main header row */}
@@ -95,7 +102,7 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
           </div>
 
           {/* Barcode display */}
-          {scannedBarcode ? (
+          {scannedBarcode && isBarcodeEnabled ? (
             <div className="relative w-full md:w-64">
               <Barcode
                 className="absolute left-2.5 top-1/2 transform -translate-y-1/2 
@@ -120,7 +127,7 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
               </button>
             </div>
           ) : (
-            <div className="relative w-full md:w-64">
+            <div className={`relative w-full md:w-64 ${isBarcodeEnabled ? '' : 'hidden'}`}>
               <Barcode
                 className="absolute left-2.5 top-1/2 transform -translate-y-1/2 
                                 text-[var(--text-tertiary)] w-4 h-4"
@@ -153,17 +160,20 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
 
           {/* Action buttons */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={onToggleBarcodeMode}
-              className={`p-1.5 rounded-lg transition-colors ${
-                barcodeMode
-                  ? "bg-[var(--accent-blue)] text-white"
-                  : "bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--card-hover-bg)]"
-              }`}
-              title={barcodeMode ? "Barcode mode ON" : "Barcode mode OFF"}
-            >
-              <Barcode className="w-4 h-4" />
-            </button>
+            {isBarcodeEnabled && (
+              <button
+                onClick={onToggleBarcodeMode}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  barcodeMode
+                    ? "bg-[var(--accent-blue)] text-white"
+                    : "bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--card-hover-bg)]"
+                }`}
+                title={barcodeMode ? "Barcode mode ON" : "Barcode mode OFF"}
+              >
+                <Barcode className="w-4 h-4" />
+              </button>
+            )}
+
             <button
               onClick={onRefresh}
               disabled={loadingProducts}
@@ -187,30 +197,34 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
             )}
           </div>
 
-          {/* Status indicators */}
+          {/* Status indicators — conditional batay sa settings */}
           <div className="flex items-center gap-3 pl-2 border-l border-[var(--border-color)]">
-            <div
-              className={`flex items-center gap-1 text-sm ${
-                printerReady
-                  ? "text-[var(--accent-green)]"
-                  : "text-[var(--accent-red)]"
-              }`}
-              title={printerReady ? "Printer ready" : "Printer error"}
-            >
-              <Printer className="w-4 h-4" />
-              <span className="text-xs hidden sm:inline">Printer</span>
-            </div>
-            <div
-              className={`flex items-center gap-1 text-sm ${
-                drawerOpen
-                  ? "text-[var(--accent-amber)]"
-                  : "text-[var(--text-tertiary)]"
-              }`}
-              title={drawerOpen ? "Cash drawer open" : "Cash drawer closed"}
-            >
-              <Lock className="w-4 h-4" />
-              <span className="text-xs hidden sm:inline">Drawer</span>
-            </div>
+            {receiptPrintingEnabled && (
+              <div
+                className={`flex items-center gap-1 text-sm ${
+                  printerReady
+                    ? "text-[var(--accent-green)]"
+                    : "text-[var(--accent-red)]"
+                }`}
+                title={printerReady ? "Printer ready" : "Printer error"}
+              >
+                <Printer className="w-4 h-4" />
+                <span className="text-xs hidden sm:inline">Printer</span>
+              </div>
+            )}
+            {cashDrawerEnabled && (
+              <div
+                className={`flex items-center gap-1 text-sm ${
+                  drawerOpen
+                    ? "text-[var(--accent-amber)]"
+                    : "text-[var(--text-tertiary)]"
+                }`}
+                title={drawerOpen ? "Cash drawer open" : "Cash drawer closed"}
+              >
+                <Lock className="w-4 h-4" />
+                <span className="text-xs hidden sm:inline">Drawer</span>
+              </div>
+            )}
             <div
               className={`flex items-center gap-1 text-sm ${
                 online

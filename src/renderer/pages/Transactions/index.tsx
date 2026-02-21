@@ -14,9 +14,11 @@ import { FilterBar } from "./components/FilterBar";
 import { SummaryMetrics } from "./components/SummaryMetrics";
 import { TransactionsTable } from "./components/TransactionsTable";
 import { TransactionDetailsDrawer } from "./components/TransactionDetailsDrawer";
+import { PromptDialog } from "../../components/Shared/PromptDialog"; // <-- new import
 import { dialogs } from "../../utils/dialogs";
-import saleAPI from "../../api/sale";
+import saleAPI, { type Sale } from "../../api/sale";
 import Pagination from "../../components/Shared/Pagination1";
+import { hideLoading, showLoading } from "../../utils/notification";
 
 const TransactionsPage: React.FC = () => {
   const { transactions, filters, setFilters, loading, error, reload } =
@@ -36,17 +38,30 @@ const TransactionsPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 20, 50, 100];
 
+  // Prompt state for refund reason
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [pendingRefundTransaction, setPendingRefundTransaction] =
+    useState<Sale | null>(null);
+
   const handleFilterChange = (key: keyof TransactionFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // reset to first page on filter change
+    setCurrentPage(1);
   };
 
-  const handlePrint = async (transaction: any) => {
-    // Implement print logic
-    await dialogs.alert({ title: "Print", message: "Printing receipt..." });
+  const handlePrint = async (transaction: Sale) => {
+    try {
+      showLoading("Printing receipt...");
+      await window.backendAPI.printerPrint(transaction.id);
+      await dialogs.success("Transaction printed successfully.", "Success");
+    } catch (err) {
+      hideLoading();
+      await dialogs.error("Printer Unavailable.", "Printer Error");
+    } finally {
+      hideLoading();
+    }
   };
 
-  const handleRefund = (transaction: any) => {
+  const handleRefund = (transaction: Sale) => {
     dialogs
       .confirm({
         title: "Process Refund",
@@ -54,13 +69,39 @@ const TransactionsPage: React.FC = () => {
       })
       .then((confirmed) => {
         if (confirmed) {
-          // Call refund API
+          setPendingRefundTransaction(transaction);
+          setPromptOpen(true);
         }
       });
   };
 
+  const handleRefundConfirm = async (reason: string) => {
+    if (!pendingRefundTransaction) return;
+    try {
+      const items = pendingRefundTransaction.saleItems.map((s) => ({
+        productId: s.product.id,
+        quantity: s.quantity,
+      }));
+
+      const response = await saleAPI.refund(
+        pendingRefundTransaction.id,
+        items,
+        reason,
+      );
+
+      console.log("Refund processed:", response);
+      await reload(); // refresh list
+      await dialogs.success("Refund processed successfully.", "Success");
+    } catch (err) {
+      console.error("Refund failed:", err);
+      await dialogs.error("Refund failed. Please try again.", "Error");
+    } finally {
+      setPendingRefundTransaction(null);
+    }
+  };
+
   const handleNewSale = () => {
-    window.location.href = "/pos/cashier"; // or use router
+    window.location.href = "/pos/cashier";
   };
 
   const handleExport = async () => {
@@ -93,17 +134,13 @@ const TransactionsPage: React.FC = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
   const totalItems = transactions.length;
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
+  const handlePageChange = (page: number) => setCurrentPage(page);
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
-    setCurrentPage(1); // reset to first page
+    setCurrentPage(1);
   };
 
   return (
@@ -173,7 +210,7 @@ const TransactionsPage: React.FC = () => {
             />
           </div>
 
-          {/* Pagination - identical to product page */}
+          {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             totalItems={totalItems}
@@ -193,6 +230,19 @@ const TransactionsPage: React.FC = () => {
         onClose={closeDetails}
         onPrint={handlePrint}
         onRefund={handleRefund}
+      />
+
+      {/* Refund Reason Prompt */}
+      <PromptDialog
+        isOpen={promptOpen}
+        onClose={() => {
+          setPromptOpen(false);
+          setPendingRefundTransaction(null);
+        }}
+        onConfirm={handleRefundConfirm}
+        title="Refund Reason"
+        message="Please provide a reason for this refund:"
+        placeholder="Enter reason..."
       />
     </div>
   );

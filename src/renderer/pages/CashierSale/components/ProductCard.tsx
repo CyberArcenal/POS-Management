@@ -3,6 +3,10 @@ import { Package } from 'lucide-react';
 import Decimal from 'decimal.js';
 import type { Product } from '../types';
 import { formatCurrency } from '../../../utils/formatters';
+import {
+  useStockAlertThreshold,
+  useAllowNegativeStock,
+} from '../../../utils/posUtils'; // ✅ mga bagong hook
 
 interface ProductCardProps {
   product: Product;
@@ -10,14 +14,28 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
-  const isOutOfStock = product.stockQty === 0;
+  const stockAlertThreshold = useStockAlertThreshold();
+  const allowNegativeStock = useAllowNegativeStock();
+
+  // ✅ Disable lang kung hindi pinapayagan ang negative stock at ubos na ang stock
+  const isDisabled = !allowNegativeStock && product.stockQty === 0;
+
+  // ✅ Tukuyin ang stock status batay sa threshold
+  let stockStatusClass = '';
+  if (product.stockQty === 0) {
+    stockStatusClass = 'text-[var(--stock-outstock)]';
+  } else if (product.stockQty <= stockAlertThreshold) {
+    stockStatusClass = 'text-[var(--stock-lowstock)]';
+  } else {
+    stockStatusClass = 'text-[var(--stock-instock)]';
+  }
 
   return (
     <button
       onClick={() => onAdd(product)}
-      disabled={isOutOfStock}
+      disabled={isDisabled}
       className={`group relative bg-[var(--product-card-bg)] border border-[var(--product-card-border)] rounded-xl p-4 hover:border-[var(--accent-blue)] transition-all duration-200 hover:shadow-lg ${
-        isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
+        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
       <div className="flex flex-col items-center text-center">
@@ -29,19 +47,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
         <p className="text-lg font-bold text-[var(--accent-green)] mt-2">
           {formatCurrency(new Decimal(product.price).toFixed(2))}
         </p>
-        <p
-          className={`text-xs mt-1 ${
-            product.stockQty > 10
-              ? 'text-[var(--stock-instock)]'
-              : product.stockQty > 0
-              ? 'text-[var(--stock-lowstock)]'
-              : 'text-[var(--stock-outstock)]'
-          }`}
-        >
+        <p className={`text-xs mt-1 ${stockStatusClass}`}>
           Stock: {product.stockQty}
         </p>
       </div>
-      {!isOutOfStock && (
+      {!isDisabled && (
         <div className="absolute inset-0 bg-[var(--accent-blue)]/0 group-hover:bg-[var(--accent-blue)]/5 rounded-xl transition-all duration-200" />
       )}
     </button>

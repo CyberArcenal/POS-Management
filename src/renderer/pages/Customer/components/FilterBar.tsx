@@ -28,23 +28,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           />
         </div>
 
-        {/* Status Filter */}
+        {/* Status Filter – now uses actual status values */}
         <select
           value={filters.status}
-          onChange={(e) => onFilterChange("status", e.target.value)}
+          onChange={(e) => onFilterChange("status", e.target.value as CustomerFilters["status"])}
           className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
         >
           <option value="all">All Status</option>
           <option value="vip">VIP</option>
-          <option value="loyal">Loyal</option>
+          <option value="elite">Elite</option>
           <option value="regular">Regular</option>
-          <option value="new">New</option>
         </select>
 
         {/* Sort By */}
         <select
           value={filters.sortBy}
-          onChange={(e) => onFilterChange("sortBy", e.target.value)}
+          onChange={(e) => onFilterChange("sortBy", e.target.value as CustomerFilters["sortBy"])}
           className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
         >
           <option value="name">Sort by Name</option>
@@ -55,7 +54,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         {/* Sort Order */}
         <select
           value={filters.sortOrder}
-          onChange={(e) => onFilterChange("sortOrder", e.target.value)}
+          onChange={(e) => onFilterChange("sortOrder", e.target.value as "ASC" | "DESC")}
           className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)]"
         >
           <option value="ASC">Ascending</option>

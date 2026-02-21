@@ -93,7 +93,6 @@ export interface InventorySettings {
 
 // 4. SALES SETTINGS
 export interface SalesSettings {
-  tax_rate?: number;
   discount_enabled?: boolean;
   max_discount_percent?: number;
   allow_refunds?: boolean;
@@ -129,7 +128,22 @@ export interface NotificationsSettings {
   twilio_auth_token?: string;
   twilio_phone_number?: string;
   twilio_messaging_service_sid?: string;
+
+  // Supplier notifications
+  notify_supplier_with_sms?: boolean;
+  notify_supplier_with_email?: boolean;
+  notify_supplier_on_complete_email?: boolean;
+  notify_supplier_on_complete_sms?: boolean;
+  notify_supplier_on_cancel_email?: boolean;
+  notify_supplier_on_cancel_sms?: boolean;
+
+  // Customer notifications for return/refund
+  notify_customer_return_processed_email?: boolean;
+  notify_customer_return_processed_sms?: boolean;
+  notify_customer_return_cancelled_email?: boolean;
+  notify_customer_return_cancelled_sms?: boolean;
 }
+
 
 // 7. DATA & REPORTS SETTINGS
 export interface DataReportsSettings {

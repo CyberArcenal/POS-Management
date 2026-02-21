@@ -23,6 +23,7 @@ const PurchaseItem = require("../../entities/PurchaseItem");
 const ReturnRefund = require("../../entities/ReturnRefund");
 const ReturnRefundItem = require("../../entities/ReturnRefundItem");
 const Supplier = require("../../entities/Supplier");
+const Notification = require("../../entities/Notification");
 
 const config = getDatabaseConfig();
 
@@ -43,6 +44,7 @@ const entities = [
   ReturnRefund,
   ReturnRefundItem,
   Supplier,
+  Notification,
 ];
 
 const dataSourceOptions = {

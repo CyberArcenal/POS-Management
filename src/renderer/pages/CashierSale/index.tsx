@@ -14,6 +14,8 @@ import type { CartItem } from "./types";
 import PaymentSuccessDialog from "./components/PaymentSuccessDialog";
 import CategorySelect from "../../components/Selects/Category"; // adjust path as needed
 import CashierHeader from "./components/CashierHeader";
+import { useSettings } from "../../contexts/SettingsContext";
+import { useBarcodeEnabled } from "../../utils/posUtils";
 
 const Cashier: React.FC = () => {
   const {
@@ -26,7 +28,7 @@ const Cashier: React.FC = () => {
     loadProducts,
     clearFilters,
   } = useProducts();
-
+  const isBarcodeEnabled = useBarcodeEnabled();
   const { selectedCustomer, selectCustomer, setSelectedCustomer } =
     useCustomers();
 
@@ -136,6 +138,7 @@ const Cashier: React.FC = () => {
   // Barcode scanner logic (only when barcodeMode is true)
   useEffect(() => {
     if (!barcodeMode) return;
+    if (!isBarcodeEnabled) return;
 
     let scanBuffer = "";
     let scanTimeout: ReturnType<typeof setTimeout>;
@@ -177,6 +180,7 @@ const Cashier: React.FC = () => {
     window.addEventListener("keydown", handleKeyDown);
 
     const handleBarcodeScanned = (barcode: string) => {
+      if (!isBarcodeEnabled) return;
       const product = filteredProducts.find((p) => p.sku === barcode);
       if (product) {
         addToCart(product);
