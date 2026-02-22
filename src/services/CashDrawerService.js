@@ -7,6 +7,7 @@ const {
   cashDrawerConnectionType,
 } = require("../utils/system");
 
+
 class CashDrawerService {
   constructor() {
     this.driver = null;
@@ -45,6 +46,7 @@ class CashDrawerService {
    * @returns {Promise<boolean>}
    */
   async openDrawer(reason = "sale") {
+    const notificationService = require("./NotificationService");
     const drawerEnabled = await enableCashDrawer();
     if (!drawerEnabled) {
       console.log("[CashDrawerService] Cash drawer is disabled in settings");
@@ -83,6 +85,31 @@ class CashDrawerService {
       // @ts-ignore
       console.error("[CashDrawerService] Failed to open drawer:", err.message);
       this.isOpen = false;
+
+      try {
+        await notificationService.create(
+          {
+            userId: 1,
+            title: "Cash Drawer Error",
+            // @ts-ignore
+            message: `Failed to open cash drawer (${reason}): ${err.message}`,
+            type: "error",
+            metadata: {
+              reason,
+              // @ts-ignore
+              error: err.message,
+              // @ts-ignore
+              stack: err.stack,
+            },
+          },
+          "system",
+        );
+      } catch (notifErr) {
+        console.error(
+          "Failed to send error notification for cash drawer",
+          notifErr,
+        );
+      }
       throw err;
     }
   }

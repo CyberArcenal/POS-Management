@@ -22,14 +22,7 @@ class EmailSender {
    * @param {object} options
    * @param {boolean} asyncMode
    */
-  async send(
-    to,
-    subject,
-    html,
-    text,
-    options = {},
-    asyncMode = true,
-  ) {
+  async send(to, subject, html, text, options = {}, asyncMode = true) {
     if (asyncMode) {
       this.queue.add(() =>
         this._sendWithRetry(to, subject, html, text, options),
@@ -37,13 +30,7 @@ class EmailSender {
       logger.info(`📥 Queued email → To: ${to}, Subject: "${subject}"`);
       return { success: true, queued: true };
     } else {
-      return await this._sendWithRetry(
-        to,
-        subject,
-        html,
-        text,
-        options
-      );
+      return await this._sendWithRetry(to, subject, html, text, options);
     }
   }
 
@@ -52,6 +39,7 @@ class EmailSender {
    */
   // @ts-ignore
   async _sendWithRetry(to, subject, html, text, options) {
+    const notificationService = require("../services/NotificationService");
     let attempt = 0;
     let lastError;
 
@@ -89,6 +77,7 @@ class EmailSender {
           "sent",
           attempt,
           null,
+          // @ts-ignore
           log?.id, // pass the log ID so we update the same row
         );
 
@@ -117,6 +106,30 @@ class EmailSender {
       }
     }
 
+    try {
+      await notificationService.create(
+        {
+          userId: 1, // system user
+          title: "Email Sending Failed",
+          // @ts-ignore
+          message: `Failed to send email to ${to}: ${lastError.message}`,
+          type: "error",
+          metadata: {
+            to,
+            subject,
+            // @ts-ignore
+            error: lastError.message,
+            // @ts-ignore
+            stack: lastError.stack,
+          },
+        },
+        "system",
+      );
+    } catch (notifErr) {
+      // @ts-ignore
+      logger.error("Failed to send error notification for email", notifErr);
+    }
+
     // Final failure – rethrow after all retries
     throw lastError;
   }
@@ -133,6 +146,7 @@ class EmailSender {
       smtpUsername,
       smtpPassword,
       companyName,
+      // @ts-ignore
       // @ts-ignore
       smtpFromName,
       smtpFromEmail,
@@ -234,6 +248,7 @@ class EmailSender {
         }
       }
 
+      // @ts-ignore
       const saved = await saveDb(repo, log);
       logger.debug(
         `📌 NotificationLog ${saved.id} → Status: ${status}, Retry: ${retryCount}`,

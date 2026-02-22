@@ -40,8 +40,8 @@ interface CashierHeaderProps {
   onCategoryChange: (id: number | null) => void;
 
   // Action buttons
-  barcodeMode: boolean;
-  onToggleBarcodeMode: () => void;
+  barcodeMode?: boolean;
+  onToggleBarcodeMode?: (isOpen: boolean) => void;
   loadingProducts: boolean;
   onRefresh: () => void;
   onClearFilters: () => void;
@@ -63,8 +63,6 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
   total,
   categoryId,
   onCategoryChange,
-  barcodeMode,
-  onToggleBarcodeMode,
   loadingProducts,
   onRefresh,
   onClearFilters,
@@ -160,20 +158,6 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
 
           {/* Action buttons */}
           <div className="flex items-center gap-1">
-            {isBarcodeEnabled && (
-              <button
-                onClick={onToggleBarcodeMode}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  barcodeMode
-                    ? "bg-[var(--accent-blue)] text-white"
-                    : "bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--card-hover-bg)]"
-                }`}
-                title={barcodeMode ? "Barcode mode ON" : "Barcode mode OFF"}
-              >
-                <Barcode className="w-4 h-4" />
-              </button>
-            )}
-
             <button
               onClick={onRefresh}
               disabled={loadingProducts}

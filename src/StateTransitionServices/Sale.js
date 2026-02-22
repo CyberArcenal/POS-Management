@@ -7,7 +7,6 @@ const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
 const auditLogger = require("../utils/auditLogger");
 const Sale = require("../entities/Sale");
 // @ts-ignore
-// @ts-ignore
 const { SystemSetting, SettingType } = require("../entities/systemSettings");
 const PrinterService = require("../services/PrinterService");
 const CashDrawerService = require("../services/CashDrawerService");
@@ -20,10 +19,16 @@ const {
   enableReceiptPrinting,
   enableCashDrawer,
   autoReorderEnabled,
-  // Maaaring magdagdag ng settings para sa customer status thresholds at lifetime rate
-  // loyaltyLifetimeRate, vipThreshold, eliteThreshold
 } = require("../utils/system");
-const { logger } = require("../utils/logger"); // ipagpalagay na may logger
+const { logger } = require("../utils/logger");
+const notificationService = require("../services/NotificationService");
+const emailSender = require("../channels/email.sender");
+const smsSender = require("../channels/sms.sender");
+const { companyName, enableSmsAlerts } = require("../utils/system");
+
+// Constants (maaaring gawing settings sa hinaharap)
+const LARGE_SALE_THRESHOLD = 10000; // halagang ituturing na "large"
+const BULK_REFUND_ITEM_COUNT = 2; // refund na may 2 o higit pang items
 
 class SaleStateTransitionService {
   /**
@@ -104,24 +109,25 @@ class SaleStateTransitionService {
         if (product.stockQty <= product.reorderLevel) {
           await this.reOrder(product);
         }
+
+        // Low stock alert (optional)
+        if (product.stockQty <= product.reorderLevel) {
+          await this.notifyLowStock(product, item.quantity);
+        }
       }
     }
 
     // 2. Handle loyalty points (kung enabled)
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
     const loyaltyEnabled = await loyaltyPointsEnabled();
     if (loyaltyEnabled && hydratedSale.customer) {
       const rate = await getLoyaltyPointRate();
-      // 🔧 SETTINGS INTEGRATION: lifetime rate ay pwedeng gawing setting
-      // Para sa ngayon, panatilihin muna ang hardcoded value
-      const lifetimeRate = 50; // 1 point per ₱50 spend
+      const lifetimeRate = 50; // 1 point per ₱50 spend (pwedeng gawing setting)
       const subtotal = hydratedSale.saleItems.reduce(
         // @ts-ignore
         (sum, item) => sum + item.lineTotal,
         0,
       );
 
-      // Only earn points on net cash portion
       const netCashSpend = subtotal - (hydratedSale.loyaltyRedeemed || 0);
       const pointsEarned = Math.floor(netCashSpend / rate);
       const lifetimePointsEarned = Math.floor(netCashSpend / lifetimeRate);
@@ -134,10 +140,13 @@ class SaleStateTransitionService {
           where: { id: hydratedSale.customer.id },
         });
         if (customer) {
+          const oldStatus = customer.status;
+
           const oldBalance = customer.loyaltyPointsBalance;
           customer.loyaltyPointsBalance += pointsEarned;
           customer.lifetimePointsEarned += lifetimePointsEarned;
-          customer.status = this.determineCustomerStatus(customer);
+          const newStatus = this.determineCustomerStatus(customer);
+          customer.status = newStatus;
           customer.updatedAt = new Date();
           await updateDb(this.customerRepo, customer);
 
@@ -158,6 +167,14 @@ class SaleStateTransitionService {
             { loyaltyPointsBalance: customer.loyaltyPointsBalance },
             "system",
           );
+
+          // 🎉 Loyalty milestone notification
+          if (
+            oldStatus !== newStatus &&
+            (newStatus === "vip" || newStatus === "elite")
+          ) {
+            await this._notifyCustomerMilestone(customer, oldStatus, newStatus);
+          }
         }
       }
     }
@@ -165,8 +182,12 @@ class SaleStateTransitionService {
     // 3. Check and deduct loyalty (kung may na-redeem)
     await this.checkAndDeductLoyalty(hydratedSale);
 
-    // 4. Print receipt (kung enabled)
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang receipt printing
+    // 4. Large transaction notification (kung lampas sa threshold)
+    if (hydratedSale.totalAmount > LARGE_SALE_THRESHOLD) {
+      await this._notifyLargeSale(hydratedSale);
+    }
+
+    // 5. Print receipt (kung enabled)
     const printEnabled = await enableReceiptPrinting();
     if (printEnabled) {
       try {
@@ -194,8 +215,7 @@ class SaleStateTransitionService {
       }
     }
 
-    // 5. Open cash drawer (kung cash payment at enabled)
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang cash drawer
+    // 6. Open cash drawer (kung cash payment at enabled)
     const drawerEnabled = await enableCashDrawer();
     if (drawerEnabled && hydratedSale.paymentMethod === "cash") {
       try {
@@ -265,7 +285,6 @@ class SaleStateTransitionService {
     }
 
     // 2. Reverse loyalty points if any (kung enabled)
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty bago mag-reverse
     const loyaltyEnabled = await loyaltyPointsEnabled();
     // @ts-ignore
     if (loyaltyEnabled && sale.customer) {
@@ -284,7 +303,6 @@ class SaleStateTransitionService {
           customer.updatedAt = new Date();
           await updateDb(this.customerRepo, customer);
 
-          // Record reversal
           const reversal = this.loyaltyRepo.create({
             pointsChange: -tx.pointsChange,
             transactionType: "refund",
@@ -305,6 +323,12 @@ class SaleStateTransitionService {
           );
         }
       }
+    }
+
+    // 3. Bulk refund notification (kung maraming items)
+    // @ts-ignore
+    if (sale.saleItems && sale.saleItems.length >= BULK_REFUND_ITEM_COUNT) {
+      await this._notifyBulkRefund(sale);
     }
 
     // @ts-ignore
@@ -350,7 +374,6 @@ class SaleStateTransitionService {
     }
 
     // Reverse loyalty if any (kung enabled)
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
     const loyaltyEnabled = await loyaltyPointsEnabled();
     // @ts-ignore
     if (loyaltyEnabled && sale.customer) {
@@ -397,11 +420,10 @@ class SaleStateTransitionService {
 
   /**
    * Auto-create purchase if stock reaches reorder level
-   * @param {{ supplier: any; reorderLevel: number; reorderQty: number; stockQty: number; id: any; price: any; sku: any; }} product
+   * @param {{ supplier: any; reorderLevel: number; reorderQty: number; stockQty: number; id: any; price: any; sku: any; name: any; }} product
    */
   async reOrder(product) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
-    // 🔧 SETTINGS INTEGRATION: suriin muli kung enabled ang auto reorder (redundant pero safe)
     const autoReorder = await autoReorderEnabled();
     if (!autoReorder) return;
 
@@ -409,14 +431,12 @@ class SaleStateTransitionService {
       const purchaseRepo = this.dataSource.getRepository(Purchase);
       const purchaseItemRepo = this.dataSource.getRepository(PurchaseItem);
 
-      // Only proceed if product has a supplier, reorderLevel > 0, and reorderQty > 0
       if (
         product.supplier &&
         product.reorderLevel > 0 &&
         product.reorderQty > 0 &&
         product.stockQty <= product.reorderLevel
       ) {
-        // Check if there's already a pending purchase for this product
         const existingPending = await purchaseRepo
           .createQueryBuilder("purchase")
           .innerJoin("purchase.purchaseItems", "item")
@@ -425,23 +445,19 @@ class SaleStateTransitionService {
           .getOne();
 
         if (!existingPending) {
-          // Generate a simple reference number (you may replace with a more robust generator)
           const referenceNo = `PO-${Date.now()}-${product.id}`;
 
-          // Create purchase entity
           const purchase = purchaseRepo.create({
             referenceNo,
             supplier: product.supplier,
             status: "pending",
             orderDate: new Date(),
-            totalAmount: 0, // will update after item is added
+            totalAmount: 0,
           });
 
-          // Save purchase first to get an ID
           const savedPurchase = await saveDb(purchaseRepo, purchase);
 
-          // Create purchase item
-          const unitPrice = product.price; // using current selling price; adjust if you have cost price
+          const unitPrice = product.price;
           const subtotal = unitPrice * product.reorderQty;
 
           const purchaseItem = purchaseItemRepo.create({
@@ -454,13 +470,36 @@ class SaleStateTransitionService {
 
           await saveDb(purchaseItemRepo, purchaseItem);
 
-          // Update purchase totalAmount
           savedPurchase.totalAmount = subtotal;
           await updateDb(purchaseRepo, savedPurchase);
 
           logger.info(
             `[AutoPurchase] Created purchase #${savedPurchase.id} for product ${product.sku} (Qty: ${product.reorderQty})`,
           );
+
+          try {
+            await notificationService.create(
+              {
+                userId: 1,
+                title: "Auto‑Reorder Created",
+                message: `Product "${product.name}" (SKU: ${product.sku}) has reached reorder level. A new purchase order #${savedPurchase.referenceNo} has been automatically created.`,
+                type: "purchase",
+                metadata: {
+                  productId: product.id,
+                  purchaseId: savedPurchase.id,
+                  referenceNo: savedPurchase.referenceNo,
+                  reorderQty: product.reorderQty,
+                },
+              },
+              "system",
+            );
+          } catch (notifError) {
+            logger.error(
+              `Failed to create in-app notification for auto-reorder of product ${product.id}`,
+              // @ts-ignore
+              notifError,
+            );
+          }
         } else {
           logger.info(
             `[AutoPurchase] Pending purchase already exists for product ${product.sku}, skipping.`,
@@ -468,13 +507,11 @@ class SaleStateTransitionService {
         }
       }
     } catch (purchaseError) {
-      // Log error but do not interrupt the sale transition
       logger.error(
         `[AutoPurchase] Failed to create purchase for product ${product.id}:`,
         // @ts-ignore
         purchaseError,
       );
-      // @ts-ignore
       throw new Error("Unable To Create Order.");
     }
   }
@@ -484,7 +521,6 @@ class SaleStateTransitionService {
    */
   async checkAndDeductLoyalty(hydratedSale) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
-    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
     const loyaltyEnabled = await loyaltyPointsEnabled();
     if (!loyaltyEnabled) return;
 
@@ -519,11 +555,213 @@ class SaleStateTransitionService {
   }
 
   /**
+   * Magpadala ng low stock alert (opsyonal)
+   * @param {any} product
+   * @param {number} soldQty
+   */
+  // @ts-ignore
+  async notifyLowStock(product, soldQty) {
+    try {
+      await notificationService.create(
+        {
+          userId: 1,
+          title: "Low Stock Alert",
+          message: `Product "${product.name}" (SKU: ${product.sku}) is now low on stock. Current stock: ${product.stockQty}, Reorder level: ${product.reorderLevel}.`,
+          type: "warning",
+          metadata: {
+            productId: product.id,
+            currentStock: product.stockQty,
+            reorderLevel: product.reorderLevel,
+          },
+        },
+        "system",
+      );
+    } catch (err) {
+      logger.error(
+        `Low stock notification failed for product ${product.id}`,
+        // @ts-ignore
+        err,
+      );
+    }
+  }
+
+  /**
+   * I-notify ang admin (in‑app) at ang customer (email/SMS) kapag umabot ng bagong loyalty level.
+   * @param {string} oldStatus
+   * @param {string} newStatus
+   * @param {{ name: any; id: any; email: string; phone: string; }} customer
+   */
+  async _notifyCustomerMilestone(customer, oldStatus, newStatus) {
+    // 1. In-app notification para sa admin
+    try {
+      await notificationService.create(
+        {
+          userId: 1,
+          title: "Customer Loyalty Milestone",
+          message: `${customer.name} has reached ${newStatus} status!`,
+          type: "success",
+          metadata: { customerId: customer.id, oldStatus, newStatus },
+        },
+        "system",
+      );
+    } catch (err) {
+      logger.error(
+        `Failed to create in-app milestone notification for customer ${customer.id}`,
+        // @ts-ignore
+        err,
+      );
+    }
+
+    // 2. Email sa customer
+    const company = await companyName();
+    const subject = `Congratulations! You've reached ${newStatus} status!`;
+    const textBody = `Dear ${customer.name},
+
+Congratulations! You have reached ${newStatus} status at ${company}.
+
+We appreciate your continued patronage and look forward to serving you with exclusive benefits.
+
+Thank you for being a valued customer!
+
+Best regards,
+${company}`;
+    const htmlBody = textBody.replace(/\n/g, "<br>");
+
+    if (customer.email) {
+      try {
+        await emailSender.send(
+          customer.email,
+          subject,
+          htmlBody,
+          textBody,
+          {},
+          true, // async
+        );
+        logger.info(
+          `[Milestone] Email sent to customer ${customer.email} for reaching ${newStatus}`,
+        );
+      } catch (error) {
+        logger.error(
+          `[Milestone] Failed to send email to customer ${customer.email}`,
+          // @ts-ignore
+          error,
+        );
+      }
+    }
+
+    // 3. SMS kung enabled at may phone number
+    const smsEnabled = await enableSmsAlerts();
+    if (smsEnabled && customer.phone) {
+      try {
+        const smsMessage = `Congratulations! You've reached ${newStatus} status at ${company}. Thank you for your loyalty!`;
+        await smsSender.send(customer.phone, smsMessage);
+        logger.info(`[Milestone] SMS sent to customer ${customer.phone}`);
+      } catch (error) {
+        logger.error(
+          `[Milestone] Failed to send SMS to customer ${customer.phone}`,
+          // @ts-ignore
+          error,
+        );
+      }
+    }
+  }
+
+  /**
+   * I-notify ang admin at customer para sa large sale.
+   * @param {any} sale
+   */
+  async _notifyLargeSale(sale) {
+    // 1. In-app notification para sa admin
+    try {
+      await notificationService.create(
+        {
+          userId: 1,
+          title: "Large Sale Alert",
+          message: `Sale #${sale.referenceNo} amount: ₱${sale.totalAmount.toFixed(2)}`,
+          type: "sale",
+          metadata: { saleId: sale.id, amount: sale.totalAmount },
+        },
+        "system",
+      );
+    } catch (err) {
+      logger.error(
+        `Failed to create in-app large sale notification for sale #${sale.id}`,
+        // @ts-ignore
+        err,
+      );
+    }
+
+    // 2. Email sa customer (kung may customer at may email)
+    if (sale.customer && sale.customer.email) {
+      const company = await companyName();
+      const subject = `Thank you for your large purchase!`;
+      const textBody = `Dear ${sale.customer.name},
+
+Thank you for your recent purchase of ₱${sale.totalAmount.toFixed(2)} at ${company}.
+
+We truly appreciate your business and hope you enjoy your items.
+
+Should you have any questions, feel free to contact us.
+
+Best regards,
+${company}`;
+      const htmlBody = textBody.replace(/\n/g, "<br>");
+
+      try {
+        await emailSender.send(
+          sale.customer.email,
+          subject,
+          htmlBody,
+          textBody,
+          {},
+          true,
+        );
+        logger.info(
+          `[LargeSale] Thank‑you email sent to customer ${sale.customer.email}`,
+        );
+      } catch (error) {
+        logger.error(
+          `[LargeSale] Failed to send email to customer ${sale.customer.email}`,
+          // @ts-ignore
+          error,
+        );
+      }
+    }
+
+    // 3. (Optional) SMS kung gusto, pero hindi na muna para iwas spam
+  }
+
+  /**
+   * I-notify ang admin para sa bulk refund.
+   * @param {any} sale
+   */
+  async _notifyBulkRefund(sale) {
+    try {
+      await notificationService.create(
+        {
+          userId: 1,
+          title: "Bulk Refund Alert",
+          message: `Refund for sale #${sale.referenceNo} contains ${sale.saleItems.length} items.`,
+          type: "info",
+          metadata: { saleId: sale.id, itemCount: sale.saleItems.length },
+        },
+        "system",
+      );
+    } catch (err) {
+      logger.error(
+        `Failed to create in-app bulk refund notification for sale #${sale.id}`,
+        // @ts-ignore
+        err,
+      );
+    }
+  }
+
+  /**
+   * Tukuyin ang customer status batay sa lifetime points
    * @param {{ lifetimePointsEarned: number; }} customer
    */
   determineCustomerStatus(customer) {
-    // 🔧 SETTINGS INTEGRATION: ang thresholds ay pwedeng gawing settings
-    // Para sa ngayon, panatilihin muna ang hardcoded values
+    // 🔧 Puwede itong gawing settings sa hinaharap
     if (customer.lifetimePointsEarned > 5000) return "elite";
     if (customer.lifetimePointsEarned > 1000) return "vip";
     return "regular";

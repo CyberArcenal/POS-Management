@@ -75,8 +75,7 @@ const Cashier: React.FC = () => {
     cartItems: CartItem[];
   } | null>(null);
 
-  // Barcode mode toggle
-  const [barcodeMode, setBarcodeMode] = useState(true);
+
   const [scannedBarcode, setScannedBarcode] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const itemCount = cart.reduce((acc, item) => acc + item.cartQuantity, 0);
@@ -241,7 +240,7 @@ const Cashier: React.FC = () => {
 
   // Barcode scanner logic (only when barcodeMode is true)
   useEffect(() => {
-    if (!barcodeMode) return;
+    if (!isBarcodeEnabled) return;
 
     let scanBuffer = "";
     let scanTimeout: number;
@@ -289,7 +288,7 @@ const Cashier: React.FC = () => {
         window.backendAPI.offBarcodeScanned(handleBarcodeScanned); // ← gagana na ito
       }
     };
-  }, [barcodeMode, handleBarcodeScanned]);
+  }, [handleBarcodeScanned, isBarcodeEnabled]);
 
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)]">
@@ -304,8 +303,6 @@ const Cashier: React.FC = () => {
         total={finalTotal}
         categoryId={categoryId}
         onCategoryChange={setCategoryId}
-        barcodeMode={barcodeMode}
-        onToggleBarcodeMode={() => setBarcodeMode(!barcodeMode)}
         loadingProducts={loadingProducts}
         onRefresh={loadProducts}
         onClearFilters={clearFilters}

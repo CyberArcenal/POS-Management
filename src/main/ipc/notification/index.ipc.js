@@ -1,4 +1,5 @@
 // src/main/ipc/notification/index.ipc.js
+//@ts-check
 const { ipcMain } = require("electron");
 const { logger } = require("../../../utils/logger");
 const notificationService = require("../../../services/NotificationService");
@@ -9,25 +10,17 @@ class NotificationHandler {
     // No need to import separate files – we handle all methods in the switch
   }
 
+  // @ts-ignore
   async handleRequest(event, payload) {
     try {
       const method = payload.method;
       const params = payload.params || {};
 
+      // @ts-ignore
       logger.info(`NotificationHandler: ${method}`, { params });
 
-      // All methods are assumed to require a userId (extract from auth/session)
-      // For simplicity, we require params.userId to be passed from renderer.
-      // In a real app, you'd get the current user from the session.
-      const userId = params.userId;
-      if (!userId && method !== "create") {
-        // create may be called internally only, so it's fine to not enforce here
-        return {
-          status: false,
-          message: "Missing userId in request",
-          data: null,
-        };
-      }
+      // All methods are assumed to require a  (extract from auth/session)
+      // For simplicity, we require params. to be passed from renderer.
 
       switch (method) {
         // 📨 CREATE – should only be used internally, but we keep it for completeness
@@ -36,27 +29,27 @@ class NotificationHandler {
 
         // 📋 READ OPERATIONS
         case "getAll":
-          return await this.getAll(userId, params);
+          return await this.getAll(params);
 
         case "getById":
-          return await this.getById(userId, params.id);
+          return await this.getById(params.id);
 
         case "getUnreadCount":
-          return await this.getUnreadCount(userId);
+          return await this.getUnreadCount();
 
         case "getStats":
-          return await this.getStats(userId);
+          return await this.getStats();
 
         // ✏️ UPDATE OPERATIONS
         case "markAsRead":
-          return await this.markAsRead(userId, params.id, params.isRead);
+          return await this.markAsRead(params.id, params.isRead);
 
         case "markAllAsRead":
-          return await this.markAllAsRead(userId);
+          return await this.markAllAsRead();
 
         // 🗑 DELETE
         case "delete":
-          return await this.delete(userId, params.id);
+          return await this.delete(params.id);
 
         default:
           return {
@@ -66,9 +59,11 @@ class NotificationHandler {
           };
       }
     } catch (error) {
+      // @ts-ignore
       logger.error("NotificationHandler error:", error);
       return {
         status: false,
+        // @ts-ignore
         message: error.message || "Internal server error",
         data: null,
       };
@@ -77,21 +72,24 @@ class NotificationHandler {
 
   // --- Handlers (each calls the service) ---
 
+  // @ts-ignore
   async create(params) {
-    const { userId, title, message, type, metadata, user = "system" } = params;
-    if (!userId || !title || !message) {
-      throw new Error("Missing required fields: userId, title, message");
+    const { title, message, type, metadata, user = "system" } = params;
+    // @ts-ignore
+    if (!title || !message) {
+      throw new Error("Missing required fields: title, message");
     }
     const result = await notificationService.create(
-      { userId, title, message, type, metadata },
+      { title, message, type, metadata },
       user
     );
     return { status: true, data: result };
   }
 
-  async getAll(userId, params) {
+  // @ts-ignore
+  async getAll(params) {
     const { isRead, limit, offset, sortBy, sortOrder } = params;
-    const result = await notificationService.findAll(userId, {
+    const result = await notificationService.findAll({
       isRead,
       limit,
       offset,
@@ -101,33 +99,36 @@ class NotificationHandler {
     return { status: true, data: result };
   }
 
-  async getById(userId, id) {
-    const result = await notificationService.findById(id, userId);
+  // @ts-ignore
+  async getById(id) {
+    const result = await notificationService.findById(id);
     return { status: true, data: result };
   }
 
-  async getUnreadCount(userId) {
-    const count = await notificationService.getUnreadCount(userId);
+  async getUnreadCount() {
+    const count = await notificationService.getUnreadCount();
     return { status: true, data: { unreadCount: count } };
   }
 
-  async getStats(userId) {
-    const stats = await notificationService.getStats(userId);
+  async getStats() {
+    const stats = await notificationService.getStats();
     return { status: true, data: stats };
   }
 
-  async markAsRead(userId, id, isRead = true) {
-    const result = await notificationService.markAsRead(id, isRead, userId, "system");
+  // @ts-ignore
+  async markAsRead(id, isRead = true) {
+    const result = await notificationService.markAsRead(id, isRead, "system");
     return { status: true, data: result };
   }
 
-  async markAllAsRead(userId) {
-    const count = await notificationService.markAllAsRead(userId, "system");
+  async markAllAsRead() {
+    const count = await notificationService.markAllAsRead("system");
     return { status: true, data: { updatedCount: count } };
   }
 
-  async delete(userId, id) {
-    const result = await notificationService.delete(id, userId, "system");
+  // @ts-ignore
+  async delete(id) {
+    const result = await notificationService.delete(id, "system");
     return { status: true, data: result };
   }
 }

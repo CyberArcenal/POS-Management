@@ -7,12 +7,25 @@ const LoyaltyTransaction = require("../entities/LoyaltyTransaction");
 const auditLogger = require("../utils/auditLogger");
 const Sale = require("../entities/Sale");
 // @ts-ignore
+// @ts-ignore
+// @ts-ignore
 const { SystemSetting, SettingType } = require("../entities/systemSettings");
 const PrinterService = require("../services/PrinterService");
 const CashDrawerService = require("../services/CashDrawerService");
 const PurchaseItem = require("../entities/PurchaseItem");
 const Purchase = require("../entities/Purchase");
-const { getLoyaltyPointRate } = require("../utils/system");
+// 🔧 SETTINGS INTEGRATION: import all needed settings
+const {
+  getLoyaltyPointRate,
+  loyaltyPointsEnabled,
+  enableReceiptPrinting,
+  enableCashDrawer,
+  autoReorderEnabled,
+  // Maaaring magdagdag ng settings para sa customer status thresholds at lifetime rate
+  // loyaltyLifetimeRate, vipThreshold, eliteThreshold
+} = require("../utils/system");
+const { logger } = require("../utils/logger"); // ipagpalagay na may logger
+const notificationService = require("../services/NotificationService");
 
 class SaleStateTransitionService {
   /**
@@ -46,7 +59,7 @@ class SaleStateTransitionService {
       throw new Error(`Sale #${sale.id} not found for hydration`);
     }
 
-    console.log(`[Transition] Processing paid sale #${hydratedSale.id}`);
+    logger.info(`[Transition] Processing paid sale #${hydratedSale.id}`);
 
     // Audit sale status change
     await auditLogger.logUpdate(
@@ -84,9 +97,30 @@ class SaleStateTransitionService {
       );
     }
 
-    // 2. Handle loyalty points
-    if (hydratedSale.customer) {
+    // 🔧 SETTINGS INTEGRATION: Auto-reorder kung enabled
+    const autoReorder = await autoReorderEnabled();
+    if (autoReorder) {
+      for (const item of hydratedSale.saleItems) {
+        const product = item.product;
+        // Kung ang stock ay umabot o bumaba sa reorder level, mag-create ng purchase
+        if (product.stockQty <= product.reorderLevel) {
+          await this.reOrder(product);
+        }
+
+        if (product.stockQty <= product.reorderLevel) {
+          // Mag-notify ng low stock (kung hindi pa nagawa sa ibang pagkakataon)
+          await this.notifyLowStock(product, item.quantity);
+        }
+      }
+    }
+
+    // 2. Handle loyalty points (kung enabled)
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
+    const loyaltyEnabled = await loyaltyPointsEnabled();
+    if (loyaltyEnabled && hydratedSale.customer) {
       const rate = await getLoyaltyPointRate();
+      // 🔧 SETTINGS INTEGRATION: lifetime rate ay pwedeng gawing setting
+      // Para sa ngayon, panatilihin muna ang hardcoded value
       const lifetimeRate = 50; // 1 point per ₱50 spend
       const subtotal = hydratedSale.saleItems.reduce(
         // @ts-ignore
@@ -95,12 +129,13 @@ class SaleStateTransitionService {
       );
 
       // Only earn points on net cash portion
-      const netCashSpend = subtotal - hydratedSale.loyaltyRedeemed;
+      const netCashSpend = subtotal - (hydratedSale.loyaltyRedeemed || 0);
       const pointsEarned = Math.floor(netCashSpend / rate);
       const lifetimePointsEarned = Math.floor(netCashSpend / lifetimeRate);
       hydratedSale.pointsEarn = pointsEarned;
       hydratedSale.updatedAt = new Date();
       await updateDb(saleRepo, hydratedSale);
+
       if (pointsEarned > 0) {
         const customer = await this.customerRepo.findOne({
           where: { id: hydratedSale.customer.id },
@@ -134,37 +169,43 @@ class SaleStateTransitionService {
       }
     }
 
-    // 3. check and deduct loyalty
+    // 3. Check and deduct loyalty (kung may na-redeem)
     await this.checkAndDeductLoyalty(hydratedSale);
 
-    // 3. Print receipt
-    try {
-      const printer = new PrinterService();
-      await printer.printReceipt(hydratedSale.id);
+    // 4. Print receipt (kung enabled)
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang receipt printing
+    const printEnabled = await enableReceiptPrinting();
+    if (printEnabled) {
+      try {
+        const printer = new PrinterService();
+        await printer.printReceipt(hydratedSale.id);
 
-      // @ts-ignore
-      await auditLogger.log({
-        action: "EVENT",
-        entity: "Printer",
-        entityId: hydratedSale.id,
-        description: "Receipt printed successfully",
-        user: "system",
-      });
-    } catch (err) {
-      // @ts-ignore
-      await auditLogger.log({
-        action: "EVENT",
-        entity: "Printer",
-        entityId: hydratedSale.id,
         // @ts-ignore
-        description: `Receipt print failed: ${err.message}`,
-        user: "system",
-      });
+        await auditLogger.log({
+          action: "EVENT",
+          entity: "Printer",
+          entityId: hydratedSale.id,
+          description: "Receipt printed successfully",
+          user: "system",
+        });
+      } catch (err) {
+        // @ts-ignore
+        await auditLogger.log({
+          action: "EVENT",
+          entity: "Printer",
+          entityId: hydratedSale.id,
+          // @ts-ignore
+          description: `Receipt print failed: ${err.message}`,
+          user: "system",
+        });
+      }
     }
 
-    // 4. Open cash drawer (only for cash payments)
-    try {
-      if (hydratedSale.paymentMethod === "cash") {
+    // 5. Open cash drawer (kung cash payment at enabled)
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang cash drawer
+    const drawerEnabled = await enableCashDrawer();
+    if (drawerEnabled && hydratedSale.paymentMethod === "cash") {
+      try {
         const drawer = new CashDrawerService();
         await drawer.openDrawer("sale");
 
@@ -176,20 +217,20 @@ class SaleStateTransitionService {
           description: "Cash drawer opened successfully",
           user: "system",
         });
-      }
-    } catch (err) {
-      // @ts-ignore
-      await auditLogger.log({
-        action: "EVENT",
-        entity: "CashDrawer",
-        entityId: hydratedSale.id,
+      } catch (err) {
         // @ts-ignore
-        description: `Cash drawer open failed: ${err.message}`,
-        user: "system",
-      });
+        await auditLogger.log({
+          action: "EVENT",
+          entity: "CashDrawer",
+          entityId: hydratedSale.id,
+          // @ts-ignore
+          description: `Cash drawer open failed: ${err.message}`,
+          user: "system",
+        });
+      }
     }
 
-    console.log(`[Transition] Completed paid sale #${hydratedSale.id}`);
+    logger.info(`[Transition] Completed paid sale #${hydratedSale.id}`);
   }
 
   /**
@@ -199,7 +240,7 @@ class SaleStateTransitionService {
   async onRefund(sale) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
     // @ts-ignore
-    console.log(`[Transition] Processing refunded sale #${sale.id}`);
+    logger.info(`[Transition] Processing refunded sale #${sale.id}`);
 
     // 1. Restore stock for each sold item
     // @ts-ignore
@@ -230,9 +271,11 @@ class SaleStateTransitionService {
       );
     }
 
-    // 2. Reverse loyalty points if any
+    // 2. Reverse loyalty points if any (kung enabled)
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty bago mag-reverse
+    const loyaltyEnabled = await loyaltyPointsEnabled();
     // @ts-ignore
-    if (sale.customer) {
+    if (loyaltyEnabled && sale.customer) {
       const loyaltyTxs = await this.loyaltyRepo.find({
         // @ts-ignore
         where: { sale: { id: sale.id } },
@@ -272,7 +315,7 @@ class SaleStateTransitionService {
     }
 
     // @ts-ignore
-    console.log(`[Transition] Completed refunded sale #${sale.id}`);
+    logger.info(`[Transition] Completed refunded sale #${sale.id}`);
   }
 
   /**
@@ -282,10 +325,9 @@ class SaleStateTransitionService {
   async onCancel(sale) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
     // @ts-ignore
-    console.log(`[Transition] Processing voided sale #${sale.id}`);
+    logger.info(`[Transition] Processing voided sale #${sale.id}`);
 
-    // Same as refund but with movementType = "adjustment" and no loyalty reversal?
-    // For void, we restore stock and record adjustment.
+    // Restore stock and record adjustment
     // @ts-ignore
     for (const item of sale.saleItems) {
       const product = item.product;
@@ -314,22 +356,62 @@ class SaleStateTransitionService {
       );
     }
 
-    // Reverse loyalty if any (similar to refund)
+    // Reverse loyalty if any (kung enabled)
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
+    const loyaltyEnabled = await loyaltyPointsEnabled();
     // @ts-ignore
-    if (sale.customer) {
-      // same as refund logic
+    if (loyaltyEnabled && sale.customer) {
+      const loyaltyTxs = await this.loyaltyRepo.find({
+        // @ts-ignore
+        where: { sale: { id: sale.id } },
+      });
+      for (const tx of loyaltyTxs) {
+        const customer = await this.customerRepo.findOne({
+          // @ts-ignore
+          where: { id: sale.customer.id },
+        });
+        if (customer) {
+          const oldBalance = customer.loyaltyPointsBalance;
+          customer.loyaltyPointsBalance -= tx.pointsChange;
+          customer.updatedAt = new Date();
+          await updateDb(this.customerRepo, customer);
+
+          const reversal = this.loyaltyRepo.create({
+            pointsChange: -tx.pointsChange,
+            transactionType: "void",
+            // @ts-ignore
+            notes: `Reversal of voided sale #${sale.id}`,
+            customer,
+            sale,
+            timestamp: new Date(),
+          });
+          await saveDb(this.loyaltyRepo, reversal);
+
+          await auditLogger.logUpdate(
+            "Customer",
+            customer.id,
+            { loyaltyPointsBalance: oldBalance },
+            { loyaltyPointsBalance: customer.loyaltyPointsBalance },
+            "system",
+          );
+        }
+      }
     }
 
     // @ts-ignore
-    console.log(`[Transition] Completed voided sale #${sale.id}`);
+    logger.info(`[Transition] Completed voided sale #${sale.id}`);
   }
 
   /**
+   * Auto-create purchase if stock reaches reorder level
    * @param {{ supplier: any; reorderLevel: number; reorderQty: number; stockQty: number; id: any; price: any; sku: any; }} product
    */
   async reOrder(product) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
-    // 1b. Auto-create purchase if stock reaches reorder level
+    // 🔧 SETTINGS INTEGRATION: suriin muli kung enabled ang auto reorder (redundant pero safe)
+    const autoReorder = await autoReorderEnabled();
+    if (!autoReorder) return;
+
     try {
       const purchaseRepo = this.dataSource.getRepository(Purchase);
       const purchaseItemRepo = this.dataSource.getRepository(PurchaseItem);
@@ -383,24 +465,50 @@ class SaleStateTransitionService {
           savedPurchase.totalAmount = subtotal;
           await updateDb(purchaseRepo, savedPurchase);
 
-          console.log(
+          logger.info(
             `[AutoPurchase] Created purchase #${savedPurchase.id} for product ${product.sku} (Qty: ${product.reorderQty})`,
           );
+
+          try {
+            // TODO: palitan ang userId ng actual na user IDs (e.g., lahat ng admin)
+            await notificationService.create(
+              {
+                userId: 1, // pansamantala
+                title: "Auto‑Reorder Created",
+                // @ts-ignore
+                message: `Product "${product.name}" (SKU: ${product.sku}) has reached reorder level. A new purchase order #${savedPurchase.referenceNo} has been automatically created.`,
+                type: "purchase", // puwedeng gumamit ng "warning" o "info"
+                metadata: {
+                  productId: product.id,
+                  purchaseId: savedPurchase.id,
+                  referenceNo: savedPurchase.referenceNo,
+                  reorderQty: product.reorderQty,
+                },
+              },
+              "system",
+            );
+          } catch (notifError) {
+            logger.error(
+              `Failed to create in-app notification for auto-reorder of product ${product.id}`,
+              // @ts-ignore
+              notifError,
+            );
+          }
         } else {
-          console.log(
+          logger.info(
             `[AutoPurchase] Pending purchase already exists for product ${product.sku}, skipping.`,
           );
         }
       }
     } catch (purchaseError) {
       // Log error but do not interrupt the sale transition
-      console.error(
+      logger.error(
         `[AutoPurchase] Failed to create purchase for product ${product.id}:`,
+        // @ts-ignore
         purchaseError,
       );
       // @ts-ignore
       throw new Error("Unable To Create Order.");
-      // Optionally: report to error tracking service
     }
   }
 
@@ -409,6 +517,10 @@ class SaleStateTransitionService {
    */
   async checkAndDeductLoyalty(hydratedSale) {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
+    // 🔧 SETTINGS INTEGRATION: suriin kung enabled ang loyalty
+    const loyaltyEnabled = await loyaltyPointsEnabled();
+    if (!loyaltyEnabled) return;
+
     if (hydratedSale.usedLoyalty && hydratedSale.loyaltyRedeemed > 0) {
       const customer = await this.customerRepo.findOne({
         where: { id: hydratedSale.customer.id },
@@ -438,11 +550,39 @@ class SaleStateTransitionService {
       }
     }
   }
-
+  // @ts-ignore
+  async notifyLowStock(product, soldQty) {
+    // @ts-ignore
+    // Pero kung gusto mo talaga ng low stock alert, gawin ito.
+    try {
+      await notificationService.create(
+        {
+          userId: 1,
+          title: "Low Stock Alert",
+          message: `Product "${product.name}" (SKU: ${product.sku}) is now low on stock. Current stock: ${product.stockQty}, Reorder level: ${product.reorderLevel}.`,
+          type: "warning",
+          metadata: {
+            productId: product.id,
+            currentStock: product.stockQty,
+            reorderLevel: product.reorderLevel,
+          },
+        },
+        "system",
+      );
+    } catch (err) {
+      logger.error(
+        `Low stock notification failed for product ${product.id}`,
+        // @ts-ignore
+        err,
+      );
+    }
+  }
   /**
    * @param {{ lifetimePointsEarned: number; }} customer
    */
   determineCustomerStatus(customer) {
+    // 🔧 SETTINGS INTEGRATION: ang thresholds ay pwedeng gawing settings
+    // Para sa ngayon, panatilihin muna ang hardcoded values
     if (customer.lifetimePointsEarned > 5000) return "elite";
     if (customer.lifetimePointsEarned > 1000) return "vip";
     return "regular";

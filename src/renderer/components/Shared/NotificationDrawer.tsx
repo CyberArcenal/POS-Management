@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { X, Bell, CheckCheck, Trash2, Loader2, AlertCircle } from "lucide-react";
+import {
+  X,
+  Bell,
+  CheckCheck,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { format } from "date-fns";
 import notificationAPI, { type Notification } from "../../api/notification";
 import { dialogs } from "../../utils/dialogs";
@@ -7,13 +16,11 @@ import { dialogs } from "../../utils/dialogs";
 interface NotificationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: number; // current user id – you should get this from your auth context
 }
 
 export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   isOpen,
   onClose,
-  userId,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -21,29 +28,35 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const limit = 15;
 
-  // Fetch notifications when drawer opens or page changes
+  // Reset to page 1 and clear notifications when drawer opens
   useEffect(() => {
-    if (isOpen && userId) {
-      fetchNotifications();
+    if (isOpen) {
+      setPage(1);
+      setNotifications([]);
       fetchUnreadCount();
     }
-  }, [isOpen, userId, page]);
+  }, [isOpen]);
 
-  const fetchNotifications = async (reset = false) => {
-    if (!userId) return;
+  // Fetch notifications whenever page changes (only if drawer is open)
+  useEffect(() => {
+    if (!isOpen) return;
+    fetchNotifications(page === 1); // reset = true only for page 1
+  }, [page, isOpen]);
+
+  const fetchNotifications = async (reset: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await notificationAPI.getAll(userId, {
+      const response = await notificationAPI.getAll({
         limit,
         offset: (page - 1) * limit,
         sortBy: "createdAt",
         sortOrder: "DESC",
       });
       if (response.status) {
-        console.log(response)
         const newItems = response.data;
         setNotifications((prev) => (reset ? newItems : [...prev, ...newItems]));
         setHasMore(newItems.length === limit);
@@ -59,7 +72,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await notificationAPI.getUnreadCount(userId);
+      const response = await notificationAPI.getUnreadCount();
       if (response.status) {
         setUnreadCount(response.data.unreadCount);
       }
@@ -70,7 +83,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   const handleMarkAsRead = async (id: number) => {
     try {
-      const response = await notificationAPI.markAsRead(userId, id);
+      const response = await notificationAPI.markAsRead(id);
       if (response.status) {
         setNotifications((prev) =>
           prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
@@ -86,7 +99,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await notificationAPI.markAllAsRead(userId);
+      const response = await notificationAPI.markAllAsRead();
       if (response.status) {
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
         setUnreadCount(0);
@@ -106,7 +119,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
     if (!confirmed) return;
 
     try {
-      const response = await notificationAPI.delete(userId, id);
+      const response = await notificationAPI.delete(id);
       if (response.status) {
         setNotifications((prev) => prev.filter((n) => n.id !== id));
         // if it was unread, decrease count
@@ -125,6 +138,20 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       setPage((prev) => prev + 1);
     }
   };
+
+  const toggleExpanded = (id: number) => {
+    setExpandedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const isLongMessage = (message: string) => message.length > 100;
 
   const getTypeIcon = (type: Notification["type"]) => {
     switch (type) {
@@ -206,6 +233,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                 <button
                   onClick={() => {
                     setPage(1);
+                    setNotifications([]);
                     fetchNotifications(true);
                   }}
                   className="mt-3 px-4 py-2 bg-[var(--accent-blue)] text-white rounded text-sm"
@@ -225,71 +253,101 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
               </div>
             ) : (
               <>
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`group relative p-3 rounded-lg border ${
-                      notification.isRead
-                        ? "border-[var(--border-color)] bg-[var(--card-secondary-bg)]"
-                        : "border-[var(--accent-blue)] bg-[var(--accent-blue-light)]"
-                    } hover:shadow-md transition-shadow`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-1">
-                        {getTypeIcon(notification.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm font-medium ${
-                            notification.isRead
-                              ? "text-[var(--text-secondary)]"
-                              : "text-[var(--text-primary)]"
-                          }`}
-                        >
-                          {notification.title}
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)] mt-1 line-clamp-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)] mt-2">
-                          {format(
-                            new Date(notification.createdAt),
-                            "MMM dd, yyyy • hh:mm a"
-                          )}
-                        </p>
-                      </div>
+                {notifications.map((notification) => {
+                  const expanded = expandedIds.has(notification.id);
+                  const longMessage = isLongMessage(notification.message);
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {!notification.isRead && (
-                          <button
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
-                            title="Mark as read"
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`group relative p-3 rounded-lg border ${
+                        notification.isRead
+                          ? "border-[var(--border-color)] bg-[var(--card-secondary-bg)]"
+                          : "border-[var(--accent-blue)] bg-[var(--accent-blue-light)]"
+                      } hover:shadow-md transition-shadow`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {getTypeIcon(notification.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-sm font-medium ${
+                              notification.isRead
+                                ? "text-[var(--text-secondary)]"
+                                : "text-[var(--text-primary)]"
+                            }`}
                           >
-                            <CheckCheck className="w-4 h-4 text-[var(--accent-blue)]" />
+                            {notification.title}
+                          </p>
+
+                          {/* Message with expand/collapse */}
+                          <div className="mt-1">
+                            <p
+                              className={`text-xs text-[var(--text-tertiary)] ${
+                                !expanded ? "line-clamp-2" : ""
+                              }`}
+                            >
+                              {notification.message}
+                            </p>
+                            {longMessage && (
+                              <button
+                                onClick={() => toggleExpanded(notification.id)}
+                                className="mt-1 text-xs text-[var(--accent-blue)] hover:underline flex items-center gap-1"
+                              >
+                                {expanded ? (
+                                  <>
+                                    Show less <ChevronUp className="w-3 h-3" />
+                                  </>
+                                ) : (
+                                  <>
+                                    Read more <ChevronDown className="w-3 h-3" />
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-[var(--text-tertiary)] mt-2">
+                            {format(
+                              new Date(notification.createdAt),
+                              "MMM dd, yyyy • hh:mm a"
+                            )}
+                          </p>
+
+                          {/* Metadata - only show when expanded */}
+                          {notification.metadata && expanded && (
+                            <div className="mt-2 text-xs text-[var(--text-tertiary)] bg-[var(--card-bg)] p-2 rounded border border-[var(--border-color)]">
+                              <pre className="whitespace-pre-wrap">
+                                {JSON.stringify(notification.metadata, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {!notification.isRead && (
+                            <button
+                              onClick={() => handleMarkAsRead(notification.id)}
+                              className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
+                              title="Mark as read"
+                            >
+                              <CheckCheck className="w-4 h-4 text-[var(--accent-blue)]" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(notification.id)}
+                            className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4 text-[var(--accent-red)]" />
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(notification.id)}
-                          className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4 text-[var(--accent-red)]" />
-                        </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Optional metadata display */}
-                    {notification.metadata && (
-                      <div className="mt-2 text-xs text-[var(--text-tertiary)] bg-[var(--card-bg)] p-2 rounded border border-[var(--border-color)]">
-                        <pre className="whitespace-pre-wrap">
-                          {JSON.stringify(notification.metadata, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Load more */}
                 {hasMore && (

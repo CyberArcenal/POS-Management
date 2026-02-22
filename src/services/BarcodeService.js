@@ -11,7 +11,8 @@ class BarcodeService {
     this.autoEmitInterval = null;
     
     // Check if running in development mode
-    this.isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    // this.isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    this.isDev = false;
 
     if (this.isDev) {
       this.startAutoEmit();

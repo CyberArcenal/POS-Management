@@ -12,7 +12,7 @@ const Notification = new EntitySchema({
     },
     userId: {
       type: Number,
-      nullable: false,
+      nullable: true,
       comment: "ID of the user who receives this notification",
     },
     title: {

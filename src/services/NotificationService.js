@@ -2,7 +2,6 @@
 // @ts-check
 
 const auditLogger = require("../utils/auditLogger");
-const { saveDb, updateDb, removeDb } = require("../utils/dbUtils/dbActions");
 
 class NotificationService {
   constructor() {
@@ -33,13 +32,16 @@ class NotificationService {
    * @param {string} [user="system"] - Who triggered the creation
    */
   async create(data, user = "system") {
+    const {
+      saveDb,
+      updateDb,
+      removeDb,
+    } = require("../utils/dbUtils/dbActions");
     const repo = await this.getRepository();
 
     try {
       // @ts-ignore
       const notification = repo.create({
-        // @ts-ignore
-        userId: data.userId,
         // @ts-ignore
         title: data.title,
         // @ts-ignore
@@ -70,15 +72,12 @@ class NotificationService {
   /**
    * Get a notification by ID
    * @param {number} id
-   * @param {number} [userId] - Optional user ID for access control
    */
   // @ts-ignore
-  async findById(id, userId = null) {
+  async findById(id) {
     const repo = await this.getRepository();
 
     const where = { id };
-    // @ts-ignore
-    if (userId !== null) where.userId = userId;
 
     // @ts-ignore
     const notification = await repo.findOne({ where });
@@ -92,16 +91,13 @@ class NotificationService {
 
   /**
    * Find all notifications for a user with filters and pagination
-   * @param {number} userId
    * @param {Object} options - { isRead?, limit?, offset?, sortBy?, sortOrder? }
    */
-  async findAll(userId, options = {}) {
+  async findAll(options = {}) {
     const repo = await this.getRepository();
 
     // @ts-ignore
-    const queryBuilder = repo
-      .createQueryBuilder("notification")
-      .where("notification.userId = :userId", { userId });
+    const queryBuilder = repo.createQueryBuilder("notification");
 
     // @ts-ignore
     if (options.isRead !== undefined) {
@@ -137,16 +133,18 @@ class NotificationService {
    * Mark a single notification as read (or unread)
    * @param {number} id
    * @param {boolean} [isRead=true]
-   * @param {number} [userId] - Optional user ID for access control
    * @param {string} [user="system"]
    */
   // @ts-ignore
-  async markAsRead(id, isRead = true, userId = null, user = "system") {
+  async markAsRead(id, isRead = true, user = "system") {
+    const {
+      saveDb,
+      updateDb,
+      removeDb,
+    } = require("../utils/dbUtils/dbActions");
     const repo = await this.getRepository();
 
     const where = { id };
-    // @ts-ignore
-    if (userId !== null) where.userId = userId;
 
     // @ts-ignore
     const notification = await repo.findOne({ where });
@@ -167,10 +165,14 @@ class NotificationService {
 
   /**
    * Mark all notifications for a user as read
-   * @param {number} userId
    * @param {string} [user="system"]
    */
-  async markAllAsRead(userId, user = "system") {
+  async markAllAsRead(user = "system") {
+    const {
+      saveDb,
+      updateDb,
+      removeDb,
+    } = require("../utils/dbUtils/dbActions");
     const repo = await this.getRepository();
 
     // @ts-ignore
@@ -178,8 +180,7 @@ class NotificationService {
       .createQueryBuilder()
       .update()
       .set({ isRead: true, updatedAt: new Date() })
-      .where("userId = :userId AND isRead = :isRead", {
-        userId,
+      .where("isRead = :isRead", {
         isRead: false,
       })
       .execute();
@@ -189,11 +190,11 @@ class NotificationService {
       await auditLogger.logUpdate(
         "Notification",
         null,
-        { userId, isRead: false },
-        { userId, isRead: true },
+        { isRead: false },
+        { isRead: true },
         user,
       );
-      console.log(`Marked ${count} notifications as read for user ${userId}`);
+      console.log(`Marked ${count} notifications as read`);
     }
     return count;
   }
@@ -201,16 +202,18 @@ class NotificationService {
   /**
    * Delete a notification (hard delete)
    * @param {number} id
-   * @param {number} [userId] - Optional user ID for access control
    * @param {string} [user="system"]
    */
   // @ts-ignore
-  async delete(id, userId = null, user = "system") {
+  async delete(id, user = "system") {
+    const {
+      saveDb,
+      updateDb,
+      removeDb,
+    } = require("../utils/dbUtils/dbActions");
     const repo = await this.getRepository();
 
     const where = { id };
-    // @ts-ignore
-    if (userId !== null) where.userId = userId;
 
     // @ts-ignore
     const notification = await repo.findOne({ where });
@@ -227,25 +230,23 @@ class NotificationService {
 
   /**
    * Get unread count for a user
-   * @param {number} userId
    */
-  async getUnreadCount(userId) {
+  async getUnreadCount() {
     const repo = await this.getRepository();
     // @ts-ignore
-    return repo.count({ where: { userId, isRead: false } });
+    return repo.count({ where: { isRead: false } });
   }
 
   /**
    * Get notification statistics for a user
-   * @param {number} userId
    */
-  async getStats(userId) {
+  async getStats() {
     const repo = await this.getRepository();
 
     // @ts-ignore
-    const total = await repo.count({ where: { userId } });
+    const total = await repo.count();
     // @ts-ignore
-    const unread = await repo.count({ where: { userId, isRead: false } });
+    const unread = await repo.count({ where: { isRead: false } });
     const read = total - unread;
 
     // Count by type (optional)
@@ -254,7 +255,6 @@ class NotificationService {
       .createQueryBuilder("notification")
       .select("notification.type", "type")
       .addSelect("COUNT(*)", "count")
-      .where("notification.userId = :userId", { userId })
       .groupBy("notification.type")
       .getRawMany();
 

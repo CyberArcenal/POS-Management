@@ -93,7 +93,6 @@ class NotificationAPI {
    * @param data - { userId, title, message, type?, metadata? }
    */
   async create(data: {
-    userId: number;
     title: string;
     message: string;
     type?: Notification["type"];
@@ -124,19 +123,16 @@ class NotificationAPI {
 
   /**
    * Get all notifications for the current user with optional filters.
-   * @param userId - ID of the user (must be provided)
+   (must be provided)
    * @param params - { isRead?, limit?, offset?, sortBy?, sortOrder? }
    */
-  async getAll(
-    userId: number,
-    params?: {
-      isRead?: boolean;
-      limit?: number;
-      offset?: number;
-      sortBy?: string;
-      sortOrder?: "ASC" | "DESC";
-    }
-  ): Promise<NotificationsResponse> {
+  async getAll(params?: {
+    isRead?: boolean;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: "ASC" | "DESC";
+  }): Promise<NotificationsResponse> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -144,7 +140,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "getAll",
-        params: { userId, ...params },
+        params: params,
       });
 
       if (response.status) {
@@ -158,10 +154,10 @@ class NotificationAPI {
 
   /**
    * Get a single notification by ID, ensuring it belongs to the user.
-   * @param userId - ID of the user
+  
    * @param id - Notification ID
    */
-  async getById(userId: number, id: number): Promise<NotificationResponse> {
+  async getById(id: number): Promise<NotificationResponse> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -169,7 +165,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "getById",
-        params: { userId, id },
+        params: { id },
       });
 
       if (response.status) {
@@ -183,9 +179,9 @@ class NotificationAPI {
 
   /**
    * Get unread count for the user.
-   * @param userId - ID of the user
+  
    */
-  async getUnreadCount(userId: number): Promise<UnreadCountResponseWrapper> {
+  async getUnreadCount(): Promise<UnreadCountResponseWrapper> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -193,7 +189,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "getUnreadCount",
-        params: { userId },
+        params: {},
       });
 
       if (response.status) {
@@ -207,9 +203,8 @@ class NotificationAPI {
 
   /**
    * Get notification statistics for the user.
-   * @param userId - ID of the user
    */
-  async getStats(userId: number): Promise<NotificationStatsResponse> {
+  async getStats(): Promise<NotificationStatsResponse> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -217,7 +212,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "getStats",
-        params: { userId },
+        params: {},
       });
 
       if (response.status) {
@@ -235,14 +230,13 @@ class NotificationAPI {
 
   /**
    * Mark a specific notification as read (or unread).
-   * @param userId - ID of the user
+
    * @param id - Notification ID
    * @param isRead - true for read, false for unread (default true)
    */
   async markAsRead(
-    userId: number,
     id: number,
-    isRead: boolean = true
+    isRead: boolean = true,
   ): Promise<NotificationResponse> {
     try {
       if (!window.backendAPI?.notification) {
@@ -251,13 +245,15 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "markAsRead",
-        params: { userId, id, isRead },
+        params: { id, isRead },
       });
 
       if (response.status) {
         return response;
       }
-      throw new Error(response.message || "Failed to mark notification as read");
+      throw new Error(
+        response.message || "Failed to mark notification as read",
+      );
     } catch (error: any) {
       throw new Error(error.message || "Failed to mark notification as read");
     }
@@ -265,9 +261,8 @@ class NotificationAPI {
 
   /**
    * Mark all unread notifications for the user as read.
-   * @param userId - ID of the user
    */
-  async markAllAsRead(userId: number): Promise<MarkAllAsReadResponseWrapper> {
+  async markAllAsRead(): Promise<MarkAllAsReadResponseWrapper> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -275,7 +270,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "markAllAsRead",
-        params: { userId },
+        params: {},
       });
 
       if (response.status) {
@@ -293,10 +288,10 @@ class NotificationAPI {
 
   /**
    * Delete a notification (hard delete).
-   * @param userId - ID of the user
+  
    * @param id - Notification ID
    */
-  async delete(userId: number, id: number): Promise<DeleteResponse> {
+  async delete(id: number): Promise<DeleteResponse> {
     try {
       if (!window.backendAPI?.notification) {
         throw new Error("Electron API (notification) not available");
@@ -304,7 +299,7 @@ class NotificationAPI {
 
       const response = await window.backendAPI.notification({
         method: "delete",
-        params: { userId, id },
+        params: { id },
       });
 
       if (response.status) {
@@ -324,16 +319,16 @@ class NotificationAPI {
    * Check if the notification API is available.
    */
   async isAvailable(): Promise<boolean> {
-    return !!(window.backendAPI?.notification);
+    return !!window.backendAPI?.notification;
   }
 
   /**
    * Convenience method to get only unread notifications.
-   * @param userId - ID of the user
+  
    * @param limit - Max number of items
    */
-  async getUnread(userId: number, limit?: number): Promise<NotificationsResponse> {
-    return this.getAll(userId, { isRead: false, limit });
+  async getUnread(limit?: number): Promise<NotificationsResponse> {
+    return this.getAll({ isRead: false, limit });
   }
 }
 

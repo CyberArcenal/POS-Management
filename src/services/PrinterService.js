@@ -10,6 +10,8 @@ const {
   receiptPrinterType,
 } = require("../utils/system");
 
+const { logger } = require("../utils/logger");
+
 class PrinterService {
   constructor() {
     this.driver = null;
@@ -55,6 +57,7 @@ class PrinterService {
    * @returns {Promise<boolean>}
    */
   async printReceipt(saleId) {
+    const notificationService = require("./NotificationService");
     let driver;
     try {
       driver = await this._getDriver();
@@ -91,6 +94,25 @@ class PrinterService {
       // @ts-ignore
       console.error("[PrinterService] Failed to print receipt:", err.message);
       this.isReady = false;
+
+      try {
+        await notificationService.create(
+          {
+            userId: 1,
+            title: "Printer Error",
+            // @ts-ignore
+            message: `Failed to print receipt: ${error.message}`,
+            type: "error",
+            // @ts-ignore
+            metadata: { error: error.message },
+          },
+          "system",
+        );
+      } catch (notifErr) {
+        // @ts-ignore
+        logger.error("Failed to send printer error notification", notifErr);
+      }
+
       throw err;
     }
   }

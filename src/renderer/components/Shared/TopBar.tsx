@@ -30,15 +30,13 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   // Replace with actual user id from your auth context
-  const currentUserId = 1; // ⚠️ TEMP – get from real auth
 
   // Fetch unread count periodically
   useEffect(() => {
-    if (!currentUserId) return;
 
     const fetchUnread = async () => {
       try {
-        const response = await notificationAPI.getUnreadCount(currentUserId);
+        const response = await notificationAPI.getUnreadCount();
         if (response.status) {
           setUnreadCount(response.data.unreadCount);
         }
@@ -50,7 +48,7 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000); // every 30s
     return () => clearInterval(interval);
-  }, [currentUserId]);
+  }, []);
 
   // Define searchable routes for POS
   const allRoutes: RouteInfo[] = useMemo(
@@ -172,7 +170,7 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
         <button
           onClick={toggleSidebar}
           aria-label="Toggle menu"
-          className="p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)] transition-all duration-200 md:hidden"
+          className="p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)] transition-all duration-200"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -343,7 +341,6 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
       <NotificationDrawer
         isOpen={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
-        userId={currentUserId}
       />
     </header>
   );
