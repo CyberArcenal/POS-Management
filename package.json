@@ -1,7 +1,7 @@
 {
   "name": "pos-management",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.0-beta",
   "main": "src/main/index.js",
   "build": {
     "appId": "com.CyberArcenal.posmanagement.app",

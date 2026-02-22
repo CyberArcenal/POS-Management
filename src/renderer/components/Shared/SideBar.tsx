@@ -361,12 +361,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   return (
     <div
-      className={`fixed md:relative inset-y-0 left-0 w-64
-        bg-gradient-to-b from-[var(--sidebar-bg)] to-[#1e293b] border-r border-[var(--sidebar-border)]
-        transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        md:translate-x-0 transition-all duration-300 ease-in-out
-        z-30 flex flex-col h-screen shadow-xl`}
-    >
+  className={`
+    fixed md:relative
+    flex flex-col h-screen           {/* ← essential for scrolling */}
+    bg-gradient-to-b from-[var(--sidebar-bg)] to-[#1e293b]
+    border-r border-[var(--sidebar-border)]
+    shadow-xl
+    transition-all duration-300 ease-in-out
+    overflow-hidden
+    ${isOpen ? "w-64" : "w-0"}
+  `}
+>
       {/* Header - Fixed height */}
       <div className="flex-shrink-0 border-b border-[var(--sidebar-border)] bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b] p-6">
         <div className="flex items-center gap-3">

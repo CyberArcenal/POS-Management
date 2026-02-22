@@ -26,6 +26,7 @@ const Layout: React.FC = () => {
   return (
     <div className="flex h-screen">
       {/* Sidebar component */}
+      
       <Sidebar isOpen={sidebarOpen} />
 
       {/* Mobile sidebar backdrop */}
