@@ -29,3 +29,4 @@ setup.ps1
 *.db
 *.db-wal
 *.db-shm
+/release

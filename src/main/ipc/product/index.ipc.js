@@ -16,6 +16,7 @@ class ProductHandler {
     // 📋 READ-ONLY HANDLERS
     this.getAllProducts = this.importHandler("./get/all.ipc");
     this.getProductById = this.importHandler("./get/by_id.ipc");
+    this.getProductByBarcode = this.importHandler("./get/by_barcode.ipc");
     this.getProductBySKU = this.importHandler("./get/by_sku.ipc");
     this.getActiveProducts = this.importHandler("./get/active.ipc");
     this.getLowStockProducts = this.importHandler("./get/low_stock.ipc");
@@ -92,6 +93,8 @@ class ProductHandler {
 
         case "getProductById":
           return await this.getProductById(enrichedParams);
+        case "getProductByBarcode":
+          return await this.getProductByBarcode(enrichedParams);
 
         case "getProductBySKU":
           return await this.getProductBySKU(enrichedParams);
@@ -276,5 +279,5 @@ ipcMain.handle(
     "IPC:product",
   ),
 );
-
+// console.log('PRODUCT HANDLER LOADED', new Date().toISOString());
 module.exports = { ProductHandler, productHandler };

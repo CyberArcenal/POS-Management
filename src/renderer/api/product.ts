@@ -11,7 +11,7 @@ export interface Category {
   name: string;
   description: string | null;
   isActive: boolean;
-  createdAt: string;            // ISO datetime
+  createdAt: string; // ISO datetime
   updatedAt: string | null;
 }
 
@@ -21,7 +21,7 @@ export interface Supplier {
   contactInfo: string | null;
   address: string | null;
   isActive: boolean;
-  createdAt: string;            // ISO datetime
+  createdAt: string; // ISO datetime
   updatedAt: string | null;
 }
 
@@ -31,12 +31,12 @@ export interface Product {
   name: string;
   barcode: string;
   description: string | null;
-  price: number;                // decimal stored as number
+  price: number; // decimal stored as number
   stockQty: number;
-  reorderLevel: number;         // threshold for auto-reorder
-  reorderQty: number;           // default reorder quantity
+  reorderLevel: number; // threshold for auto-reorder
+  reorderQty: number; // default reorder quantity
   isActive: boolean;
-  createdAt: string;            // ISO datetime
+  createdAt: string; // ISO datetime
   updatedAt: string | null;
 
   // New relations (eager-loaded)
@@ -46,7 +46,7 @@ export interface Product {
 
 export interface InventoryMovement {
   id: number;
-  movementType: 'sale' | 'refund' | 'adjustment';
+  movementType: "sale" | "refund" | "adjustment";
   qtyChange: number;
   timestamp: string;
   notes: string | null;
@@ -104,13 +104,13 @@ export interface ProductReport {
 export interface ProductsResponse {
   status: boolean;
   message: string;
-  data: Product[];              // array of products with category & supplier
+  data: Product[]; // array of products with category & supplier
 }
 
 export interface ProductResponse {
   status: boolean;
   message: string;
-  data: Product;                // single product with category & supplier
+  data: Product; // single product with category & supplier
 }
 
 export interface InventoryMovementsResponse {
@@ -141,7 +141,7 @@ export interface ExportCSVResponse {
   status: boolean;
   message: string;
   data: {
-    filePath: string;           // path to the exported CSV file
+    filePath: string; // path to the exported CSV file
   };
 }
 
@@ -149,10 +149,12 @@ export interface ImportCSVResponse {
   status: boolean;
   message: string;
   data: {
-    imported: Array<Product & {
-      categoryName?: string;     // if CSV included category/supplier names
-      supplierName?: string;
-    }>;
+    imported: Array<
+      Product & {
+        categoryName?: string; // if CSV included category/supplier names
+        supplierName?: string;
+      }
+    >;
     errors: Array<{ row: any; errors: string[] }>;
   };
 }
@@ -179,7 +181,7 @@ export interface UpdateStockResponse {
 export interface DeleteResponse {
   status: boolean;
   message: string;
-  data: Product;                // the deactivated product
+  data: Product; // the deactivated product
 }
 
 export interface ReportResponse {
@@ -209,29 +211,29 @@ class ProductAPI {
     search?: string;
     minPrice?: number;
     maxPrice?: number;
-    categoryId?: number;          // new filter
-    supplierId?: number;          // new filter
+    categoryId?: number; // new filter
+    supplierId?: number; // new filter
     sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC';
+    sortOrder?: "ASC" | "DESC";
     page?: number;
     limit?: number;
   }): Promise<ProductsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getAllProducts',
+        method: "getAllProducts",
         params: params || {},
       });
 
       if (response.status) {
         return response as ProductsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch products');
+      throw new Error(response.message || "Failed to fetch products");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch products');
+      throw new Error(error.message || "Failed to fetch products");
     }
   }
 
@@ -242,20 +244,20 @@ class ProductAPI {
   async getById(id: number): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getProductById',
+        method: "getProductById",
         params: { id },
       });
 
       if (response.status) {
         return response as ProductResponse;
       }
-      throw new Error(response.message || 'Failed to fetch product');
+      throw new Error(response.message || "Failed to fetch product");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch product');
+      throw new Error(error.message || "Failed to fetch product");
     }
   }
 
@@ -266,20 +268,44 @@ class ProductAPI {
   async getBySKU(sku: string): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getProductBySKU',
+        method: "getProductBySKU",
         params: { sku },
       });
 
       if (response.status) {
         return response as ProductResponse;
       }
-      throw new Error(response.message || 'Failed to fetch product by SKU');
+      throw new Error(response.message || "Failed to fetch product by SKU");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch product by SKU');
+      throw new Error(error.message || "Failed to fetch product by SKU");
+    }
+  }
+
+  /**
+   * Get a product by barcode.
+   * @param barcode - Product barcode
+   */
+  async getByBarcode(barcode: string): Promise<ProductResponse> {
+    try {
+      if (!window.backendAPI?.product) {
+        throw new Error("Electron API (product) not available");
+      }
+
+      const response = await window.backendAPI.product({
+        method: "getProductByBarcode",
+        params: { barcode },
+      });
+
+      if (response.status) {
+        return response as ProductResponse;
+      }
+      throw new Error(response.message || "Failed to fetch product by barcode");
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch product by barcode");
     }
   }
 
@@ -294,26 +320,26 @@ class ProductAPI {
     categoryId?: number;
     supplierId?: number;
     sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC';
+    sortOrder?: "ASC" | "DESC";
     page?: number;
     limit?: number;
   }): Promise<ProductsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getActiveProducts',
+        method: "getActiveProducts",
         params: params || {},
       });
 
       if (response.status) {
         return response as ProductsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch active products');
+      throw new Error(response.message || "Failed to fetch active products");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch active products');
+      throw new Error(error.message || "Failed to fetch active products");
     }
   }
 
@@ -324,20 +350,20 @@ class ProductAPI {
   async getLowStock(threshold: number = 5): Promise<ProductsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getLowStockProducts',
+        method: "getLowStockProducts",
         params: { threshold },
       });
 
       if (response.status) {
         return response as ProductsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch low stock products');
+      throw new Error(response.message || "Failed to fetch low stock products");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch low stock products');
+      throw new Error(error.message || "Failed to fetch low stock products");
     }
   }
 
@@ -347,20 +373,20 @@ class ProductAPI {
   async getStatistics(): Promise<StatisticsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getProductStatistics',
+        method: "getProductStatistics",
         params: {},
       });
 
       if (response.status) {
         return response as StatisticsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch product statistics');
+      throw new Error(response.message || "Failed to fetch product statistics");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch product statistics');
+      throw new Error(error.message || "Failed to fetch product statistics");
     }
   }
 
@@ -372,20 +398,20 @@ class ProductAPI {
   async search(query: string, limit?: number): Promise<ProductsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'searchProducts',
+        method: "searchProducts",
         params: { query, limit },
       });
 
       if (response.status) {
         return response as ProductsResponse;
       }
-      throw new Error(response.message || 'Search failed');
+      throw new Error(response.message || "Search failed");
     } catch (error: any) {
-      throw new Error(error.message || 'Search failed');
+      throw new Error(error.message || "Search failed");
     }
   }
 
@@ -396,24 +422,24 @@ class ProductAPI {
   async getByDate(params: {
     startDate: string;
     endDate: string;
-    field?: 'createdAt' | 'updatedAt';
+    field?: "createdAt" | "updatedAt";
   }): Promise<ProductsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getProductsByDate',
+        method: "getProductsByDate",
         params,
       });
 
       if (response.status) {
         return response as ProductsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch products by date');
+      throw new Error(response.message || "Failed to fetch products by date");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch products by date');
+      throw new Error(error.message || "Failed to fetch products by date");
     }
   }
 
@@ -428,20 +454,22 @@ class ProductAPI {
   }): Promise<InventoryMovementsResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getInventoryMovements',
+        method: "getInventoryMovements",
         params,
       });
 
       if (response.status) {
         return response as InventoryMovementsResponse;
       }
-      throw new Error(response.message || 'Failed to fetch inventory movements');
+      throw new Error(
+        response.message || "Failed to fetch inventory movements",
+      );
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to fetch inventory movements');
+      throw new Error(error.message || "Failed to fetch inventory movements");
     }
   }
 
@@ -449,23 +477,27 @@ class ProductAPI {
    * Get total inventory value (optionally only active products).
    * @param activeOnly - If true (default), only active products are considered.
    */
-  async getInventoryValue(activeOnly: boolean = true): Promise<InventoryValueResponse> {
+  async getInventoryValue(
+    activeOnly: boolean = true,
+  ): Promise<InventoryValueResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getInventoryValue',
+        method: "getInventoryValue",
         params: { activeOnly },
       });
 
       if (response.status) {
         return response as InventoryValueResponse;
       }
-      throw new Error(response.message || 'Failed to calculate inventory value');
+      throw new Error(
+        response.message || "Failed to calculate inventory value",
+      );
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to calculate inventory value');
+      throw new Error(error.message || "Failed to calculate inventory value");
     }
   }
 
@@ -480,20 +512,20 @@ class ProductAPI {
   }): Promise<ProductSalesReportResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'getProductSalesReport',
+        method: "getProductSalesReport",
         params: params || {},
       });
 
       if (response.status) {
         return response as ProductSalesReportResponse;
       }
-      throw new Error(response.message || 'Failed to generate sales report');
+      throw new Error(response.message || "Failed to generate sales report");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to generate sales report');
+      throw new Error(error.message || "Failed to generate sales report");
     }
   }
 
@@ -515,18 +547,18 @@ class ProductAPI {
       stockQty?: number;
       description?: string | null;
       isActive?: boolean;
-      categoryId?: number | null;      // new field
-      supplierId?: number | null;      // new field
+      categoryId?: number | null; // new field
+      supplierId?: number | null; // new field
     },
-    user: string = 'system'
+    user: string = "system",
   ): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'createProduct',
+        method: "createProduct",
         params: productData,
         user,
       });
@@ -534,9 +566,9 @@ class ProductAPI {
       if (response.status) {
         return response as ProductResponse;
       }
-      throw new Error(response.message || 'Failed to create product');
+      throw new Error(response.message || "Failed to create product");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to create product');
+      throw new Error(error.message || "Failed to create product");
     }
   }
 
@@ -558,18 +590,18 @@ class ProductAPI {
       reorderLevel: number;
       description: string | null;
       isActive: boolean;
-      categoryId: number | null;      // new field
-      supplierId: number | null;      // new field
+      categoryId: number | null; // new field
+      supplierId: number | null; // new field
     }>,
-    user: string = 'system'
+    user: string = "system",
   ): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'updateProduct',
+        method: "updateProduct",
         params: { id, ...updates },
         user,
       });
@@ -577,9 +609,9 @@ class ProductAPI {
       if (response.status) {
         return response as ProductResponse;
       }
-      throw new Error(response.message || 'Failed to update product');
+      throw new Error(response.message || "Failed to update product");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to update product');
+      throw new Error(error.message || "Failed to update product");
     }
   }
 
@@ -588,14 +620,14 @@ class ProductAPI {
    * @param id - Product ID
    * @param user - Optional username
    */
-  async delete(id: number, user: string = 'system'): Promise<DeleteResponse> {
+  async delete(id: number, user: string = "system"): Promise<DeleteResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'deleteProduct',
+        method: "deleteProduct",
         params: { id },
         user,
       });
@@ -603,9 +635,9 @@ class ProductAPI {
       if (response.status) {
         return response as DeleteResponse;
       }
-      throw new Error(response.message || 'Failed to delete product');
+      throw new Error(response.message || "Failed to delete product");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete product');
+      throw new Error(error.message || "Failed to delete product");
     }
   }
 
@@ -618,19 +650,19 @@ class ProductAPI {
     params: {
       productId: number;
       quantityChange: number;
-      movementType: 'sale' | 'refund' | 'adjustment';
+      movementType: "sale" | "refund" | "adjustment";
       notes?: string | null;
       saleId?: number | null;
     },
-    user: string = 'system'
+    user: string = "system",
   ): Promise<UpdateStockResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'updateProductStock',
+        method: "updateProductStock",
         params,
         user,
       });
@@ -638,9 +670,9 @@ class ProductAPI {
       if (response.status) {
         return response as UpdateStockResponse;
       }
-      throw new Error(response.message || 'Failed to update stock');
+      throw new Error(response.message || "Failed to update stock");
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to update stock');
+      throw new Error(error.message || "Failed to update stock");
     }
   }
 
@@ -657,18 +689,18 @@ class ProductAPI {
       stockQty?: number;
       description?: string | null;
       isActive?: boolean;
-      categoryId?: number | null;      // new field
-      supplierId?: number | null;      // new field
+      categoryId?: number | null; // new field
+      supplierId?: number | null; // new field
     }>,
-    user: string = 'system'
+    user: string = "system",
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'bulkCreateProducts',
+        method: "bulkCreateProducts",
         params: { products },
         user,
       });
@@ -676,9 +708,9 @@ class ProductAPI {
       if (response.status) {
         return response as BulkOperationResponse;
       }
-      throw new Error(response.message || 'Bulk create failed');
+      throw new Error(response.message || "Bulk create failed");
     } catch (error: any) {
-      throw new Error(error.message || 'Bulk create failed');
+      throw new Error(error.message || "Bulk create failed");
     }
   }
 
@@ -697,19 +729,19 @@ class ProductAPI {
         stockQty: number;
         description: string | null;
         isActive: boolean;
-        categoryId: number | null;      // new field
-        supplierId: number | null;      // new field
+        categoryId: number | null; // new field
+        supplierId: number | null; // new field
       }>;
     }>,
-    user: string = 'system'
+    user: string = "system",
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'bulkUpdateProducts',
+        method: "bulkUpdateProducts",
         params: { updates },
         user,
       });
@@ -717,9 +749,9 @@ class ProductAPI {
       if (response.status) {
         return response as BulkOperationResponse;
       }
-      throw new Error(response.message || 'Bulk update failed');
+      throw new Error(response.message || "Bulk update failed");
     } catch (error: any) {
-      throw new Error(error.message || 'Bulk update failed');
+      throw new Error(error.message || "Bulk update failed");
     }
   }
 
@@ -730,15 +762,15 @@ class ProductAPI {
    */
   async importFromCSV(
     filePath: string,
-    user: string = 'system'
+    user: string = "system",
   ): Promise<ImportCSVResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'importProductsFromCSV',
+        method: "importProductsFromCSV",
         params: { filePath },
         user,
       });
@@ -746,9 +778,9 @@ class ProductAPI {
       if (response.status) {
         return response as ImportCSVResponse;
       }
-      throw new Error(response.message || 'CSV import failed');
+      throw new Error(response.message || "CSV import failed");
     } catch (error: any) {
-      throw new Error(error.message || 'CSV import failed');
+      throw new Error(error.message || "CSV import failed");
     }
   }
 
@@ -764,19 +796,19 @@ class ProductAPI {
       search?: string;
       minPrice?: number;
       maxPrice?: number;
-      categoryId?: number;      // new filter
-      supplierId?: number;      // new filter
+      categoryId?: number; // new filter
+      supplierId?: number; // new filter
     },
     outputPath?: string,
-    user: string = 'system'
+    user: string = "system",
   ): Promise<ExportCSVResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'exportProductsToCSV',
+        method: "exportProductsToCSV",
         params: { filters, outputPath },
         user,
       });
@@ -784,9 +816,9 @@ class ProductAPI {
       if (response.status) {
         return response as ExportCSVResponse;
       }
-      throw new Error(response.message || 'CSV export failed');
+      throw new Error(response.message || "CSV export failed");
     } catch (error: any) {
-      throw new Error(error.message || 'CSV export failed');
+      throw new Error(error.message || "CSV export failed");
     }
   }
 
@@ -799,17 +831,17 @@ class ProductAPI {
     params?: {
       startDate?: string;
       endDate?: string;
-      format?: 'json' | 'csv';
+      format?: "json" | "csv";
     },
-    user: string = 'system'
+    user: string = "system",
   ): Promise<ReportResponse> {
     try {
       if (!window.backendAPI?.product) {
-        throw new Error('Electron API (product) not available');
+        throw new Error("Electron API (product) not available");
       }
 
       const response = await window.backendAPI.product({
-        method: 'generateProductReport',
+        method: "generateProductReport",
         params: params || {},
         user,
       });
@@ -817,9 +849,9 @@ class ProductAPI {
       if (response.status) {
         return response as ReportResponse;
       }
-      throw new Error(response.message || 'Report generation failed');
+      throw new Error(response.message || "Report generation failed");
     } catch (error: any) {
-      throw new Error(error.message || 'Report generation failed');
+      throw new Error(error.message || "Report generation failed");
     }
   }
 
@@ -831,7 +863,7 @@ class ProductAPI {
    * Check if the backend API is available.
    */
   async isAvailable(): Promise<boolean> {
-    return !!(window.backendAPI?.product);
+    return !!window.backendAPI?.product;
   }
 
   /**
@@ -869,7 +901,10 @@ class ProductAPI {
    * @param categoryId - Category ID
    * @param params - Additional filter parameters
    */
-  async getByCategory(categoryId: number, params?: Omit<Parameters<typeof this.getAll>[0], 'categoryId'>): Promise<ProductsResponse> {
+  async getByCategory(
+    categoryId: number,
+    params?: Omit<Parameters<typeof this.getAll>[0], "categoryId">,
+  ): Promise<ProductsResponse> {
     return this.getAll({ ...params, categoryId });
   }
 
@@ -878,7 +913,10 @@ class ProductAPI {
    * @param supplierId - Supplier ID
    * @param params - Additional filter parameters
    */
-  async getBySupplier(supplierId: number, params?: Omit<Parameters<typeof this.getAll>[0], 'supplierId'>): Promise<ProductsResponse> {
+  async getBySupplier(
+    supplierId: number,
+    params?: Omit<Parameters<typeof this.getAll>[0], "supplierId">,
+  ): Promise<ProductsResponse> {
     return this.getAll({ ...params, supplierId });
   }
 }

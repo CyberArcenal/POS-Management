@@ -30,6 +30,7 @@ module.exports = async (params) => {
     console.error("Error in searchProducts:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Search failed",
       data: null,
     };

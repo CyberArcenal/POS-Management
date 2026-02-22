@@ -252,7 +252,7 @@ class SystemConfigHandler {
       this._updateCache(result);
 
       // @ts-ignore
-      logger.info("Get system data", result);
+      // logger.info("Get system data", result);
 
       return {
         status: true,

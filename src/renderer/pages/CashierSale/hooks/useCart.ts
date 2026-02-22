@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { CartItem, Product } from '../types';
 import { dialogs } from '../../../utils/dialogs';
 
@@ -8,7 +8,7 @@ export const useCart = () => {
   const [globalTax, setGlobalTax] = useState(0);
   const [notes, setNotes] = useState('');
 
-  const addToCart = (product: Product) => {
+  const addToCart = useCallback((product: Product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
@@ -43,7 +43,7 @@ export const useCart = () => {
         ];
       }
     });
-  };
+  }, []);
 
   const updateCartQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity < 1) {

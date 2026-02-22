@@ -23,35 +23,6 @@ import NotificationLogPage from "../pages/NotificationLog";
 import SettingsPage from "../pages/Settings";
 import DeviceManagerPage from "../pages/DeviceManager";
 
-// Placeholder components
-// const ReturnsPage = () => <div>↩️ Returns & Refunds Page (placeholder)</div>;
-const CustomersListPage = () => <div>👥 Customer Directory (placeholder)</div>;
-const LoyaltyPage = () => <div>🏆 Loyalty Program (placeholder)</div>;
-// const DailySalesPage = () => <div>📅 Daily Sales (placeholder)</div>;
-// const SalesReportsPage = () => <div>📊 Sales Reports (placeholder)</div>;
-// const NotificationLogsPage = () => (
-//   <div>🔔 Notification Logs (placeholder)</div>
-// );
-
-// Inventory placeholders
-// const StockLevelsPage = () => <div>📦 Stock Levels (placeholder)</div>;
-// const ReorderPage = () => <div>🚚 Reorder & Vendors (placeholder)</div>;
-const PurchasesPage = () => <div>📝 Purchases (placeholder)</div>;
-const CategoriesPage = () => <div>🏷️ Categories (placeholder)</div>;
-
-// Reports placeholders
-// const FinancialReportsPage = () => (
-//   <div>💰 Financial Reports (placeholder)</div>
-// );
-// const InventoryReportsPage = () => (
-//   <div>📋 Inventory Reports (placeholder)</div>
-// );
-const CustomerInsightsPage = () => (
-  <div>🔍 Customer Insights (placeholder)</div>
-);
-
-// System placeholders
-const SystemSettingsPage = () => <div>⚙️ System Settings (placeholder)</div>;
 const ApplicationLogsPage = () => <div>📄 Application Logs (placeholder)</div>;
 
 const PageNotFound = () => <div> Page Not Found</div>;

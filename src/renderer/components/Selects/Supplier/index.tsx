@@ -64,10 +64,6 @@ const SupplierSelect: React.FC<SupplierSelectProps> = ({
             newSuppliers = response.data;
             totalPages = 1;
             totalItems = newSuppliers.length;
-          } else {
-            newSuppliers = response.data.items || [];
-            totalPages = response.data.totalPages || 1;
-            totalItems = response.data.total || 0;
           }
 
           setSuppliers((prev) => (reset ? newSuppliers : [...prev, ...newSuppliers]));

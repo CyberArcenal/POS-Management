@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Loader2, Barcode, RefreshCw, XCircle, X } from "lucide-react";
 import Decimal from "decimal.js";
 import { useProducts } from "./hooks/useProducts";
@@ -16,6 +16,7 @@ import CategorySelect from "../../components/Selects/Category"; // adjust path a
 import CashierHeader from "./components/CashierHeader";
 import { useSettings } from "../../contexts/SettingsContext";
 import { useBarcodeEnabled } from "../../utils/posUtils";
+import productAPI from "../../api/product";
 
 const Cashier: React.FC = () => {
   const {
@@ -57,7 +58,7 @@ const Cashier: React.FC = () => {
   } = useLoyaltyMethod(selectedCustomer?.id);
 
   const { isProcessing, processCheckout } = useCheckout();
-
+  const lastScannedRef = useRef<{ barcode: string; time: number } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<
     "cash" | "card" | "wallet"
   >("cash");
@@ -134,14 +135,116 @@ const Cashier: React.FC = () => {
     setLoyaltyPointsToRedeem(0);
     loadProducts();
   };
+  const handleBarcodeScanned = useCallback(
+    async (barcode: string) => {
+      if (!isBarcodeEnabled) return;
+
+      // Ignore if same barcode within 500ms (adjust as needed)
+      if (
+        lastScannedRef.current?.barcode === barcode &&
+        Date.now() - lastScannedRef.current.time < 500
+      ) {
+        console.log("Ignoring duplicate barcode scan");
+        return;
+      }
+      lastScannedRef.current = { barcode, time: Date.now() };
+
+      setScannedBarcode(barcode);
+      try {
+        const response = await productAPI.getByBarcode(barcode);
+        if (response.status && response.data) {
+          addToCart(response.data);
+        } else {
+          setSearchTerm(barcode);
+        }
+      } catch (error) {
+        console.error("Barcode lookup failed:", error);
+        setSearchTerm(barcode);
+      }
+    },
+    [isBarcodeEnabled, addToCart, setSearchTerm],
+  );
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Huwag i-trigger kung nasa input/textarea/select ang focus
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      // Ctrl+D = Global Discount
+      if (e.ctrlKey && e.key === "d") {
+        e.preventDefault();
+        const discountStr = window.prompt(
+          "Enter global discount percentage:",
+          String(globalDiscount),
+        );
+        if (discountStr !== null) {
+          const discount = parseFloat(discountStr);
+          if (!isNaN(discount) && discount >= 0 && discount <= 100) {
+            setGlobalDiscount(discount);
+          } else {
+            alert("Invalid discount. Must be 0–100.");
+          }
+        }
+      }
+      
+
+      // Ctrl+Enter = Checkout
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        handleCheckoutClick();
+      }
+
+      // Ctrl+Shift+N = Multiply quantities
+      if (e.ctrlKey && e.shiftKey && e.key === "N") {
+        e.preventDefault();
+        const factorStr = window.prompt(
+          "Enter multiplier factor (e.g., 2 to double):",
+          "2",
+        );
+        if (factorStr !== null) {
+          const factor = parseFloat(factorStr);
+          if (!isNaN(factor) && factor > 0) {
+            // I-multiply ang bawat item sa cart, check stock limit
+            cart.forEach((item) => {
+              const newQty = Math.floor(item.cartQuantity * factor);
+              if (newQty > item.stockQty) {
+                alert(
+                  `Cannot multiply ${item.name}: only ${item.stockQty} available.`,
+                );
+              } else {
+                updateCartQuantity(item.id, newQty);
+              }
+            });
+          } else {
+            alert("Invalid factor. Must be a positive number.");
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    globalDiscount,
+    setGlobalDiscount,
+    handleCheckoutClick,
+    cart,
+    updateCartQuantity,
+  ]);
 
   // Barcode scanner logic (only when barcodeMode is true)
   useEffect(() => {
     if (!barcodeMode) return;
-    if (!isBarcodeEnabled) return;
 
     let scanBuffer = "";
-    let scanTimeout: ReturnType<typeof setTimeout>;
+    let scanTimeout: number;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -157,7 +260,6 @@ const Cashier: React.FC = () => {
           window.backendAPI
             .barcode({ method: "emit", params: { barcode: scanBuffer } })
             .catch(console.error);
-          handleBarcodeScanned(scanBuffer);
           scanBuffer = "";
         }
         return;
@@ -178,26 +280,17 @@ const Cashier: React.FC = () => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
-    const handleBarcodeScanned = (barcode: string) => {
-      if (!isBarcodeEnabled) return;
-      const product = filteredProducts.find((p) => p.sku === barcode);
-      if (product) {
-        addToCart(product);
-      } else {
-        setSearchTerm(barcode);
-      }
-    };
-
     window.backendAPI.onBarcodeScanned(handleBarcodeScanned);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       clearTimeout(scanTimeout);
-      // Ideally remove the listener, but if the API doesn't provide an off method,
-      // we assume it's handled globally. In a real app you'd want to unregister.
+      if (window.backendAPI.offBarcodeScanned) {
+        window.backendAPI.offBarcodeScanned(handleBarcodeScanned); // ← gagana na ito
+      }
     };
-  }, [barcodeMode, filteredProducts, addToCart, setSearchTerm]);
+  }, [barcodeMode, handleBarcodeScanned]);
+
   return (
     <div className="h-full flex flex-col bg-[var(--background-color)]">
       {/* Header with search, category filter, barcode display, and actions */}

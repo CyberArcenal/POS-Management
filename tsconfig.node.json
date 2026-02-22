@@ -8,11 +8,28 @@
     "types": ["node"],
     "skipLibCheck": true,
     "moduleResolution": "node",
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
-    "useDefineForClassFields": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "sourceMap": true
   },
-  "include": ["src/main", "src/channels", "src/services/activation.js"]
+  "include": [
+    "src/main/**/*",
+    "src/entities/**/*",
+    "src/migrations/**/*",
+    "src/handlers/**/*",
+    "src/services/**/*",
+    "src/subscribers/**/*",
+    "src/utils/**/*",
+    "src/middlewares/**/*",
+    "src/StateTransitionServices/**/*",
+    "src/channels/**/*",
+    "src/drivers/**/*",
+    "src/scheduler/**/*",
+    "src/seeders/**/*"
+  ],
+  "exclude": ["src/renderer", "node_modules", "dist"]
 }

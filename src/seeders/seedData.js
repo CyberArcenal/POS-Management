@@ -1,5 +1,5 @@
 // seedData.js
-// POS Management System Seeder (Updated with new fields)
+// POS Management System Seeder (Updated with all entity fields)
 // Run with: npm run seed [options]
 
 const { DataSource } = require("typeorm");
@@ -70,7 +70,6 @@ const random = {
     usedSet.add(sku);
     return sku;
   },
-  // New: generate a unique 13‑digit barcode (EAN‑13 like)
   barcode: (usedSet) => {
     let barcode;
     do {
@@ -80,6 +79,7 @@ const random = {
     return barcode;
   },
   phone: () => `+63${random.int(900000000, 999999999)}`,
+  email: (prefix) => `${prefix}${random.int(1, 999)}@example.com`,
   name: () => {
     const first = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Maria', 'James', 'Patricia', 'Robert', 'Jennifer'];
     const last = ['Smith', 'Doe', 'Johnson', 'Brown', 'Davis', 'Garcia', 'Rodriguez', 'Wilson', 'Martinez', 'Taylor'];
@@ -91,7 +91,6 @@ const random = {
     return `${random.element(adjectives)} ${random.element(nouns)}`;
   },
   description: () => random.boolean(0.3) ? `High quality ${random.productName().toLowerCase()} for everyday use.` : null,
-  // Generate a random voucher code
   voucherCode: () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     return `VOUCH-${Array.from({ length: 6 }, () => chars[random.int(0, chars.length - 1)]).join('')}`;
@@ -105,8 +104,8 @@ class POSSeeder {
     this.dataSource = null;
     this.queryRunner = null;
     this.usedSkus = new Set();
-    this.usedBarcodes = new Set(); // for product barcodes
-    this.productPriceCache = new Map(); // product id -> price
+    this.usedBarcodes = new Set();
+    this.productPriceCache = new Map();
   }
 
   async init() {
@@ -126,7 +125,6 @@ class POSSeeder {
     console.log('🧹 Clearing old data...');
     await this.queryRunner.query('PRAGMA foreign_keys = OFF;');
     try {
-      // Order respects foreign key constraints (child tables first)
       await this.queryRunner.clearTable('return_refund_items');
       await this.queryRunner.clearTable('return_refunds');
       await this.queryRunner.clearTable('purchase_items');
@@ -161,7 +159,6 @@ class POSSeeder {
         updatedAt: null,
       });
     }
-    // If more categories needed, generate random ones
     while (categories.length < this.config.categoryCount) {
       categories.push({
         name: `Category ${categories.length + 1}`,
@@ -184,7 +181,9 @@ class POSSeeder {
       suppliers.push({
         name: `Supplier ${random.name()}`,
         contactInfo: random.boolean(0.8) ? random.phone() : null,
-        address: random.boolean(0.6) ? `${random.int(1,999)} Main St` : null,
+        email: random.email('supplier'),
+        phone: random.boolean(0.8) ? random.phone() : null,
+        address: random.boolean(0.6) ? `${random.int(1, 999)} Main St` : null,
         isActive: random.boolean(0.9),
         createdAt: random.pastDate(),
         updatedAt: random.boolean(0.2) ? random.pastDate() : null,
@@ -204,7 +203,7 @@ class POSSeeder {
       const stockQty = random.int(0, 100);
       products.push({
         sku: random.sku(this.usedSkus),
-        barcode: random.barcode(this.usedBarcodes), // NEW field
+        barcode: random.barcode(this.usedBarcodes),
         name: random.productName(),
         description: random.description(),
         price: price,
@@ -228,11 +227,17 @@ class POSSeeder {
   async seedCustomers() {
     console.log(`👥 Seeding ${this.config.customerCount} customers...`);
     const customers = [];
+    const statuses = ['regular', 'vip', 'elite'];
     for (let i = 0; i < this.config.customerCount; i++) {
+      const pointsBalance = random.int(0, 500);
       customers.push({
         name: random.name(),
         contactInfo: random.boolean(0.7) ? random.phone() : null,
-        loyaltyPointsBalance: random.int(0, 500),
+        email: random.email('customer'),
+        phone: random.boolean(0.7) ? random.phone() : null,
+        loyaltyPointsBalance: pointsBalance,
+        lifetimePointsEarned: pointsBalance + random.int(0, 200),
+        status: random.element(statuses),
         createdAt: random.pastDate(),
         updatedAt: random.boolean(0.2) ? random.pastDate() : null,
       });
@@ -263,7 +268,6 @@ class POSSeeder {
       const itemCount = random.int(1, 5);
       let totalAmount = 0;
 
-      // New sale fields with random values
       const usedLoyalty = random.boolean(0.3);
       const loyaltyRedeemed = usedLoyalty ? random.int(10, 200) : 0;
       const usedDiscount = random.boolean(0.4);
@@ -282,6 +286,7 @@ class POSSeeder {
         totalDiscount,
         usedVoucher,
         voucherCode,
+        pointsEarn: 0, // will be updated after items
         notes: random.boolean(0.2) ? 'Sample note' : null,
         createdAt: saleDate,
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
@@ -314,6 +319,7 @@ class POSSeeder {
       }
 
       savedSale.totalAmount = totalAmount;
+      savedSale.pointsEarn = totalAmount; // set pointsEarn equal to totalAmount (or any rule)
       await saleRepo.save(savedSale);
     }
 
@@ -332,14 +338,13 @@ class POSSeeder {
 
     for (let i = 0; i < this.config.purchaseCount; i++) {
       const supplier = random.element(suppliers);
-      // Include 'approved' in possible statuses (added to match entity enum)
       const status = random.element(['pending', 'approved', 'completed', 'cancelled']);
       const orderDate = random.pastDate();
       const itemCount = random.int(1, 5);
       let totalAmount = 0;
 
       const purchase = {
-        referenceNo: `PO-${Date.now()}-${i}-${random.int(1000,9999)}`,
+        referenceNo: `PO-${Date.now()}-${i}-${random.int(1000, 9999)}`,
         orderDate: orderDate,
         status: status,
         totalAmount: 0,
@@ -395,7 +400,7 @@ class POSSeeder {
       let totalAmount = 0;
 
       const returnRefund = {
-        referenceNo: `RET-${Date.now()}-${i}-${random.int(1000,9999)}`,
+        referenceNo: `RET-${Date.now()}-${i}-${random.int(1000, 9999)}`,
         reason: random.boolean(0.7) ? 'Customer returned item' : null,
         refundMethod: refundMethod,
         totalAmount: 0,
@@ -439,11 +444,9 @@ class POSSeeder {
   async seedInventoryMovements(products, sales, saleItems) {
     console.log(`📦 Seeding ${this.config.inventoryMovementCount} inventory movements...`);
     const movementRepo = this.dataSource.getRepository(InventoryMovement);
-    // Include 'purchase' in movement types (added to match entity enum)
     const movementTypes = ['sale', 'refund', 'adjustment', 'purchase'];
     const movements = [];
 
-    // Create movements from sale items (sale type)
     for (const item of saleItems) {
       if (random.boolean(0.8)) {
         movements.push({
@@ -458,7 +461,6 @@ class POSSeeder {
       }
     }
 
-    // Additional random movements, now including 'purchase'
     while (movements.length < this.config.inventoryMovementCount) {
       const product = random.element(products);
       const sale = random.boolean(0.3) ? random.element(sales) : null;
@@ -466,8 +468,8 @@ class POSSeeder {
       let qtyChange;
       if (movementType === 'sale') qtyChange = -random.int(1, 10);
       else if (movementType === 'refund') qtyChange = random.int(1, 5);
-      else if (movementType === 'purchase') qtyChange = random.int(10, 100); // positive for purchase
-      else qtyChange = random.int(-20, 20); // adjustment
+      else if (movementType === 'purchase') qtyChange = random.int(10, 100);
+      else qtyChange = random.int(-20, 20);
 
       movements.push({
         movementType: movementType,
@@ -499,12 +501,10 @@ class POSSeeder {
       const sale = random.boolean(0.4) ? random.element(sales) : null;
       const pointsChange = random.boolean(0.7) ? random.int(10, 200) : -random.int(5, 50);
       const timestamp = sale ? sale.timestamp : random.pastDate();
-
-      // Set transactionType based on pointsChange sign (earn/redeem)
-      const transactionType = pointsChange > 0 ? 'earn' : 'redeem';
+      const transactionType = pointsChange > 0 ? 'earn' : 'redeem'; // could add 'refund' occasionally if needed
 
       transactions.push({
-        transactionType, // NEW field
+        transactionType,
         pointsChange: pointsChange,
         timestamp: timestamp,
         notes: pointsChange > 0 ? 'Earned from purchase' : 'Redeemed reward',
@@ -569,13 +569,13 @@ class POSSeeder {
       const sentAt = status === 'sent' ? random.pastDate() : null;
       const lastErrorAt = status === 'failed' ? random.pastDate() : null;
       logs.push({
-        recipient_email: `user${random.int(1,100)}@example.com`,
+        recipient_email: random.email('user'),
         subject: random.boolean(0.7) ? 'Order Confirmation' : null,
-        payload: random.boolean(0.5) ? JSON.stringify({ orderId: random.int(1000,9999) }) : null,
+        payload: random.boolean(0.5) ? JSON.stringify({ orderId: random.int(1000, 9999) }) : null,
         status: status,
         error_message: status === 'failed' ? 'SMTP error' : null,
-        retry_count: status === 'failed' ? random.int(1,3) : 0,
-        resend_count: status === 'resend' ? random.int(1,2) : 0,
+        retry_count: status === 'failed' ? random.int(1, 3) : 0,
+        resend_count: status === 'resend' ? random.int(1, 2) : 0,
         sent_at: sentAt,
         last_error_at: lastErrorAt,
         created_at: random.pastDate(),
@@ -602,7 +602,6 @@ class POSSeeder {
         return;
       }
 
-      // Seed data in correct order respecting foreign keys
       let categories = [];
       let suppliers = [];
       let products = [];

@@ -337,7 +337,7 @@ class ProductService {
       // @ts-ignore
       if (options.search) {
         queryBuilder.andWhere(
-          "(product.name LIKE :search OR product.sku LIKE :search)",
+          "(product.name LIKE :search OR product.sku LIKE :search OR product.barcode LIKE :search)",
           // @ts-ignore
           { search: `%${options.search}%` },
         );

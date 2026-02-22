@@ -88,6 +88,7 @@ declare global {
         params?: any;
       }) => Promise<{ status: boolean; message?: string }>;
       onBarcodeScanned: (callback: (barcode: string) => void) => void;
+      offBarcodeScanned: (callback: (barcode: string) => void) => void;
 
       // 🛠️ Logging
       log: {

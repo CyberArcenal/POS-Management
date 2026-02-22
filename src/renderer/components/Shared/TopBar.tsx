@@ -338,11 +338,6 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
             </span>
           )}
         </button>
-
-        {/* User avatar placeholder */}
-        <button className="p-2 rounded-lg hover:bg-[var(--topbar-hover)]/20 text-[var(--sidebar-text)]">
-          <User className="w-5 h-5" />
-        </button>
       </div>
       {/* Notification Drawer */}
       <NotificationDrawer

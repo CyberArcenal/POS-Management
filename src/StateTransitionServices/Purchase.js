@@ -34,8 +34,6 @@ class PurchaseStateTransitionService {
    */
 
   // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   async onApprove(purchase, user = "system") {
     logger.info(`[Transition] Approving purchase #${purchase.id}`);
     const notifySupplierWithEmail =
@@ -98,6 +96,7 @@ ${company}`;
       } catch (error) {
         logger.error(
           `[Transition] Failed to queue email for purchase #${purchase.id}`,
+
           // @ts-ignore
           error,
         );
@@ -115,6 +114,7 @@ ${company}`;
       } catch (error) {
         logger.error(
           `[Transition] SMS failed for supplier ${supplier.phone}`,
+
           // @ts-ignore
           error,
         );
@@ -134,11 +134,13 @@ ${company}`;
    */
   async onComplete(purchase, user = "system") {
     const { saveDb, updateDb } = require("../utils/dbUtils/dbActions");
+
     // @ts-ignore
     logger.info(`[Transition] Completing purchase #${purchase.id}`);
 
     // Ensure we have full purchase with supplier and items
     let fullPurchase = purchase;
+
     // @ts-ignore
     if (!fullPurchase.supplier || !fullPurchase.purchaseItems) {
       fullPurchase = await this.purchaseRepo.findOne({
@@ -157,6 +159,7 @@ ${company}`;
     }
 
     // --- Stock updates and inventory movements (existing code) ---
+
     // @ts-ignore
     for (const item of fullPurchase.purchaseItems) {
       const product = item.product;
@@ -170,6 +173,7 @@ ${company}`;
       const movement = this.movementRepo.create({
         movementType: "purchase",
         qtyChange: item.quantity,
+
         // @ts-ignore
         notes: `Purchase #${fullPurchase.id} - ${fullPurchase.referenceNo}`,
         product,
@@ -193,6 +197,7 @@ ${company}`;
     }
 
     // --- Notify supplier that the purchase has been received/completed ---
+
     // @ts-ignore
     if (fullPurchase.supplier) {
       // @ts-ignore
@@ -202,20 +207,22 @@ ${company}`;
       const notifySms = await getNotifySupplierOnCompleteWithSms();
 
       // Build email content
+
       // @ts-ignore
       const subject = `Purchase Order Received – ${fullPurchase.referenceNo}`;
+
       // @ts-ignore
       const itemsList = fullPurchase.purchaseItems
+
         // @ts-ignore
         .map((item) => `${item.product.name} – Qty: ${item.quantity}`)
         .join("\n");
 
       const textBody = `Dear ${supplier.name},
 
-We have received the items for purchase order #${
-        // @ts-ignore
-        fullPurchase.referenceNo
-      }.
+We have received the items for purchase order #${fullPurchase.
+// @ts-ignore
+referenceNo}.
 
 Items received:
 ${itemsList}
@@ -246,6 +253,7 @@ ${company}`;
           logger.error(
             // @ts-ignore
             `[Transition] Failed to queue completion email for purchase #${fullPurchase.id}`,
+
             // @ts-ignore
             error,
           );
@@ -259,12 +267,14 @@ ${company}`;
           try {
             await smsSender.send(
               supplier.phone,
+
               // @ts-ignore
               `Purchase #${fullPurchase.referenceNo} received. Please check your email for details.`,
             );
           } catch (error) {
             logger.error(
               `[Transition] Completion SMS failed for supplier ${supplier.phone}`,
+
               // @ts-ignore
               error,
             );
@@ -298,6 +308,7 @@ ${company}`;
 
     // Ensure we have full purchase with supplier and items
     let fullPurchase = purchase;
+
     // @ts-ignore
     if (!fullPurchase.supplier || !fullPurchase.purchaseItems) {
       fullPurchase = await this.purchaseRepo.findOne({
@@ -330,6 +341,7 @@ ${company}`;
         const movement = this.movementRepo.create({
           movementType: "adjustment",
           qtyChange: -item.quantity,
+
           // @ts-ignore
           notes: `Cancelled purchase #${fullPurchase.id} - reversal of completed purchase`,
           product,
@@ -356,6 +368,7 @@ ${company}`;
     if (oldStatus === "pending") return;
 
     // --- Notify supplier about the cancellation (especially if it was approved/completed) ---
+
     // @ts-ignore
     if (fullPurchase.supplier) {
       // @ts-ignore
@@ -365,10 +378,13 @@ ${company}`;
       const notifySms = await getNotifySupplierOnCancelWithSms();
 
       // Build email content
+
       // @ts-ignore
       const subject = `Purchase Order Cancelled – ${fullPurchase.referenceNo}`;
+
       // @ts-ignore
       const itemsList = fullPurchase.purchaseItems
+
         // @ts-ignore
         .map((item) => `${item.product.name} – Qty: ${item.quantity}`)
         .join("\n");
@@ -411,6 +427,7 @@ ${company}`;
           logger.error(
             // @ts-ignore
             `[Transition] Failed to queue cancellation email for purchase #${fullPurchase.id}`,
+
             // @ts-ignore
             error,
           );
@@ -424,12 +441,14 @@ ${company}`;
           try {
             await smsSender.send(
               supplier.phone,
+
               // @ts-ignore
               `Purchase #${fullPurchase.referenceNo} has been cancelled. Please check your email for details.`,
             );
           } catch (error) {
             logger.error(
               `[Transition] Cancellation SMS failed for supplier ${supplier.phone}`,
+
               // @ts-ignore
               error,
             );

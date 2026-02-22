@@ -7,15 +7,15 @@
  * @class
  * @implements {MigrationInterface}
  */
-module.exports = class InitSchema1771654836574 {
-    name = 'InitSchema1771654836574'
+module.exports = class InitSchema1771738649890 {
+    name = 'InitSchema1771738649890'
 
     /**
      * @param {QueryRunner} queryRunner
      */
     async up(queryRunner) {
         await queryRunner.query(`CREATE TABLE "audit_logs" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "action" varchar NOT NULL, "entity" varchar NOT NULL, "entityId" integer, "timestamp" datetime NOT NULL DEFAULT (datetime('now')), "user" varchar)`);
-        await queryRunner.query(`CREATE TABLE "customers" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar NOT NULL, "contactInfo" varchar, "loyaltyPointsBalance" integer NOT NULL DEFAULT (0), "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime)`);
+        await queryRunner.query(`CREATE TABLE "customers" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar NOT NULL, "contactInfo" varchar, "email" varchar, "phone" varchar, "loyaltyPointsBalance" integer NOT NULL DEFAULT (0), "lifetimePointsEarned" integer NOT NULL DEFAULT (0), "status" varchar CHECK( "status" IN ('regular','vip','elite') ) NOT NULL DEFAULT ('regular'), "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime)`);
         await queryRunner.query(`CREATE TABLE "inventory_movements" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "movementType" varchar CHECK( "movementType" IN ('sale','refund','adjustment','purchase') ) NOT NULL DEFAULT ('sale'), "qtyChange" integer NOT NULL, "timestamp" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "notes" varchar, "updatedAt" datetime, "productId" integer, "saleId" integer)`);
         await queryRunner.query(`CREATE TABLE "license_cache" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "license_key" text, "license_type" text NOT NULL, "status" text NOT NULL, "expires_at" datetime, "activated_at" datetime, "days_remaining" integer, "features" text DEFAULT ('[]'), "limits" text DEFAULT ('{}'), "usage" text DEFAULT ('{}'), "max_devices" integer NOT NULL DEFAULT (1), "current_devices" integer NOT NULL DEFAULT (0), "last_sync" datetime, "next_sync_due" datetime, "sync_interval_days" integer NOT NULL DEFAULT (30), "device_id" text, "activated_on_device" datetime, "server_response" text, "activation_id" text, "grace_period_days" integer NOT NULL DEFAULT (7), "server_timestamp" datetime, "offline_activation" boolean NOT NULL DEFAULT (0), "trial_consumed" boolean NOT NULL DEFAULT (0), "last_deactivated" datetime, "created_at" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updated_at" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), CONSTRAINT "UQ_e5240a5d083ab00fd7210838f5d" UNIQUE ("license_key"))`);
         await queryRunner.query(`CREATE INDEX "idx_license_key" ON "license_cache" ("license_key") `);
@@ -38,6 +38,9 @@ module.exports = class InitSchema1771654836574 {
         await queryRunner.query(`CREATE TABLE "return_refunds" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "referenceNo" varchar NOT NULL, "reason" varchar, "refundMethod" varchar NOT NULL, "totalAmount" decimal NOT NULL DEFAULT (0), "status" varchar CHECK( "status" IN ('processed','pending','cancelled') ) NOT NULL DEFAULT ('processed'), "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime, "saleId" integer, "customerId" integer, CONSTRAINT "UQ_c6ae8a21cd5e6958819540e7b46" UNIQUE ("referenceNo"))`);
         await queryRunner.query(`CREATE TABLE "return_refund_items" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "quantity" integer NOT NULL, "unitPrice" decimal NOT NULL, "subtotal" decimal NOT NULL, "reason" varchar, "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "returnRefundId" integer, "productId" integer)`);
         await queryRunner.query(`CREATE TABLE "suppliers" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar NOT NULL, "contactInfo" varchar, "email" varchar, "phone" varchar, "address" varchar, "isActive" boolean NOT NULL DEFAULT (1), "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime)`);
+        await queryRunner.query(`CREATE TABLE "notifications" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "userId" integer NOT NULL, "title" varchar(255) NOT NULL, "message" text NOT NULL, "type" varchar CHECK( "type" IN ('info','success','warning','error','purchase','sale') ) NOT NULL DEFAULT ('info'), "isRead" boolean NOT NULL DEFAULT (0), "metadata" text, "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime DEFAULT (datetime('now')))`);
+        await queryRunner.query(`CREATE INDEX "idx_notifications_user_read" ON "notifications" ("userId", "isRead") `);
+        await queryRunner.query(`CREATE INDEX "idx_notifications_created" ON "notifications" ("createdAt") `);
         await queryRunner.query(`CREATE TABLE "temporary_inventory_movements" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "movementType" varchar CHECK( "movementType" IN ('sale','refund','adjustment','purchase') ) NOT NULL DEFAULT ('sale'), "qtyChange" integer NOT NULL, "timestamp" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "notes" varchar, "updatedAt" datetime, "productId" integer, "saleId" integer, CONSTRAINT "FK_05715a7ea47e49653f164c0dd8c" FOREIGN KEY ("productId") REFERENCES "products" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION, CONSTRAINT "FK_6f1f9c640e9a68b047482881eba" FOREIGN KEY ("saleId") REFERENCES "sales" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION)`);
         await queryRunner.query(`INSERT INTO "temporary_inventory_movements"("id", "movementType", "qtyChange", "timestamp", "notes", "updatedAt", "productId", "saleId") SELECT "id", "movementType", "qtyChange", "timestamp", "notes", "updatedAt", "productId", "saleId" FROM "inventory_movements"`);
         await queryRunner.query(`DROP TABLE "inventory_movements"`);
@@ -116,6 +119,9 @@ module.exports = class InitSchema1771654836574 {
         await queryRunner.query(`CREATE TABLE "inventory_movements" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "movementType" varchar CHECK( "movementType" IN ('sale','refund','adjustment','purchase') ) NOT NULL DEFAULT ('sale'), "qtyChange" integer NOT NULL, "timestamp" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "notes" varchar, "updatedAt" datetime, "productId" integer, "saleId" integer)`);
         await queryRunner.query(`INSERT INTO "inventory_movements"("id", "movementType", "qtyChange", "timestamp", "notes", "updatedAt", "productId", "saleId") SELECT "id", "movementType", "qtyChange", "timestamp", "notes", "updatedAt", "productId", "saleId" FROM "temporary_inventory_movements"`);
         await queryRunner.query(`DROP TABLE "temporary_inventory_movements"`);
+        await queryRunner.query(`DROP INDEX "idx_notifications_created"`);
+        await queryRunner.query(`DROP INDEX "idx_notifications_user_read"`);
+        await queryRunner.query(`DROP TABLE "notifications"`);
         await queryRunner.query(`DROP TABLE "suppliers"`);
         await queryRunner.query(`DROP TABLE "return_refund_items"`);
         await queryRunner.query(`DROP TABLE "return_refunds"`);
