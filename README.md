@@ -6,6 +6,8 @@ A modern, feature‑rich Point of Sale (POS) management system built with **Elec
 Here are sample displays of the system
 
 ![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/1.png?raw=true)
+![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/1.png?raw=true)
+![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/1.png?raw=true)
 
 ## 🚀 Features
 
