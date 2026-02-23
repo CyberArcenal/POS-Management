@@ -10,15 +10,15 @@ const Category = new EntitySchema({
     description: { type: String, nullable: true },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: () => "CURRENT_TIMESTAMP" },
-    updatedAt: { type: Date, nullable: true }
+    updatedAt: { type: Date, nullable: true },
   },
   relations: {
     products: {
       target: "Product",
       type: "one-to-many",
-      inverseSide: "category"
-    }
-  }
+      inverseSide: "category",
+    },
+  },
 });
 
 module.exports = Category;
