@@ -1,11 +1,11 @@
 {
-  "name": "pos-management",
+  "name": "posify",
   "private": true,
-  "version": "0.0.0-beta",
+  "version": "0.0.1-beta",
   "main": "src/main/index.js",
   "build": {
-    "appId": "com.CyberArcenal.posmanagement.app",
-    "productName": "POS Management",
+    "appId": "com.CyberArcenal.posify.app",
+    "productName": "POSify",
     "directories": {
       "output": "release"
     },
@@ -23,7 +23,7 @@
       {
         "provider": "github",
         "owner": "CyberArcenal",
-        "repo": "POS-Management"
+        "repo": "POSify"
       }
     ]
   },

@@ -1,13 +1,13 @@
-# POS Management System
+# POSify (POS Management System)
 
 A modern, feature‑rich Point of Sale (POS) management system built with **Electron, React, TypeScript, and SQLite**. This desktop application provides tools for retail operations, inventory tracking, sales processing, and customer relationship management.
 
 ## 📸 Screenshots
 Here are sample displays of the system
 
-![Screenshot 1](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/1.png?raw=true)
-![Screenshot 2](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/2.png?raw=true)
-![Screenshot 3](https://github.com/CyberArcenal/POS-Management/blob/main/screenshots/3.png?raw=true)
+![Screenshot 1](https://github.com/CyberArcenal/POSify/blob/main/screenshots/1.png?raw=true)
+![Screenshot 2](https://github.com/CyberArcenal/POSify/blob/main/screenshots/2.png?raw=true)
+![Screenshot 3](https://github.com/CyberArcenal/POSify/blob/main/screenshots/3.png?raw=true)
 
 ## 🚀 Features
 
@@ -45,7 +45,7 @@ Here are sample displays of the system
 
 ## 📁 Project Structure
 ```
-pos-management/
+POSify/
 ├── src/
 │   ├── main/           # Electron main process
 │   │   ├── db/         # Database config
@@ -66,8 +66,8 @@ pos-management/
 
 1. Clone repo  
    ```bash
-   git clone https://github.com/CyberArcenal/POS-Management.git
-   cd POS-Management
+   git clone https://github.com/CyberArcenal/POSify.git
+   cd POSify
    ```
 2. Install dependencies  
    ```bash

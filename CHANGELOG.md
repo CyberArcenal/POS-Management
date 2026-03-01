@@ -1,3 +1,13 @@
+
+# 📑 Changelog – POS Management  
+**Version:** v0.0.1-beta  
+**Date:** March 1, 2026  
+
+### Changed  
+- Renamed app from working title to **POSify** for consistent branding across GitHub and Microsoft Store.  
+
+---
+
 # 📑 Changelog – POS Management  
 **Version:** v0.0.0-beta  
 **Date:** February 22, 2026  
