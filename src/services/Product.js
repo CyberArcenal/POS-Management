@@ -61,7 +61,7 @@ class ProductService {
 
       const {
         // @ts-ignore
-        sku,
+        sku = generateSKU("PRD"),
         // @ts-ignore
         name,
         // @ts-ignore
@@ -76,6 +76,8 @@ class ProductService {
         categoryId,
         // @ts-ignore
         supplierId,
+        // @ts-ignore
+        barcode,
       } = productData;
 
       // Check SKU uniqueness
@@ -83,6 +85,12 @@ class ProductService {
       const existing = await productRepo.findOne({ where: { sku } });
       if (existing) {
         throw new Error(`Product with SKU "${sku}" already exists`);
+      }
+
+      // @ts-ignore
+      const existing_barcode = await productRepo.findOne({ where: { barcode } });
+      if (existing_barcode) {
+        throw new Error(`Product with barcode "${barcode}" already exists`);
       }
 
       // I-validate ang category at supplier kung provided
@@ -105,6 +113,7 @@ class ProductService {
       const product = productRepo.create({
         sku,
         name,
+        barcode,
         description,
         price,
         stockQty,
@@ -600,6 +609,14 @@ class ProductService {
     }
   }
 }
+
+
+function generateSKU(prefix = "PRD") {
+  const timestamp = Date.now().toString(36); // base36 para mas maikli
+  const random = Math.floor(Math.random() * 999).toString().padStart(3, "0");
+  return `${prefix}-${timestamp}-${random}`;
+}
+
 
 // Singleton instance
 const productService = new ProductService();

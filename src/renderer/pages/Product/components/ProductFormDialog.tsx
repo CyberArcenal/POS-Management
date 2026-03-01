@@ -58,7 +58,7 @@ export const ProductFormDialog: React.FC<ProductFormDialogProps> = ({
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
-    if (!formData.sku.trim()) newErrors.sku = "SKU is required";
+    // if (!formData?.sku?.trim()) newErrors.sku = "SKU is required";
     if (!formData.name.trim()) newErrors.name = "Product name is required";
     if (formData.price <= 0) newErrors.price = "Price must be greater than 0";
     setErrors(newErrors);

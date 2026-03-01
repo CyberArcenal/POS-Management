@@ -540,9 +540,9 @@ class ProductAPI {
    */
   async create(
     productData: {
-      sku: string;
+      sku?: string;
       name: string;
-      barcode: string;
+      barcode?: string;
       price: number;
       stockQty?: number;
       description?: string | null;

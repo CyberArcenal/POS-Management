@@ -66,6 +66,7 @@ module.exports = async (params, queryRunner) => {
     console.error("Error in createProduct:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to create product",
       data: null,
     };

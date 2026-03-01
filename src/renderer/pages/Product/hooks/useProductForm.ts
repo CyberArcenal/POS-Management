@@ -2,8 +2,8 @@ import { useState } from "react";
 import { type Product } from "../../../api/product";
 
 export interface ProductFormData {
-  barcode: string;
-  sku: string;
+  barcode?: string;
+  sku?: string;
   name: string;
   price: number;
   stockQty?: number;

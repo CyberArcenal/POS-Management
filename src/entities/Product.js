@@ -8,7 +8,7 @@ const Product = new EntitySchema({
     id: { type: Number, primary: true, generated: true },
     sku: { type: String },
     name: { type: String },
-    barcode: { type: "varchar", unique: true },
+    barcode: { type: "varchar", unique: true, nullable: true },
     description: { type: String, nullable: true },
     price: { type: "decimal" },
     stockQty: { type: Number, default: 0 },

@@ -1,7 +1,7 @@
 {
   "name": "tillify",
   "private": true,
-  "version": "0.0.1-beta",
+  "version": "0.0.2-beta",
   "main": "src/main/index.js",
   "build": {
     "appId": "com.CyberArcenal.tillify.app",
