@@ -14,10 +14,15 @@
       "target": "nsis"
     },
     "mac": {
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "target": "dmg"
     },
     "linux": {
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "publish": [
       {
@@ -40,6 +45,9 @@
     "migration:revert": "npx typeorm migration:revert -d src/main/db/datasource.js",
     "dev": "cross-env NODE_ENV=development concurrently \"vite\" \"tsc -w -p tsconfig.main.json\" \"electron ./src/main/index.js\"",
     "build": "vite build && electron-builder",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:mac": "vite build && electron-builder --mac",
+    "dist:linux": "vite build && electron-builder --linux",
     "seed": "node src/seeders/seedData.js",
     "seed:reset": "ts-node src/seeders/seedData.js --reset",
     "postinstall": "electron-rebuild",
