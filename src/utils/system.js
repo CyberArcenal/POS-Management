@@ -190,7 +190,7 @@ async function companyName() {
     SettingType.GENERAL,
 
     // @ts-ignore
-    "POS Management",
+    "Tillify",
   );
 }
 
@@ -691,7 +691,6 @@ async function notifyCustomerOnReturnCancelledWithSms() {
   );
 }
 
-
 // Cash drawer connection type: 'printer' or 'usb' (or 'serial')
 async function cashDrawerConnectionType() {
   // @ts-ignore
@@ -705,14 +704,17 @@ async function cashDrawerDevicePath() {
   return getValue("cash_drawer_device_path", SettingType.CASHIER, "");
 }
 
-
 // Sa system.js (kung gusto mo)
 async function autoUpdateStockOnReturnProcessed() {
   return getBool("auto_update_stock_on_return", SettingType.INVENTORY, true);
 }
 
 async function autoReverseStockOnReturnCancel() {
-  return getBool("auto_reverse_stock_on_return_cancel", SettingType.INVENTORY, true);
+  return getBool(
+    "auto_reverse_stock_on_return_cancel",
+    SettingType.INVENTORY,
+    true,
+  );
 }
 
 async function getGeneralSettings() {
@@ -987,7 +989,6 @@ module.exports = {
   autoUpdateStockOnReturnProcessed,
   autoReverseStockOnReturnCancel,
 
-  
   getNotifySupplierOnConfirmedWithSms,
   getNotifySupplierOnConfirmedWithEmail,
   getNotifySupplierOnCompleteWithEmail,

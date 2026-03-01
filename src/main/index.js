@@ -2,7 +2,7 @@
 // src/main/index.js
 // @ts-check
 /**
- * @file Main entry point for retail POS Management System
+ * @file Main entry point for retail Tillify System
  * @version 0.0.0
  * @author CyberArcenal
  * @description Electron main process with TypeORM, SQLite, and React integration
@@ -79,7 +79,7 @@ let migrationManager = null;
 /** @type {AppConfig} */
 const APP_CONFIG = {
   isDev: process.env.NODE_ENV === "development" || !app.isPackaged,
-  appName: "POS Management",
+  appName: "Tillify",
   version: app.getVersion(),
   userDataPath: app.getPath("userData"),
 };
@@ -863,7 +863,6 @@ function registerIpcHandlers() {
   } catch (error) {
     log(LogLevel.ERROR, "Failed to register IPC handlers:", error);
   }
-
 }
 
 // ===================== MAIN APPLICATION FLOW =====================

@@ -25,7 +25,7 @@ export interface FrontendSystemInfo {
   system_version: string;
 }
 
-// 📊 POS Management Setting Types
+// 📊 Tillify Management Setting Types
 export const SettingType = {
   EMAIL: "email",
   ATTENDANCE: "attendance",
@@ -143,7 +143,6 @@ export interface NotificationsSettings {
   notify_customer_return_cancelled_email?: boolean;
   notify_customer_return_cancelled_sms?: boolean;
 }
-
 
 // 7. DATA & REPORTS SETTINGS
 export interface DataReportsSettings {
@@ -1013,7 +1012,7 @@ class SystemConfigAPI {
       const defaultSettings = [
         {
           key: "company_name",
-          value: "POS Management",
+          value: "Tillify",
           setting_type: SettingType.GENERAL,
           description: "Company name",
         },

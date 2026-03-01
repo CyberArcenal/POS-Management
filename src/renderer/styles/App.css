@@ -1,4 +1,4 @@
-/* POS MANAGEMENT THEME - DARK THEME */
+/* Tillify THEME - DARK THEME */
 @import "tailwindcss";
 
 :root {
@@ -10,29 +10,29 @@
   --warning-color: #f59e0b; /* Amber */
   --danger-color: #ef4444; /* Red */
   --info-color: #60a5fa; /* Brighter Blue for info */
-  
+
   /* Background Colors - Dark Theme */
   --background-color: #0f172a; /* Dark Slate 900 - Main background */
   --sidebar-bg: #1e293b; /* Dark Slate 800 - Sidebar */
   --sidebar-border: #334155; /* Slate 700 */
   --sidebar-text: #f1f5f9; /* Light text */
   --header-bg: #1e293b; /* Dark header */
-  
+
   /* Text Colors for Dark Theme */
   --text-primary: #f1f5f9; /* Light for readability */
   --text-secondary: #cbd5e1; /* Slate 300 */
   --text-tertiary: #94a3b8; /* Slate 400 */
-  
+
   /* Card Backgrounds - Dark Theme */
   --card-bg: #1e293b; /* Dark Slate 800 */
   --card-secondary-bg: #0f172a; /* Slate 900 */
   --card-hover-bg: #334155; /* Slate 700 */
-  
+
   /* Border Colors */
   --border-color: #334155; /* Slate 700 */
   --border-light: #1e293b; /* Slate 800 */
   --border-dark: #475569; /* Slate 600 */
-  
+
   /* Transaction Status Colors */
   --status-completed: #10b981; /* Green */
   --status-pending: #f59e0b; /* Amber */
@@ -40,52 +40,52 @@
   --status-refunded: #a78bfa; /* Purple */
   --status-processing: #60a5fa; /* Blue */
   --status-onhold: #fb923c; /* Orange */
-  
+
   /* Inventory Status */
   --stock-instock: #10b981; /* Green */
   --stock-lowstock: #f59e0b; /* Amber */
   --stock-outstock: #ef4444; /* Red */
   --stock-preorder: #a78bfa; /* Purple */
-  
+
   /* Payment Method Colors */
   --payment-cash: #10b981; /* Green */
   --payment-card: #60a5fa; /* Blue */
   --payment-digital: #a78bfa; /* Purple */
   --payment-credit: #f59e0b; /* Amber */
   --payment-cod: #fb923c; /* Orange */
-  
+
   /* Customer Status Colors */
   --customer-regular: #60a5fa; /* Blue */
   --customer-vip: #a78bfa; /* Purple */
   --customer-new: #10b981; /* Green */
   --customer-loyal: #f59e0b; /* Amber */
-  
+
   /* Accent Colors - Dark Theme */
   --accent-blue: #3b82f6;
   --accent-blue-hover: #2563eb;
   --accent-blue-light: rgba(59, 130, 246, 0.1);
   --accent-blue-dark: #1d4ed8;
-  
+
   --accent-green: #10b981;
   --accent-green-hover: #059669;
   --accent-green-light: rgba(16, 185, 129, 0.1);
   --accent-green-dark: #047857;
-  
+
   --accent-amber: #f59e0b;
   --accent-amber-hover: #d97706;
   --accent-amber-light: rgba(245, 158, 11, 0.1);
   --accent-amber-dark: #b45309;
-  
+
   --accent-red: #ef4444;
   --accent-red-hover: #dc2626;
   --accent-red-light: rgba(239, 68, 68, 0.1);
   --accent-red-dark: #b91c1c;
-  
+
   --accent-purple: #8b5cf6;
   --accent-purple-hover: #7c3aed;
   --accent-purple-light: rgba(139, 92, 246, 0.1);
   --accent-purple-dark: #6d28d9;
-  
+
   /* Status Backgrounds - Dark Theme */
   --status-completed-bg: rgba(16, 185, 129, 0.15);
   --status-pending-bg: rgba(245, 158, 11, 0.15);
@@ -93,89 +93,89 @@
   --status-refunded-bg: rgba(168, 139, 250, 0.15);
   --status-processing-bg: rgba(96, 165, 250, 0.15);
   --status-onhold-bg: rgba(251, 146, 60, 0.15);
-  
+
   /* Stock Status Backgrounds */
   --stock-instock-bg: rgba(16, 185, 129, 0.15);
   --stock-lowstock-bg: rgba(245, 158, 11, 0.15);
   --stock-outstock-bg: rgba(239, 68, 68, 0.15);
   --stock-preorder-bg: rgba(168, 139, 250, 0.15);
-  
+
   /* Button Colors for POS - Dark Theme */
   --btn-primary-bg: var(--accent-blue);
   --btn-primary-hover: var(--accent-blue-hover);
   --btn-primary-text: #ffffff;
-  
+
   --btn-success-bg: var(--accent-green);
   --btn-success-hover: var(--accent-green-hover);
   --btn-success-text: #ffffff;
-  
+
   --btn-danger-bg: var(--accent-red);
   --btn-danger-hover: var(--accent-red-hover);
   --btn-danger-text: #ffffff;
-  
+
   --btn-warning-bg: var(--accent-amber);
   --btn-warning-hover: var(--accent-amber-hover);
   --btn-warning-text: #ffffff;
-  
+
   --btn-checkout-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --btn-checkout-hover: linear-gradient(135deg, #059669 0%, #047857 100%);
   --btn-checkout-text: #ffffff;
-  
+
   --btn-payment-bg: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   --btn-payment-hover: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   --btn-payment-text: #ffffff;
-  
+
   /* Receipt & Invoice Colors */
   --receipt-bg: #1e293b;
   --receipt-border: #334155;
   --receipt-header: #0f172a;
   --receipt-total: #334155;
-  
+
   /* Transaction Table - Dark Theme */
   --table-header-bg: #0f172a;
   --table-row-even: #1e293b;
   --table-row-odd: #0f172a;
   --table-row-hover: #334155;
   --table-border: #334155;
-  
+
   /* POS Interface Elements */
   --pos-keyboard-bg: #0f172a;
   --pos-keyboard-key: #1e293b;
   --pos-keyboard-key-hover: #334155;
   --pos-screen-bg: #1e293b;
   --pos-screen-border: #334155;
-  
+
   /* Cart & Order Summary */
   --cart-bg: #1e293b;
   --cart-header: #0f172a;
   --cart-item-hover: #334155;
   --cart-total-bg: #0f172a;
-  
+
   /* Product Cards */
   --product-card-bg: #1e293b;
   --product-card-border: #334155;
   --product-card-hover: #334155;
   --product-sale: #f87171; /* Lighter red for dark theme */
-  
+
   /* Notification Colors */
   --notification-success: rgba(16, 185, 129, 0.15);
   --notification-warning: rgba(245, 158, 11, 0.15);
   --notification-error: rgba(239, 68, 68, 0.15);
   --notification-info: rgba(96, 165, 250, 0.15);
-  
+
   /* Gradient Colors - Dark Theme */
   --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   --gradient-sales: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  
+
   /* Form Colors - Dark Theme */
   --input-bg: #0f172a;
   --input-border: #334155;
   --input-focus: var(--accent-blue);
   --select-option-bg: #1e293b;
   --select-option-hover: #334155;
-  
+
   /* Topbar Colors - Dark Theme */
   --topbar-bg: #1e293b;
   --topbar-border: #334155;
@@ -184,11 +184,10 @@
   --topbar-search-border: #334155;
 }
 
-
-
 /* Pulse animation for card border when reloading */
 @keyframes pulse-border {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
   }
   50% {

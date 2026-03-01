@@ -1,11 +1,11 @@
 {
-  "name": "posify",
+  "name": "tillify",
   "private": true,
   "version": "0.0.1-beta",
   "main": "src/main/index.js",
   "build": {
-    "appId": "com.CyberArcenal.posify.app",
-    "productName": "POSify",
+    "appId": "com.CyberArcenal.tillify.app",
+    "productName": "Tillify",
     "directories": {
       "output": "release"
     },
@@ -23,7 +23,7 @@
       {
         "provider": "github",
         "owner": "CyberArcenal",
-        "repo": "POSify"
+        "repo": "Tillify"
       }
     ]
   },

@@ -1542,7 +1542,7 @@ class SystemConfigHandler {
   async _getSystemInfo() {
     return {
       version: "0.0.0",
-      name: "Electron POS System",
+      name: "Electron Tillify System",
       environment: "production",
       debug_mode: process.env.NODE_ENV === "development",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

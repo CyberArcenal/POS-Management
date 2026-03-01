@@ -15,7 +15,7 @@ import { dialogs } from "../../../utils/dialogs";
 import { useSettings as useSettings1 } from "../../../contexts/SettingsContext";
 // ========== Default values for every category ==========
 const DEFAULT_GENERAL: GeneralSettings = {
-  company_name: "POS Management",
+  company_name: "Tillify",
   store_location: "",
   default_timezone: "Asia/Manila",
   currency: "USD",
@@ -122,32 +122,96 @@ const DEFAULTS = {
 // Allowed keys per category – derived from the interfaces
 const ALLOWED_KEYS: Record<keyof typeof DEFAULTS, string[]> = {
   general: [
-    "company_name", "store_location", "default_timezone", "currency",
-    "language", "receipt_footer_message", "auto_logout_minutes"
+    "company_name",
+    "store_location",
+    "default_timezone",
+    "currency",
+    "language",
+    "receipt_footer_message",
+    "auto_logout_minutes",
   ],
-  inventory: ["auto_reorder_enabled", "reorder_level_default", "reorder_qty_default", "stock_alert_threshold", "allow_negative_stock", "inventory_sync_enabled"],
-  sales: ["discount_enabled", "max_discount_percent", "allow_refunds", "refund_window_days", "loyalty_points_enabled", "loyalty_points_rate"],
-  cashier: ["enable_cash_drawer", "drawer_open_code", "enable_receipt_printing", "receipt_printer_type", "enable_barcode_scanning", "enable_touchscreen_mode", "quick_sale_enabled"],
+  inventory: [
+    "auto_reorder_enabled",
+    "reorder_level_default",
+    "reorder_qty_default",
+    "stock_alert_threshold",
+    "allow_negative_stock",
+    "inventory_sync_enabled",
+  ],
+  sales: [
+    "discount_enabled",
+    "max_discount_percent",
+    "allow_refunds",
+    "refund_window_days",
+    "loyalty_points_enabled",
+    "loyalty_points_rate",
+  ],
+  cashier: [
+    "enable_cash_drawer",
+    "drawer_open_code",
+    "enable_receipt_printing",
+    "receipt_printer_type",
+    "enable_barcode_scanning",
+    "enable_touchscreen_mode",
+    "quick_sale_enabled",
+  ],
   notifications: [
-    "email_enabled", "email_smtp_host", "email_smtp_port", "email_from_address",
-    "sms_enabled", "sms_provider", "push_notifications_enabled", "low_stock_alert_enabled",
-    "daily_sales_summary_enabled", "twilio_account_sid", "twilio_auth_token",
-    "twilio_phone_number", "twilio_messaging_service_sid",
-    "notify_supplier_with_sms", "notify_supplier_with_email",
-    "notify_supplier_on_complete_email", "notify_supplier_on_complete_sms",
-    "notify_supplier_on_cancel_email", "notify_supplier_on_cancel_sms",
-    "notify_customer_return_processed_email", "notify_customer_return_processed_sms",
-    "notify_customer_return_cancelled_email", "notify_customer_return_cancelled_sms"
+    "email_enabled",
+    "email_smtp_host",
+    "email_smtp_port",
+    "email_from_address",
+    "sms_enabled",
+    "sms_provider",
+    "push_notifications_enabled",
+    "low_stock_alert_enabled",
+    "daily_sales_summary_enabled",
+    "twilio_account_sid",
+    "twilio_auth_token",
+    "twilio_phone_number",
+    "twilio_messaging_service_sid",
+    "notify_supplier_with_sms",
+    "notify_supplier_with_email",
+    "notify_supplier_on_complete_email",
+    "notify_supplier_on_complete_sms",
+    "notify_supplier_on_cancel_email",
+    "notify_supplier_on_cancel_sms",
+    "notify_customer_return_processed_email",
+    "notify_customer_return_processed_sms",
+    "notify_customer_return_cancelled_email",
+    "notify_customer_return_cancelled_sms",
   ],
-  data_reports: ["export_formats", "default_export_format", "auto_backup_enabled", "backup_schedule", "backup_location", "data_retention_days"],
-  integrations: ["accounting_integration_enabled", "accounting_api_url", "accounting_api_key", "payment_gateway_enabled", "payment_gateway_provider", "payment_gateway_api_key", "webhooks_enabled", "webhooks"],
-  audit_security: ["audit_log_enabled", "log_retention_days", "log_events", "force_https", "session_encryption_enabled", "gdpr_compliance_enabled"],
+  data_reports: [
+    "export_formats",
+    "default_export_format",
+    "auto_backup_enabled",
+    "backup_schedule",
+    "backup_location",
+    "data_retention_days",
+  ],
+  integrations: [
+    "accounting_integration_enabled",
+    "accounting_api_url",
+    "accounting_api_key",
+    "payment_gateway_enabled",
+    "payment_gateway_provider",
+    "payment_gateway_api_key",
+    "webhooks_enabled",
+    "webhooks",
+  ],
+  audit_security: [
+    "audit_log_enabled",
+    "log_retention_days",
+    "log_events",
+    "force_https",
+    "session_encryption_enabled",
+    "gdpr_compliance_enabled",
+  ],
 };
 
 // Helper to sanitize an object to only allowed keys
 function sanitizeSettings<T extends Record<string, any>>(
   obj: T,
-  allowedKeys: string[]
+  allowedKeys: string[],
 ): Partial<T> {
   const result: Partial<T> = {};
   for (const key of allowedKeys) {
@@ -159,7 +223,7 @@ function sanitizeSettings<T extends Record<string, any>>(
 }
 
 export const useSettings = () => {
- const {refreshSettings} = useSettings1();
+  const { refreshSettings } = useSettings1();
   const [groupedConfig, setGroupedConfig] = useState(DEFAULTS);
   const [systemInfo, setSystemInfo] = useState<SystemInfoData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,10 +247,22 @@ export const useSettings = () => {
           inventory: { ...DEFAULTS.inventory, ...apiSettings.inventory },
           sales: { ...DEFAULTS.sales, ...apiSettings.sales },
           cashier: { ...DEFAULTS.cashier, ...apiSettings.cashier },
-          notifications: { ...DEFAULTS.notifications, ...apiSettings.notifications },
-          data_reports: { ...DEFAULTS.data_reports, ...apiSettings.data_reports },
-          integrations: { ...DEFAULTS.integrations, ...apiSettings.integrations },
-          audit_security: { ...DEFAULTS.audit_security, ...apiSettings.audit_security },
+          notifications: {
+            ...DEFAULTS.notifications,
+            ...apiSettings.notifications,
+          },
+          data_reports: {
+            ...DEFAULTS.data_reports,
+            ...apiSettings.data_reports,
+          },
+          integrations: {
+            ...DEFAULTS.integrations,
+            ...apiSettings.integrations,
+          },
+          audit_security: {
+            ...DEFAULTS.audit_security,
+            ...apiSettings.audit_security,
+          },
         });
       }
       const infoRes = await systemConfigAPI.getSystemInfo();
@@ -205,7 +281,7 @@ export const useSettings = () => {
     <C extends keyof typeof DEFAULTS>(
       category: C,
       field: keyof (typeof DEFAULTS)[C],
-      value: any
+      value: any,
     ) => {
       setGroupedConfig((prev) => ({
         ...prev,
@@ -215,7 +291,7 @@ export const useSettings = () => {
         },
       }));
     },
-    []
+    [],
   );
 
   // Category-specific updaters
@@ -227,14 +303,18 @@ export const useSettings = () => {
     updateCategoryField("sales", field, value);
   const updateCashier = (field: keyof CashierSettings, value: any) =>
     updateCategoryField("cashier", field, value);
-  const updateNotifications = (field: keyof NotificationsSettings, value: any) =>
-    updateCategoryField("notifications", field, value);
+  const updateNotifications = (
+    field: keyof NotificationsSettings,
+    value: any,
+  ) => updateCategoryField("notifications", field, value);
   const updateDataReports = (field: keyof DataReportsSettings, value: any) =>
     updateCategoryField("data_reports", field, value);
   const updateIntegrations = (field: keyof IntegrationsSettings, value: any) =>
     updateCategoryField("integrations", field, value);
-  const updateAuditSecurity = (field: keyof AuditSecuritySettings, value: any) =>
-    updateCategoryField("audit_security", field, value);
+  const updateAuditSecurity = (
+    field: keyof AuditSecuritySettings,
+    value: any,
+  ) => updateCategoryField("audit_security", field, value);
 
   // Save settings: send each category individually, but only the allowed fields
   const saveSettings = async () => {
@@ -242,20 +322,29 @@ export const useSettings = () => {
     setError(null);
     setSuccessMessage(null);
 
-    const categories = Object.keys(groupedConfig) as Array<keyof typeof DEFAULTS>;
+    const categories = Object.keys(groupedConfig) as Array<
+      keyof typeof DEFAULTS
+    >;
     const results = await Promise.allSettled(
       categories.map(async (category) => {
-        const dataToSend = sanitizeSettings(groupedConfig[category], ALLOWED_KEYS[category]);
+        const dataToSend = sanitizeSettings(
+          groupedConfig[category],
+          ALLOWED_KEYS[category],
+        );
         return systemConfigAPI.updateGroupedConfig({
           [category]: dataToSend,
         });
-      })
+      }),
     );
 
     const failed = results.filter((r) => r.status === "rejected");
     if (failed.length > 0) {
-      const errors = failed.map((f) => (f as PromiseRejectedResult).reason?.message || "Unknown error");
-      setError(`Failed to save ${failed.length} category(s): ${errors.join("; ")}`);
+      const errors = failed.map(
+        (f) => (f as PromiseRejectedResult).reason?.message || "Unknown error",
+      );
+      setError(
+        `Failed to save ${failed.length} category(s): ${errors.join("; ")}`,
+      );
     } else {
       setSuccessMessage("All settings saved successfully");
       fetchSettings(); // refresh to get latest timestamps
@@ -319,7 +408,8 @@ export const useSettings = () => {
 
   const testSmtpConnection = async () => {
     try {
-      if (!window.backendAPI?.systemConfig) throw new Error("Electron API not available");
+      if (!window.backendAPI?.systemConfig)
+        throw new Error("Electron API not available");
       const response = await window.backendAPI.systemConfig({
         method: "testSmtpConnection",
         params: { settings: groupedConfig.notifications },
@@ -333,12 +423,14 @@ export const useSettings = () => {
 
   const testSmsConnection = async () => {
     try {
-      if (!window.backendAPI?.systemConfig) throw new Error("Electron API not available");
+      if (!window.backendAPI?.systemConfig)
+        throw new Error("Electron API not available");
       const response = await window.backendAPI.systemConfig({
         method: "testSmsConnection",
         params: { settings: groupedConfig.notifications },
       });
-      if (response.status) setSuccessMessage("SMS (Twilio) connection successful");
+      if (response.status)
+        setSuccessMessage("SMS (Twilio) connection successful");
       else setError(response.message || "SMS connection failed");
     } catch (err: any) {
       setError(err.message || "Failed to test SMS connection");

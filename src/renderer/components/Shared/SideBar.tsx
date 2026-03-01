@@ -59,14 +59,11 @@ interface MenuItem {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const location = useLocation();
   const { settings, getSetting, updateSetting } = useSettings();
-  const companyName = getSetting('general', 'company_name', 'Default Name');
-
-
+  const companyName = getSetting("general", "company_name", "Default Name");
 
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {},
   );
-
 
   // Stats state
   const [stats, setStats] = useState({
@@ -85,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         // Get summary (includes today's revenue and sales count)
         const summaryRes = await dashboardAPI.getSummary();
         if (mounted && summaryRes.status && summaryRes.data) {
-          setStats(prev => ({
+          setStats((prev) => ({
             ...prev,
             revenueToday: summaryRes.data!.revenueToday,
             transactions: summaryRes.data!.salesToday,
@@ -95,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         // Get inventory status (includes low stock count)
         const inventoryRes = await dashboardAPI.getInventoryStatus();
         if (mounted && inventoryRes.status && inventoryRes.data) {
-          setStats(prev => ({
+          setStats((prev) => ({
             ...prev,
             lowStockCount: inventoryRes.data!.lowStockCount,
           }));
@@ -205,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       children: [
         { path: "/system/audit", name: "Audit Trail", icon: ListChecks },
         { path: "/notification-logs", name: "Notification Logs", icon: Bell },
-        {path: "/devices", name: "Device Manager", icon: ComputerIcon},
+        { path: "/devices", name: "Device Manager", icon: ComputerIcon },
         { path: "/system/settings", name: "System Settings", icon: Sliders },
       ],
     },
@@ -361,7 +358,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   return (
     <div
-  className={`
+      className={`
     fixed md:relative
     flex flex-col h-screen           {/* ← essential for scrolling */}
     bg-gradient-to-b from-[var(--sidebar-bg)] to-[#1e293b]
@@ -371,7 +368,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     overflow-hidden
     ${isOpen ? "w-64" : "w-0"}
   `}
->
+    >
       {/* Header - Fixed height */}
       <div className="flex-shrink-0 border-b border-[var(--sidebar-border)] bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b] p-6">
         <div className="flex items-center gap-3">
@@ -449,7 +446,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       {/* Footer - Fixed height */}
       <div className="p-4 border-t border-[var(--border-color)] text-center flex-shrink-0 bg-gradient-to-r from-[var(--sidebar-bg)] to-[#1e293b]">
         <p className="text-xs text-[var(--text-tertiary)] mb-2">
-          v{version} • © {new Date().getFullYear()} POS System
+          v{version} • © {new Date().getFullYear()} Tillify
         </p>
         <div className="flex justify-center gap-4">
           <button

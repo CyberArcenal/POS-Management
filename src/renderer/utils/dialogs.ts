@@ -52,7 +52,7 @@ const IconTemplates = {
   `,
 };
 
-// Updated IconColors to use POS Management dark theme variables
+// Updated IconColors to use Tillify dark theme variables
 const IconColors: Record<ConfirmIconType, string> = {
   question: "text-[var(--info-color)] bg-[var(--status-processing-bg)]",
   warning: "text-[var(--warning-color)] bg-[var(--status-pending-bg)]",
