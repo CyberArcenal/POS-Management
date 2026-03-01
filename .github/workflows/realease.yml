@@ -1,0 +1,35 @@
+name: Build & Release Tillify
+
+on:
+  push:
+    tags:
+      - 'v*'   # tuwing mag-push ka ng git tag na nagsisimula sa v (hal. v0.0.2-beta)
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build app
+        run: npm run build
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
