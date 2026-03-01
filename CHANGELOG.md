@@ -1,5 +1,5 @@
 
-# 📑 Changelog – POS Management  
+# 📑 Changelog – POSify  
 **Version:** v0.0.1-beta  
 **Date:** March 1, 2026  
 
@@ -8,7 +8,6 @@
 
 ---
 
-# 📑 Changelog – POS Management  
 **Version:** v0.0.0-beta  
 **Date:** February 22, 2026  
 
