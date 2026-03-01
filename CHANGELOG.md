@@ -4,7 +4,8 @@
 **Date:** March 1, 2026  
 
 ### Changed  
-- Renamed app from working title to **POSify** for consistent branding across GitHub and Microsoft Store.  
+- Renamed app from working title to **POSify** for consistent branding across GitHub and Microsoft Store.
+- Change app icon to new icon design.
 
 ---
 
