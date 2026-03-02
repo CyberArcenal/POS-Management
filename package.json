@@ -13,6 +13,7 @@
   },
   "build": {
     "appId": "com.CyberArcenal.tillify.app",
+    "publish": "never",
     "productName": "Tillify",
     "directories": {
       "output": "release"
@@ -31,14 +32,7 @@
         "AppImage",
         "deb"
       ]
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "CyberArcenal",
-        "repo": "Tillify"
-      }
-    ]
+    }
   },
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
