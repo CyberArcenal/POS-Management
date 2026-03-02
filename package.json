@@ -7,7 +7,10 @@
     "name": "CyberArcenal",
     "email": "cyberarcenal1@gmail.com"
   },
-
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CyberArcenal/Tillify.git"
+  },
   "build": {
     "appId": "com.CyberArcenal.tillify.app",
     "productName": "Tillify",
