@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.2-beta",
   "main": "src/main/index.js",
+  "author": {
+    "name": "CyberArcenal",
+    "email": "cyberarcenal1@gmail.com"
+  },
+
   "build": {
     "appId": "com.CyberArcenal.tillify.app",
     "productName": "Tillify",
