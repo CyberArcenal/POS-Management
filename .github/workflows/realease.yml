@@ -37,12 +37,33 @@ jobs:
       - name: Install app deps for electron
         run: npx electron-builder install-app-deps
 
-      - name: Build app
-        run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and package on macOS
+        if: runner.os == 'macOS'
+        run: |
+          npm run build
+          npx electron-builder --mac --publish=never
 
-      - name: Release to GitHub
+      - name: Build and package on Windows
+        if: runner.os == 'Windows'
+        run: |
+          npm run build
+          npx electron-builder --win --publish=never
+
+      - name: Build and package on Linux
+        if: runner.os == 'Linux'
+        run: |
+          npm run build
+          npx electron-builder --linux --publish=never
+
+      - name: Upload artifacts (Linux only)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: release/**
+
+      - name: Release to GitHub (Linux only)
+        if: runner.os == 'Linux'
         uses: softprops/action-gh-release@v1
         with:
           files: release/**
