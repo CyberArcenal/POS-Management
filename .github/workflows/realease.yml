@@ -3,7 +3,7 @@ name: Build & Release Tillify
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -24,34 +24,27 @@ jobs:
         with:
           node-version: 22
 
-      # Install system dependencies for Linux (required for USB & native modules)
       - name: Install system dependencies (Linux only)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            python3 \
-            libusb-1.0-0-dev \
-            libudev-dev \
-            libgbm1 \
-            libxkbcommon-x11-0 \
-            libgtk-3-0 \
-            libnss3 \
-            libatk-bridge2.0-0
+            build-essential python3 \
+            libusb-1.0-0-dev libudev-dev \
+            libgbm1 libxkbcommon-x11-0 \
+            libgtk-3-0 libnss3 libatk-bridge2.0-0
 
       - name: Install dependencies
         run: npm install
 
-      - name: Rebuild native modules for Electron
+      - name: Rebuild native modules
         run: npx electron-builder install-app-deps
 
-      # Disable code signing on macOS (prevents CI signature errors)
       - name: Build and package (macOS)
         if: runner.os == 'macOS'
         run: npm run build
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_IDENTITY_AUTO_DISCOVERY: false # disables code signing in CI
 
       - name: Build and package (Windows / Linux)
         if: runner.os != 'macOS'
@@ -73,9 +66,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Display structure of downloaded files
-        run: ls -R artifacts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
