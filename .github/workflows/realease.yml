@@ -40,7 +40,7 @@ jobs:
       - name: Build and package on macOS
         if: runner.os == 'macOS'
         run: |
-          npm run build
+          vite build
           npx electron-builder --mac --publish=never
 
       - name: Build and package on Windows
