@@ -67,10 +67,17 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create GitHub Release
+      - name: Display structure (debug)
+        run: find artifacts -type f
+
+      - name: Upload installers to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
+            artifacts/**/*.AppImage
+            artifacts/**/*.deb
           prerelease: true
           generate_release_notes: true
         env:
