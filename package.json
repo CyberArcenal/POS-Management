@@ -32,13 +32,7 @@
         "deb"
       ]
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "CyberArcenal",
-        "repo": "Tillify"
-      }
-    ]
+"publish": "never"
   },
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
