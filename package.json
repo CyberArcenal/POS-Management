@@ -32,7 +32,7 @@
         "deb"
       ]
     },
-"publish": "never"
+    "publish": null
   },
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
