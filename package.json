@@ -13,7 +13,6 @@
   },
   "build": {
     "appId": "com.CyberArcenal.tillify.app",
-    "publish": "never",
     "productName": "Tillify",
     "directories": {
       "output": "release"
@@ -32,7 +31,8 @@
         "AppImage",
         "deb"
       ]
-    }
+    },
+    "publish": "never"
   },
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",

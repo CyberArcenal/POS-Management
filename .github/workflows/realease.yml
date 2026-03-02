@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -28,15 +31,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3 libusb-1.0-0-dev libudev-dev
 
-      # Use npm install everywhere (lock file ensures versions)
       - name: Install dependencies
         run: npm install --force
+
+      - name: Install app deps for electron
+        run: npx electron-builder install-app-deps
 
       - name: Build app
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
       - name: Release to GitHub
         uses: softprops/action-gh-release@v1
