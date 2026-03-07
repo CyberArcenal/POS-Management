@@ -4,8 +4,6 @@
 const LicenseCache = require("../entities/LicenseCache");
 const crypto = require("crypto");
 const os = require("os");
-const { activationClient } = require("../utils/activationClient");
-
 
 // DeviceInfo class moved here
 class DeviceInfo {
@@ -89,7 +87,8 @@ class DeviceInfo {
 // Main License Service
 class LicenseService {
   constructor() {
-    // @ts-ignore
+    const { AppDataSource } = require("../main/db/datasource");
+    const { activationClient } = require("../utils/activationClient");
     this.repository = AppDataSource.getRepository(LicenseCache);
     this.client = activationClient;
   }
