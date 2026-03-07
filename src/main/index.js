@@ -29,8 +29,6 @@ const MigrationManager = require("../utils/dbUtils/migrationManager");
 const PrinterService = require("../services/PrinterService");
 const CashDrawerService = require("../services/CashDrawerService");
 
-
-
 // ===================== TYPE DEFINITIONS =====================
 /**
  * @typedef {import('electron').BrowserWindow} BrowserWindow
@@ -515,6 +513,10 @@ async function createMainWindow() {
 
     // Handle window close with confirmation
     mainWindow.on("close", (event) => {
+      log(LogLevel.INFO, "❌ Main window close event triggered", {
+        isShuttingDown,
+        fromIPC: event.sender === mainWindow.webContents ? "renderer" : "other",
+      });
       if (!APP_CONFIG.isDev && !isShuttingDown) {
         event.preventDefault();
 
@@ -715,6 +717,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.on("window:close", () => {
+    log(LogLevel.WARN, "📨 IPC window:close received from renderer");
     if (mainWindow) mainWindow.close();
   });
 
