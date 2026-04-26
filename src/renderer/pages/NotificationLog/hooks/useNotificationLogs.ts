@@ -3,8 +3,8 @@ import type {
   NotificationLogEntry,
   NotificationStats,
   PaginatedNotifications,
-} from "../../../api/utils/notification_log";
-import notificationLogAPI from "../../../api/utils/notification_log";
+} from "../../../api/core/notification_log";
+import notificationLogAPI from "../../../api/core/notification_log";
 
 interface UseNotificationLogsParams {
   page?: number;

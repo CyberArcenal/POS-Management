@@ -1,7 +1,7 @@
 // src/renderer/pages/purchase/components/PurchaseViewDialog.tsx
 import React from "react";
 import { X, Package, ShoppingCart, Loader2 } from "lucide-react";
-import type { Purchase, PurchaseItem } from "../../../api/utils/purchase";
+import type { Purchase, PurchaseItem } from "../../../api/core/purchase";
 import Decimal from "decimal.js";
 
 interface PurchaseViewDialogProps {

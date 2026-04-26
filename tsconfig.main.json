@@ -1,21 +1,23 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "CommonJS",
-    "types": ["node"],
-    "skipLibCheck": true,
     "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
+    "outDir": "src/main",
+    "rootDir": "src/main",
     "noEmit": false,
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "sourceMap": true,
+    "types": ["node"]
   },
   "include": [
     "src/main/**/*",

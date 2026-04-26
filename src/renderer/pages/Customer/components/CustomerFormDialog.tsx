@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
-import customerAPI from "../../../api/utils/customer";
+import customerAPI from "../../../api/core/customer";
 import { dialogs } from "../../../utils/dialogs";
 
 interface CustomerFormDialogProps {

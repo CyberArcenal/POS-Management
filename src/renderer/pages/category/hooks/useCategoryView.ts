@@ -1,7 +1,7 @@
 // src/renderer/pages/category/hooks/useCategoryView.ts
 import { useState } from "react";
-import type { Category } from "../../../api/utils/category";
-import productAPI, { type Product } from "../../../api/utils/product";
+import type { Category } from "../../../api/core/category";
+import productAPI, { type Product } from "../../../api/core/product";
 
 export function useCategoryView() {
   const [isOpen, setIsOpen] = useState(false);

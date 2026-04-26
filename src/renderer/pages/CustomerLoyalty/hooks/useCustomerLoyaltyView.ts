@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import loyaltyAPI, {
   type LoyaltyTransaction,
-} from "../../../api/utils/loyalty";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
+} from "../../../api/core/loyalty";
+import customerAPI, { type Customer } from "../../../api/core/customer";
 
 export const useCustomerLoyaltyView = () => {
   const [isOpen, setIsOpen] = useState(false);

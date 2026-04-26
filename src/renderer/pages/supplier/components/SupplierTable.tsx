@@ -1,7 +1,7 @@
 // src/renderer/pages/supplier/components/SupplierTable.tsx
 import React from "react";
 import { Eye, Edit, Trash2, Package, Check, X } from "lucide-react";
-import type { Supplier } from "../../../api/utils/supplier";
+import type { Supplier } from "../../../api/core/supplier";
 
 // ----------------------------------------------------------------------
 // Helper Components

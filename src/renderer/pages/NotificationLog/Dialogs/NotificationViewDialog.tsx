@@ -1,7 +1,7 @@
 import React from "react";
 import { X, Mail, AlertCircle, User, Hash, FileText } from "lucide-react";
 import { formatDate } from "../../../utils/formatters";
-import type { NotificationLogEntry } from "../../../api/utils/notification_log";
+import type { NotificationLogEntry } from "../../../api/core/notification_log";
 
 interface NotificationViewDialogProps {
   log: NotificationLogEntry;

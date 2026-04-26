@@ -2,10 +2,10 @@ import { useState } from "react";
 import productAPI, {
   type Product,
   type ProductSalesReportItem,
-} from "../../../api/utils/product";
+} from "../../../api/core/product";
 import inventoryAPI, {
   type InventoryMovement,
-} from "../../../api/utils/inventory";
+} from "../../../api/core/inventory";
 
 export function useProductView() {
   const [isOpen, setIsOpen] = useState(false);

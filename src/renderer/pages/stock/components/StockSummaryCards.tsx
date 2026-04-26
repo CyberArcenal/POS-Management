@@ -1,7 +1,7 @@
 // src/renderer/pages/stock/components/StockSummaryCards.tsx
 import React from "react";
 import { Package, DollarSign, AlertTriangle, XCircle } from "lucide-react";
-import type { Product } from "../../../api/utils/product";
+import type { Product } from "../../../api/core/product";
 import Decimal from "decimal.js";
 
 interface StockSummaryCardsProps {

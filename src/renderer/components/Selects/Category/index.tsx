@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Search, ChevronDown, Tag, X } from "lucide-react";
-import type { Category } from "../../../api/utils/category";
-import categoryAPI from "../../../api/utils/category";
+import type { Category } from "../../../api/core/category";
+import categoryAPI from "../../../api/core/category";
 
 interface CategorySelectProps {
   value: number | null;

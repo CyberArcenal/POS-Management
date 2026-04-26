@@ -1,8 +1,8 @@
 // src/renderer/pages/category/components/CategoryViewDialog.tsx
 import React from "react";
 import { X, Package, Loader2 } from "lucide-react";
-import type { Category } from "../../../api/utils/category";
-import type { Product } from "../../../api/utils/product";
+import type { Category } from "../../../api/core/category";
+import type { Product } from "../../../api/core/product";
 import Decimal from "decimal.js";
 
 interface CategoryViewDialogProps {

@@ -12,7 +12,7 @@ import {
 import { format } from "date-fns";
 import notificationAPI, {
   type Notification,
-} from "../../api/utils/notification";
+} from "../../api/core/notification";
 import { dialogs } from "../../utils/dialogs";
 
 interface NotificationDrawerProps {

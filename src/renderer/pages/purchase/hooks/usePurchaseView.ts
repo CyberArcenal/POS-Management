@@ -3,9 +3,9 @@ import { useState } from "react";
 import purchaseAPI, {
   type Purchase,
   type PurchaseItem,
-} from "../../../api/utils/purchase";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
-import productAPI, { type Product } from "../../../api/utils/product";
+} from "../../../api/core/purchase";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
+import productAPI, { type Product } from "../../../api/core/product";
 
 export function usePurchaseView() {
   const [isOpen, setIsOpen] = useState(false);

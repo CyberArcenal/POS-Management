@@ -1,7 +1,7 @@
 import React from "react";
 import { X, Loader2, Award, TrendingDown, Calendar } from "lucide-react";
-import { type Customer } from "../../../api/utils/customer";
-import { type LoyaltyTransaction } from "../../../api/utils/loyalty";
+import { type Customer } from "../../../api/core/customer";
+import { type LoyaltyTransaction } from "../../../api/core/loyalty";
 
 interface CustomerLoyaltyViewDialogProps {
   isOpen: boolean;

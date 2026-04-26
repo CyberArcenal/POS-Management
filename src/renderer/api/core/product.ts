@@ -2,33 +2,18 @@
 // Product API – aligned with backend IPC handlers (product channel)
 // Updated to include category and supplier relations
 
+import type { Category } from "./category";
+import type { Supplier } from "./supplier";
+
 // ----------------------------------------------------------------------
 // 📦 Types & Interfaces (based on backend entities and services)
 // ----------------------------------------------------------------------
-
-export interface Category {
-  id: number;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  createdAt: string; // ISO datetime
-  updatedAt: string | null;
-}
-
-export interface Supplier {
-  id: number;
-  name: string;
-  contactInfo: string | null;
-  address: string | null;
-  isActive: boolean;
-  createdAt: string; // ISO datetime
-  updatedAt: string | null;
-}
 
 export interface Product {
   id: number;
   sku: string;
   name: string;
+  image: string | null;
   barcode: string;
   description: string | null;
   price: number; // decimal stored as number
@@ -466,7 +451,7 @@ class ProductAPI {
         return response as InventoryMovementsResponse;
       }
       throw new Error(
-        response.message || "Failed to fetch inventory movements",
+        response.message || "Failed to fetch inventory movements"
       );
     } catch (error: any) {
       throw new Error(error.message || "Failed to fetch inventory movements");
@@ -478,7 +463,7 @@ class ProductAPI {
    * @param activeOnly - If true (default), only active products are considered.
    */
   async getInventoryValue(
-    activeOnly: boolean = true,
+    activeOnly: boolean = true
   ): Promise<InventoryValueResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -494,7 +479,7 @@ class ProductAPI {
         return response as InventoryValueResponse;
       }
       throw new Error(
-        response.message || "Failed to calculate inventory value",
+        response.message || "Failed to calculate inventory value"
       );
     } catch (error: any) {
       throw new Error(error.message || "Failed to calculate inventory value");
@@ -542,6 +527,7 @@ class ProductAPI {
     productData: {
       sku?: string;
       name: string;
+      image?: File | string | { path: string; originalName: string };
       barcode?: string;
       price: number;
       stockQty?: number;
@@ -550,7 +536,7 @@ class ProductAPI {
       categoryId?: number | null; // new field
       supplierId?: number | null; // new field
     },
-    user: string = "system",
+    user: string = "system"
   ): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -592,8 +578,9 @@ class ProductAPI {
       isActive: boolean;
       categoryId: number | null; // new field
       supplierId: number | null; // new field
+      image: File | string | null;
     }>,
-    user: string = "system",
+    user: string = "system"
   ): Promise<ProductResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -642,6 +629,32 @@ class ProductAPI {
   }
 
   /**
+   * Permanently delete a product (hard delete) – removes from DB and deletes image file.
+   * @param id - Product ID
+   * @param user - Optional username
+   */
+  async hardDelete(
+    id: number,
+    user: string = "system"
+  ): Promise<{ status: boolean; message: string; data: null }> {
+    try {
+      if (!window.backendAPI?.product) {
+        throw new Error("Electron API (product) not available");
+      }
+
+      const response = await window.backendAPI.product({
+        method: "hardDeleteProduct",
+        params: { id },
+        user,
+      });
+
+      return response as { status: boolean; message: string; data: null };
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to permanently delete product");
+    }
+  }
+
+  /**
    * Update product stock and record an inventory movement.
    * @param params - productId, quantityChange, movementType, notes, saleId
    * @param user - Optional username
@@ -654,7 +667,7 @@ class ProductAPI {
       notes?: string | null;
       saleId?: number | null;
     },
-    user: string = "system",
+    user: string = "system"
   ): Promise<UpdateStockResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -691,8 +704,9 @@ class ProductAPI {
       isActive?: boolean;
       categoryId?: number | null; // new field
       supplierId?: number | null; // new field
+      image?: File | string | null;
     }>,
-    user: string = "system",
+    user: string = "system"
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -731,9 +745,10 @@ class ProductAPI {
         isActive: boolean;
         categoryId: number | null; // new field
         supplierId: number | null; // new field
+        image?: File | string | null;
       }>;
     }>,
-    user: string = "system",
+    user: string = "system"
   ): Promise<BulkOperationResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -762,7 +777,7 @@ class ProductAPI {
    */
   async importFromCSV(
     filePath: string,
-    user: string = "system",
+    user: string = "system"
   ): Promise<ImportCSVResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -800,7 +815,7 @@ class ProductAPI {
       supplierId?: number; // new filter
     },
     outputPath?: string,
-    user: string = "system",
+    user: string = "system"
   ): Promise<ExportCSVResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -833,7 +848,7 @@ class ProductAPI {
       endDate?: string;
       format?: "json" | "csv";
     },
-    user: string = "system",
+    user: string = "system"
   ): Promise<ReportResponse> {
     try {
       if (!window.backendAPI?.product) {
@@ -858,6 +873,22 @@ class ProductAPI {
   // --------------------------------------------------------------------
   // 🧰 UTILITY METHODS
   // --------------------------------------------------------------------
+
+  /**
+   * Get the full URL for a product image using a custom protocol.
+   * The main process must register the protocol 'app-image' to serve files from the userData/images directory.
+   * @param product - Product object or relative image path
+   * @returns Full URL (e.g., "app-image://products/filename.jpg") or null.
+   */
+  getImageUrl(product: Product | string | null): string | null {
+    if (!product) return null;
+    const relativePath = typeof product === "string" ? product : product.image;
+    if (!relativePath) return null;
+    let normalized = relativePath.replace(/\\/g, "/");
+    // Encode special characters (spaces, etc.)
+    normalized = encodeURIComponent(normalized).replace(/%2F/g, "/");
+    return `app-image://${normalized}`;
+  }
 
   /**
    * Check if the backend API is available.
@@ -903,7 +934,7 @@ class ProductAPI {
    */
   async getByCategory(
     categoryId: number,
-    params?: Omit<Parameters<typeof this.getAll>[0], "categoryId">,
+    params?: Omit<Parameters<typeof this.getAll>[0], "categoryId">
   ): Promise<ProductsResponse> {
     return this.getAll({ ...params, categoryId });
   }
@@ -915,7 +946,7 @@ class ProductAPI {
    */
   async getBySupplier(
     supplierId: number,
-    params?: Omit<Parameters<typeof this.getAll>[0], "supplierId">,
+    params?: Omit<Parameters<typeof this.getAll>[0], "supplierId">
   ): Promise<ProductsResponse> {
     return this.getAll({ ...params, supplierId });
   }

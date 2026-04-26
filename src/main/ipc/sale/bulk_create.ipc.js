@@ -30,6 +30,7 @@ module.exports = async (params, queryRunner) => {
     console.error("[IPC] sale:bulk_create error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to bulk create sales",
       data: null,
     };

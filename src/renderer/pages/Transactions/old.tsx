@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Decimal from "decimal.js";
 import { format } from "date-fns";
-import saleAPI, { type Sale, type SaleItem } from "../../api/utils/sale";
+import saleAPI, { type Sale, type SaleItem } from "../../api/core/sale";
 import { dialogs } from "../../utils/dialogs";
 
 // ----------------------------------------------------------------------

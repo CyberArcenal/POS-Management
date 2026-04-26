@@ -1,4 +1,4 @@
-import type { Sale } from "../api/utils/sale";
+import type { Sale } from "../api/core/sale";
 
 export {};
 
@@ -33,6 +33,7 @@ declare global {
       }>;
 
       product: (payload: any) => Promise<any>;
+      getImageUrl: (relativePath: string | null | undefined) => string | null;
       auditLog: (payload: any) => Promise<any>;
       inventory: (payload: any) => Promise<any>;
       sale: (payload: any) => Promise<any>;

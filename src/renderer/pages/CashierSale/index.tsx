@@ -16,7 +16,7 @@ import CategorySelect from "../../components/Selects/Category"; // adjust path a
 import CashierHeader from "./components/CashierHeader";
 import { useSettings } from "../../contexts/SettingsContext";
 import { useBarcodeEnabled } from "../../utils/posUtils";
-import productAPI from "../../api/utils/product";
+import productAPI from "../../api/core/product";
 
 const Cashier: React.FC = () => {
   const {

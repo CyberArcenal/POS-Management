@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Decimal from "decimal.js";
 import { format } from "date-fns";
-import type { Sale } from "../../../api/utils/sale";
+import type { Sale } from "../../../api/core/sale";
 import type { PaymentMethod, SaleStatus } from "../hooks/useTransactions";
 import { useSettings } from "../../../contexts/SettingsContext";
 import { useIsRefundable } from "../../../utils/posUtils";

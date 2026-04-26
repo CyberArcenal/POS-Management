@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
+import customerAPI, { type Customer } from "../../../api/core/customer";
 
 export const useCustomers = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(

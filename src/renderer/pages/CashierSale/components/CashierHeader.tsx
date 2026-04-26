@@ -11,9 +11,10 @@ import {
   Lock,
   Wifi,
   WifiOff,
+  ShoppingBag,
 } from "lucide-react";
 import Decimal from "decimal.js";
-import CategorySelect from "../../../components/Selects/Category"; // adjust path as needed
+import CategorySelect from "../../../components/Selects/Category";
 import { formatCurrency } from "../../../utils/formatters";
 import {
   useBarcodeEnabled,
@@ -22,32 +23,19 @@ import {
 } from "../../../utils/posUtils";
 
 interface CashierHeaderProps {
-  // Search
   searchTerm: string;
   onSearchChange: (value: string) => void;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
-
-  // Barcode display
   scannedBarcode: string;
   onClearScannedBarcode: () => void;
-
-  // Transaction summary
   itemCount: number;
   total: Decimal;
-
-  // Category filter
   categoryId: number | null;
   onCategoryChange: (id: number | null) => void;
-
-  // Action buttons
-  barcodeMode?: boolean;
-  onToggleBarcodeMode?: (isOpen: boolean) => void;
   loadingProducts: boolean;
   onRefresh: () => void;
   onClearFilters: () => void;
   showClearFilters: boolean;
-
-  // Status indicators (mock for now, replace with real props later)
   printerReady?: boolean;
   drawerOpen?: boolean;
   online?: boolean;
@@ -72,86 +60,75 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
   online = true,
 }) => {
   const isBarcodeEnabled = useBarcodeEnabled();
-  const cashDrawerEnabled = useCashDrawerEnabled(); // ✅
-  const receiptPrintingEnabled = useReceiptPrintingEnabled(); // ✅
+  const cashDrawerEnabled = useCashDrawerEnabled();
+  const receiptPrintingEnabled = useReceiptPrintingEnabled();
 
   return (
-    <div className="flex-shrink-0 bg-[var(--header-bg)] border-b border-[var(--border-color)] p-3">
-      {/* Main header row */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        {/* Left: Search + barcode */}
-        <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
-          {/* Search input */}
-          <div className="relative w-full md:w-64">
-            <Search
-              className="absolute left-2.5 top-1/2 transform -translate-y-1/2 
-                             text-[var(--accent-blue)] w-4 h-4"
-            />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[var(--card-bg)] border-2 border-[var(--accent-blue)] 
-                       rounded-lg pl-8 pr-3 py-1.5 text-sm text-[var(--accent-blue)] 
-                       placeholder-[var(--text-tertiary)] shadow-md text-center"
-            />
+    <div className="flex-shrink-0 bg-[var(--header-bg)] border-b border-[var(--border-color)] px-3 py-2 space-y-2">
+      {/* ROW 1: Search + Barcode (left) | Large Total (right) */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Left group: search + barcode */}
+        <div className="flex flex-1 flex-wrap items-center gap-2 min-w-[240px]">
+          <div className="flex-1 min-w-[140px]">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-[var(--accent-blue)] w-4 h-4" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-full bg-[var(--card-bg)] border border-[var(--accent-blue)] rounded-lg pl-8 pr-3 py-2 text-sm text-[var(--accent-blue)] placeholder-[var(--text-tertiary)]"
+              />
+            </div>
           </div>
 
-          {/* Barcode display */}
-          {scannedBarcode && isBarcodeEnabled ? (
-            <div className="relative w-full md:w-64">
-              <Barcode
-                className="absolute left-2.5 top-1/2 transform -translate-y-1/2 
-                                text-[var(--accent-green)] w-4 h-4"
-              />
-              <input
-                type="text"
-                readOnly
-                value={scannedBarcode}
-                className="w-full bg-[var(--card-bg)] border-2 border-[var(--accent-green)] 
-                         rounded-lg pl-8 pr-3 py-1.5 text-sm font-mono 
-                         text-[var(--accent-green)] shadow-md text-center"
-              />
-              <button
-                onClick={onClearScannedBarcode}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 
-                         p-1 rounded-full hover:bg-[var(--card-hover-bg)] 
-                         text-[var(--text-tertiary)]"
-                title="Clear"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className={`relative w-full md:w-64 ${isBarcodeEnabled ? '' : 'hidden'}`}>
-              <Barcode
-                className="absolute left-2.5 top-1/2 transform -translate-y-1/2 
-                                text-[var(--text-tertiary)] w-4 h-4"
-              />
-              <input
-                type="text"
-                readOnly
-                value="..."
-                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] 
-                         rounded-lg pl-8 pr-3 py-1.5 text-sm font-mono 
-                         text-[var(--text-tertiary)] shadow-sm text-center"
-              />
+          {isBarcodeEnabled && (
+            <div className="flex-1 min-w-[140px]">
+              <div className="relative">
+                <Barcode className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-[var(--accent-green)] w-4 h-4" />
+                <input
+                  type="text"
+                  readOnly
+                  value={scannedBarcode || "Scan barcode..."}
+                  className="w-full bg-[var(--card-bg)] border border-[var(--accent-green)] rounded-lg pl-8 pr-7 py-2 text-sm font-mono text-[var(--accent-green)]"
+                />
+                {scannedBarcode && (
+                  <button
+                    onClick={onClearScannedBarcode}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-0.5 rounded hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Center: Transaction summary */}
+        {/* Right group: Large Total + item count badge */}
+        <div className="flex items-center gap-3 bg-[var(--card-bg)] border-2 border-[var(--accent-green)] rounded-lg px-4 py-2 shadow-md">
+          <ShoppingBag className="w-5 h-5 text-[var(--accent-green)]" />
+          <div className="text-right">
+            <div className="text-xs text-[var(--text-tertiary)] whitespace-nowrap">
+              {itemCount} item{itemCount !== 1 ? "s" : ""}
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-[var(--accent-green)] whitespace-nowrap">
+              {formatCurrency(total.toNumber())}
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Right: Category + actions + status */}
-        <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
-          {/* Category filter */}
-          <div className="w-full md:w-48">
+      {/* ROW 2: Category, Actions, Status, Hotkeys */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Category dropdown */}
+          <div className="w-60">
             <CategorySelect
               value={categoryId}
               onChange={onCategoryChange}
-              placeholder="Filter by category"
+              placeholder="All categories"
               activeOnly
             />
           </div>
@@ -161,19 +138,15 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
             <button
               onClick={onRefresh}
               disabled={loadingProducts}
-              className="p-1.5 rounded-lg bg-[var(--card-bg)] text-[var(--text-secondary)] 
-                       hover:bg-[var(--card-hover-bg)] transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-md bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--card-hover-bg)] transition-colors disabled:opacity-50"
               title="Refresh products"
             >
-              <RefreshCw
-                className={`w-4 h-4 ${loadingProducts ? "animate-spin" : ""}`}
-              />
+              <RefreshCw className={`w-4 h-4 ${loadingProducts ? "animate-spin" : ""}`} />
             </button>
             {showClearFilters && (
               <button
                 onClick={onClearFilters}
-                className="p-1.5 rounded-lg bg-[var(--card-bg)] text-[var(--text-secondary)] 
-                         hover:bg-[var(--card-hover-bg)] transition-colors"
+                className="p-1.5 rounded-md bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--card-hover-bg)]"
                 title="Clear filters"
               >
                 <XCircle className="w-4 h-4" />
@@ -181,88 +154,41 @@ const CashierHeader: React.FC<CashierHeaderProps> = ({
             )}
           </div>
 
-          {/* Status indicators — conditional batay sa settings */}
-          <div className="flex items-center gap-3 pl-2 border-l border-[var(--border-color)]">
+          {/* Status indicators */}
+          <div className="flex items-center gap-2">
             {receiptPrintingEnabled && (
               <div
-                className={`flex items-center gap-1 text-sm ${
-                  printerReady
-                    ? "text-[var(--accent-green)]"
-                    : "text-[var(--accent-red)]"
-                }`}
+                className={`flex items-center gap-1 text-xs ${printerReady ? "text-[var(--accent-green)]" : "text-[var(--accent-red)]"}`}
                 title={printerReady ? "Printer ready" : "Printer error"}
               >
-                <Printer className="w-4 h-4" />
-                <span className="text-xs hidden sm:inline">Printer</span>
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Printer</span>
               </div>
             )}
             {cashDrawerEnabled && (
               <div
-                className={`flex items-center gap-1 text-sm ${
-                  drawerOpen
-                    ? "text-[var(--accent-amber)]"
-                    : "text-[var(--text-tertiary)]"
-                }`}
-                title={drawerOpen ? "Cash drawer open" : "Cash drawer closed"}
+                className={`flex items-center gap-1 text-xs ${drawerOpen ? "text-[var(--accent-amber)]" : "text-[var(--text-tertiary)]"}`}
+                title={drawerOpen ? "Drawer open" : "Drawer closed"}
               >
-                <Lock className="w-4 h-4" />
-                <span className="text-xs hidden sm:inline">Drawer</span>
+                <Lock className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Drawer</span>
               </div>
             )}
             <div
-              className={`flex items-center gap-1 text-sm ${
-                online
-                  ? "text-[var(--accent-green)]"
-                  : "text-[var(--accent-red)]"
-              }`}
+              className={`flex items-center gap-1 text-xs ${online ? "text-[var(--accent-green)]" : "text-[var(--accent-red)]"}`}
               title={online ? "Online" : "Offline"}
             >
-              {online ? (
-                <Wifi className="w-4 h-4" />
-              ) : (
-                <WifiOff className="w-4 h-4" />
-              )}
-              <span className="text-xs hidden sm:inline">Network</span>
+              {online ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Network</span>
             </div>
           </div>
-
-          <div
-            className="text-3xl md:text-4xl font-extrabold px-4 py-2 rounded-lg shadow-md 
-                      border-2 border-[var(--accent-green)] bg-[var(--card-bg)] 
-                      text-center w-full md:w-auto text-[var(--text-tertiary)]"
-          >
-            Total:{" "}
-            <span className="text-[var(--accent-green)]">
-              {new Intl.NumberFormat("en-PH", {
-                style: "currency",
-                currency: "PHP",
-              }).format(total.toNumber())}
-            </span>
-          </div>
         </div>
-      </div>
 
-      {/* Hotkeys legend strip */}
-      <div className="flex-shrink-0 mt-2">
-        <div className="flex flex-wrap gap-4 text-xs font-mono text-[var(--text-secondary)]">
-          <span>
-            <kbd className="px-1 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">
-              Ctrl+D
-            </kbd>{" "}
-            = Discount
-          </span>
-          <span>
-            <kbd className="px-1 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">
-              Ctrl+Enter
-            </kbd>{" "}
-            = Checkout
-          </span>
-          <span>
-            <kbd className="px-1 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">
-              Ctrl+X+N
-            </kbd>{" "}
-            = Multiply qty
-          </span>
+        {/* Hotkeys as compact badges */}
+        <div className="flex flex-wrap gap-2 text-[11px] font-mono text-[var(--text-secondary)]">
+          <kbd className="px-1.5 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">Ctrl+D</kbd>
+          <kbd className="px-1.5 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">Ctrl+Enter</kbd>
+          <kbd className="px-1.5 py-0.5 bg-[var(--card-bg)] rounded border border-[var(--border-color)]">Ctrl+Shift+N</kbd>
         </div>
       </div>
     </div>

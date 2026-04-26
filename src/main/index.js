@@ -15,6 +15,7 @@ const {
   screen,
   dialog,
   shell,
+  protocol,
   // @ts-ignore
   BrowserWindow,
 } = require("electron");
@@ -28,6 +29,19 @@ require("reflect-metadata");
 const MigrationManager = require("../utils/dbUtils/migrationManager");
 const PrinterService = require("../services/PrinterService");
 const CashDrawerService = require("../services/CashDrawerService");
+const { registerImageProtocol } = require("./protocols/imageProtocol.js");
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app-image',
+    privileges: {
+      standard: true,      // para mag‑act like http/https
+      secure: true,        // para i‑treat bilang secure (iwas mixed content)
+      supportFetchAPI: true,
+      bypassCSP: true,     // optional, para iwas CORS sa images
+    },
+  },
+]);
 
 // ===================== TYPE DEFINITIONS =====================
 /**
@@ -134,9 +148,11 @@ async function log(level, message, data = null, writeToFile = false) {
 
       const logFile = path.join(
         logDir,
-        `POS-${new Date().toISOString().split("T")[0]}.log`,
+        `POS-${new Date().toISOString().split("T")[0]}.log`
       );
-      const logEntry = `${logMessage}${data ? "\n" + JSON.stringify(data, null, 2) : ""}\n`;
+      const logEntry = `${logMessage}${
+        data ? "\n" + JSON.stringify(data, null, 2) : ""
+      }\n`;
 
       await fs.appendFile(logFile, logEntry);
     } catch (error) {
@@ -203,7 +219,7 @@ function setupGlobalErrorHandlers() {
         stack: error.stack,
         timestamp: new Date().toISOString(),
       },
-      true,
+      true
     );
 
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -224,7 +240,7 @@ function setupGlobalErrorHandlers() {
         promise: promise.toString(),
         timestamp: new Date().toISOString(),
       },
-      true,
+      true
     );
   });
 
@@ -238,7 +254,7 @@ function setupGlobalErrorHandlers() {
         webContentsId: webContents.id,
         timestamp: new Date().toISOString(),
       },
-      true,
+      true
     );
   });
 }
@@ -262,7 +278,7 @@ async function initializeDatabase() {
     if (status.needsMigration) {
       log(
         LogLevel.INFO,
-        `Found ${status.pending} pending migration(s). Running now...`,
+        `Found ${status.pending} pending migration(s). Running now...`
       );
 
       if (splashWindow && !splashWindow.isDestroyed()) {
@@ -402,7 +418,7 @@ async function createSplashWindow() {
     throw new WindowError(
       // @ts-ignore
       `Failed to create splash window: ${error.message}`,
-      "splash",
+      "splash"
     );
   }
 }
@@ -438,7 +454,7 @@ async function getAppUrl() {
   }
 
   throw new Error(
-    `Production build not found. Checked paths:\n${possiblePaths.join("\n")}`,
+    `Production build not found. Checked paths:\n${possiblePaths.join("\n")}`
   );
 }
 
@@ -570,7 +586,7 @@ async function createMainWindow() {
     throw new WindowError(
       // @ts-ignore
       `Failed to create main window: ${error.message}`,
-      "main",
+      "main"
     );
   }
 }
@@ -683,7 +699,9 @@ function showErrorPage(window, title, message, details = "") {
                     <button class="close-btn" onclick="window.close()">Close</button>
                 </div>
                 <div style="margin-top: 20px; font-size: 12px; opacity: 0.8;">
-                    v${APP_CONFIG.version} • ${APP_CONFIG.isDev ? "Development" : "Production"}
+                    v${APP_CONFIG.version} • ${
+    APP_CONFIG.isDev ? "Development" : "Production"
+  }
                 </div>
             </div>
         </body>
@@ -691,7 +709,7 @@ function showErrorPage(window, title, message, details = "") {
     `;
 
   window.loadURL(
-    `data:text/html;charset=utf-8,${encodeURIComponent(errorHTML)}`,
+    `data:text/html;charset=utf-8,${encodeURIComponent(errorHTML)}`
   );
 }
 
@@ -794,7 +812,7 @@ function registerIpcHandlers() {
   ipcMain.handle("printer:is-available", () => printerService.isAvailable());
   ipcMain.handle("cashDrawer:get-status", () => cashDrawerService.getStatus());
   ipcMain.handle("cashDrawer:is-available", () =>
-    cashDrawerService.isAvailable(),
+    cashDrawerService.isAvailable()
   );
 
   ipcMain.handle("printer:reload", () => {
@@ -890,11 +908,11 @@ async function startupSequence() {
   try {
     log(
       LogLevel.INFO,
-      `🚀 Starting ${APP_CONFIG.appName} v${APP_CONFIG.version}...`,
+      `🚀 Starting ${APP_CONFIG.appName} v${APP_CONFIG.version}...`
     );
     log(
       LogLevel.INFO,
-      `Environment: ${APP_CONFIG.isDev ? "Development" : "Production"}`,
+      `Environment: ${APP_CONFIG.isDev ? "Development" : "Production"}`
     );
     log(LogLevel.INFO, `User Data Path: ${APP_CONFIG.userDataPath}`);
 
@@ -903,6 +921,9 @@ async function startupSequence() {
 
     // 2. Create splash window
     await createSplashWindow();
+
+    // 2.5 Register custom protocol for images (must be after app ready)
+    registerImageProtocol();
 
     // 3. Initialize database
     log(LogLevel.INFO, "Initializing database...");
@@ -963,7 +984,7 @@ async function startupSequence() {
       "Startup Failed",
       "The application failed to start properly.",
       // @ts-ignore
-      error.message,
+      error.message
     );
 
     errorWindow.show();

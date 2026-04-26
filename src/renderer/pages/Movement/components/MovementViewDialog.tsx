@@ -9,7 +9,7 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
-import { type InventoryMovement } from "../../../api/utils/inventory";
+import { type InventoryMovement } from "../../../api/core/inventory";
 import {
   formatMovementType,
   getMovementTypeColor,

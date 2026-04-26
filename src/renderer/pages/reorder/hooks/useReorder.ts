@@ -1,7 +1,7 @@
 // src/renderer/pages/reorder/hooks/useReorder.ts
 import { useState, useEffect, useCallback } from "react";
-import productAPI, { type Product } from "../../../api/utils/product";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
+import productAPI, { type Product } from "../../../api/core/product";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
 
 export interface LowStockProduct extends Product {
   supplier: Supplier | null; // supplier relation should be populated

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Sale } from "../../../api/utils/sale";
+import type { Sale } from "../../../api/core/sale";
 
 export function useTransactionDetails() {
   const [selectedTransaction, setSelectedTransaction] = useState<Sale | null>(

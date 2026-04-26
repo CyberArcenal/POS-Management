@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import notificationAPI from "../../api/utils/notification";
+import notificationAPI from "../../api/core/notification";
 import { NotificationDrawer } from "./NotificationDrawer";
 import UpdateNotifier from "./UpdateNotifier";
 

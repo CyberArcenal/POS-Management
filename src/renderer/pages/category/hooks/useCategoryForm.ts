@@ -1,6 +1,6 @@
 // src/renderer/pages/category/hooks/useCategoryForm.ts
 import { useState } from "react";
-import { type Category } from "../../../api/utils/category";
+import { type Category } from "../../../api/core/category";
 
 export type FormMode = "add" | "edit";
 

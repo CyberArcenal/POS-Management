@@ -1,7 +1,7 @@
 import React from "react";
 import { Eye, FileText } from "lucide-react";
 import { getActionColor } from "../hooks/useAuditLogs";
-import type { AuditLogEntry } from "../../../api/utils/audit";
+import type { AuditLogEntry } from "../../../api/core/audit";
 
 interface AuditTableProps {
   logs: AuditLogEntry[];

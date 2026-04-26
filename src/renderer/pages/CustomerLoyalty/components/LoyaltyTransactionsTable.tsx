@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, Award, TrendingDown } from "lucide-react";
-import { type LoyaltyTransaction } from "../../../api/utils/loyalty";
+import { type LoyaltyTransaction } from "../../../api/core/loyalty";
 import Decimal from "decimal.js";
 
 interface LoyaltyTransactionsTableProps {

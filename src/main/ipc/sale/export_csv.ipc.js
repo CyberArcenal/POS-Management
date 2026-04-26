@@ -22,6 +22,7 @@ module.exports = async (params, queryRunner) => {
     console.error("[IPC] sale:export_csv error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to export sales",
       data: null,
     };

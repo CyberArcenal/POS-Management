@@ -2,8 +2,8 @@
 import React from "react";
 import { Search, RefreshCw } from "lucide-react";
 import type { StockFilters } from "../hooks/useStockLevels";
-import type { Supplier } from "../../../api/utils/supplier";
-import type { Category } from "../../../api/utils/category";
+import type { Supplier } from "../../../api/core/supplier";
+import type { Category } from "../../../api/core/category";
 
 interface StockFilterBarProps {
   filters: StockFilters;

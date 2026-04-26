@@ -1,8 +1,8 @@
 // src/renderer/pages/stock/hooks/useStockLevels.ts
 import { useState, useEffect, useCallback } from "react";
-import productAPI, { type Product } from "../../../api/utils/product";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
-import categoryAPI, { type Category } from "../../../api/utils/category";
+import productAPI, { type Product } from "../../../api/core/product";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
+import categoryAPI, { type Category } from "../../../api/core/category";
 
 export interface StockFilters {
   search: string;

@@ -29,6 +29,7 @@ module.exports = async (params, queryRunner) => {
     console.error("[IPC] sale:delete error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to delete sale",
       data: null,
     };

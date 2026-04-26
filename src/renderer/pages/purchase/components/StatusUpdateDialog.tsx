@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import type { Purchase } from "../../../api/utils/purchase";
+import type { Purchase } from "../../../api/core/purchase";
 import { allowedNextStatuses } from "../utils/statusTransitions";
 
 interface StatusUpdateDialogProps {

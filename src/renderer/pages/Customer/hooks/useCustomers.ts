@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
+import customerAPI, { type Customer } from "../../../api/core/customer";
 // import { saleAPI } from "../../../api/sale"; // kung nasa sale.ts
 
 export interface CustomerFilters {

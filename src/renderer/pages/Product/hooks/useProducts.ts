@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import productAPI, { type Product } from "../../../api/utils/product";
+import productAPI, { type Product } from "../../../api/core/product";
 
 export interface ProductFilters {
   search: string;

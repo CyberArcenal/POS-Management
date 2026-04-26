@@ -2,9 +2,9 @@ import React from "react";
 import { X, Loader2, TrendingUp, History, Check } from "lucide-react";
 import Decimal from "decimal.js";
 import { format } from "date-fns";
-import { type Product } from "../../../api/utils/product";
-import { type InventoryMovement } from "../../../api/utils/inventory";
-import { type ProductSalesReportItem } from "../../../api/utils/product";
+import { type Product } from "../../../api/core/product";
+import { type InventoryMovement } from "../../../api/core/inventory";
+import { type ProductSalesReportItem } from "../../../api/core/product";
 
 // Reuse status badge and stock badge
 const StatusBadge: React.FC<{ active: boolean }> = ({ active }) => {

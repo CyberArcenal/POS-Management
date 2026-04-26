@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, Edit, Trash2, Users, Mail, Phone } from "lucide-react";
-import { type Customer } from "../../../api/utils/customer";
+import { type Customer } from "../../../api/core/customer";
 
 // Helper to determine status badge – now uses the actual status field
 const getCustomerStatus = (

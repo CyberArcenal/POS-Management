@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
-import saleAPI, { type Sale } from "../../../api/utils/sale";
+import customerAPI, { type Customer } from "../../../api/core/customer";
+import saleAPI, { type Sale } from "../../../api/core/sale";
 import loyaltyAPI, {
   type LoyaltyTransaction,
-} from "../../../api/utils/loyalty";
+} from "../../../api/core/loyalty";
 
 export const useCustomerView = () => {
   const [isOpen, setIsOpen] = useState(false);

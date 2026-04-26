@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import type { PurchaseFilters } from "../hooks/usePurchases";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
 
 interface FilterBarProps {
   filters: PurchaseFilters;

@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Search, ChevronDown, User, X, Star } from "lucide-react";
-import type { Customer } from "../../../api/utils/customer";
-import customerAPI from "../../../api/utils/customer";
+import type { Customer } from "../../../api/core/customer";
+import customerAPI from "../../../api/core/customer";
 
 interface CustomerSelectProps {
   value: number | null;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import loyaltyAPI from "../../../api/utils/loyalty";
+import loyaltyAPI from "../../../api/core/loyalty";
 
 export const useLoyalty = (customerId?: number) => {
   const [loyaltyPointsAvailable, setLoyaltyPointsAvailable] = useState(0);

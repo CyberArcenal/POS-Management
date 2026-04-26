@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import loyaltyAPI, {
   type LoyaltyTransaction,
   type LoyaltyStatisticsResponse,
-} from "../../../api/utils/loyalty";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
+} from "../../../api/core/loyalty";
+import customerAPI, { type Customer } from "../../../api/core/customer";
 
 export interface LoyaltyFilters {
   type: "all" | "earn" | "redeem";

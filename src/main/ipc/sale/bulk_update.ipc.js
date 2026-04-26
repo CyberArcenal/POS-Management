@@ -48,6 +48,7 @@ module.exports = async (params, queryRunner) => {
     console.error("[IPC] sale:bulk_update error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to bulk update sales",
       data: null,
     };

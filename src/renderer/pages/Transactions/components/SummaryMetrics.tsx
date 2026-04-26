@@ -1,7 +1,7 @@
 import React from "react";
 import Decimal from "decimal.js";
 import { format } from "date-fns";
-import type { Sale } from "../../../api/utils/sale";
+import type { Sale } from "../../../api/core/sale";
 
 interface SummaryMetricsProps {
   transactions: Sale[];

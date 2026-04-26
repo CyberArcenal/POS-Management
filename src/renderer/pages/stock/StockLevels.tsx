@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Loader2, AlertCircle, ShoppingCart } from "lucide-react";
 import { useStockLevels, type StockFilters } from "./hooks/useStockLevels";
 import { dialogs } from "../../utils/dialogs";
-import type { Product } from "../../api/utils/product";
+import type { Product } from "../../api/core/product";
 import { StockSummaryCards } from "./components/StockSummaryCards";
 import { StockFilterBar } from "./components/StockFilterBar";
 import { StockTable } from "./components/StockTable";

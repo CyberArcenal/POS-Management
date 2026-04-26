@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
 import { dialogs } from "../../utils/dialogs";
-import categoryAPI, { type Category } from "../../api/utils/category";
+import categoryAPI, { type Category } from "../../api/core/category";
 
 // Hooks
 import { useCategories, type CategoryFilters } from "./hooks/useCategories";

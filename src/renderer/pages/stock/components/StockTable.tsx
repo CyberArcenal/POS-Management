@@ -1,6 +1,6 @@
 import React from "react";
 import { Package, CheckSquare, Square, ShoppingCart } from "lucide-react";
-import type { Product } from "../../../api/utils/product";
+import type { Product } from "../../../api/core/product";
 import Decimal from "decimal.js";
 
 const StockBadge: React.FC<{ qty: number }> = ({ qty }) => {

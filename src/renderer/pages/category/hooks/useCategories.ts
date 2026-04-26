@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import categoryAPI, {
   type Category,
   type CategoryWithProductCount,
-} from "../../../api/utils/category";
+} from "../../../api/core/category";
 
 export interface CategoryFilters {
   search: string;

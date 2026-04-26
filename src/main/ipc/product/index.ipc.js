@@ -24,13 +24,14 @@ class ProductHandler {
     this.searchProducts = this.importHandler("./search.ipc");
     this.getProductsByDate = this.importHandler("./get/by_date.ipc");
     this.getInventoryMovements = this.importHandler(
-      "./get/inventory_movements.ipc",
+      "./get/inventory_movements.ipc"
     );
 
     // ✏️ WRITE OPERATION HANDLERS
     this.createProduct = this.importHandler("./create.ipc");
     this.updateProduct = this.importHandler("./update.ipc");
     this.deleteProduct = this.importHandler("./delete.ipc");
+    this.hardDeleteProduct = this.importHandler("./hard_delete.ipc");
     this.updateProductStock = this.importHandler("./update_stock.ipc");
 
     // 📊 STATISTICS HANDLERS (additional)
@@ -59,7 +60,7 @@ class ProductHandler {
       console.warn(
         `[ProductHandler] Failed to load handler: ${path}`,
         // @ts-ignore
-        error.message,
+        error.message
       );
       // Return a fallback handler
       return async () => ({
@@ -122,28 +123,35 @@ class ProductHandler {
           return await this.handleWithTransaction(
             this.createProduct,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         case "updateProduct":
           return await this.handleWithTransaction(
             this.updateProduct,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         case "deleteProduct":
           return await this.handleWithTransaction(
             this.deleteProduct,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
+          );
+
+        case "hardDeleteProduct":
+          return await this.handleWithTransaction(
+            this.hardDeleteProduct,
+            // @ts-ignore
+            enrichedParams
           );
 
         case "updateProductStock":
           return await this.handleWithTransaction(
             this.updateProductStock,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         // 📊 STATISTICS OPERATIONS
@@ -158,21 +166,21 @@ class ProductHandler {
           return await this.handleWithTransaction(
             this.bulkCreateProducts,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         case "bulkUpdateProducts":
           return await this.handleWithTransaction(
             this.bulkUpdateProducts,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         case "importProductsFromCSV":
           return await this.handleWithTransaction(
             this.importProductsFromCSV,
             // @ts-ignore
-            enrichedParams,
+            enrichedParams
           );
 
         case "exportProductsToCSV":
@@ -276,8 +284,8 @@ ipcMain.handle(
   withErrorHandling(
     // @ts-ignore
     productHandler.handleRequest.bind(productHandler),
-    "IPC:product",
-  ),
+    "IPC:product"
+  )
 );
 // console.log('PRODUCT HANDLER LOADED', new Date().toISOString());
 module.exports = { ProductHandler, productHandler };

@@ -8,40 +8,44 @@ const Product = new EntitySchema({
     id: { type: Number, primary: true, generated: true },
     sku: { type: String },
     name: { type: String },
+    image: {
+      type: "varchar",
+      nullable: true,
+    },
     barcode: { type: "varchar", unique: true, nullable: true },
     description: { type: String, nullable: true },
     price: { type: "decimal" },
     stockQty: { type: Number, default: 0 },
-    reorderLevel: { type: Number, default: 0 },   // threshold for auto-reorder
-    reorderQty: { type: Number, default: 0 },     // default reorder quantity
+    reorderLevel: { type: Number, default: 0 }, // threshold for auto-reorder
+    reorderQty: { type: Number, default: 0 }, // default reorder quantity
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: () => "CURRENT_TIMESTAMP" },
-    updatedAt: { type: Date, nullable: true }
+    updatedAt: { type: Date, nullable: true },
   },
   relations: {
     saleItems: {
       target: "SaleItem",
       type: "one-to-many",
-      inverseSide: "product"
+      inverseSide: "product",
     },
     inventoryMovements: {
       target: "InventoryMovement",
       type: "one-to-many",
-      inverseSide: "product"
+      inverseSide: "product",
     },
     category: {
       target: "Category",
       type: "many-to-one",
       joinColumn: true,
-      eager: true
+      eager: true,
     },
     supplier: {
       target: "Supplier",
       type: "many-to-one",
       joinColumn: true,
-      eager: true
-    }
-  }
+      eager: true,
+    },
+  },
 });
 
 module.exports = Product;

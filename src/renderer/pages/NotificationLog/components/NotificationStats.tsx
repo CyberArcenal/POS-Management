@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, AlertCircle, CheckCircle, Clock } from "lucide-react";
-import type { NotificationStats as NotificationStatsData } from "../../../api/utils/notification_log";
+import type { NotificationStats as NotificationStatsData } from "../../../api/core/notification_log";
 interface NotificationStatsProps {
   stats: NotificationStatsData | null;
   loading?: boolean;

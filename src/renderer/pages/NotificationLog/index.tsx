@@ -7,9 +7,9 @@ import { NotificationStats } from "./components/NotificationStats";
 import { NotificationTable } from "./components/NotificationTable";
 import { NotificationViewDialog } from "./Dialogs/NotificationViewDialog";
 import { dialogs } from "../../utils/dialogs";
-import notificationLogAPI from "../../api/utils/notification_log";
+import notificationLogAPI from "../../api/core/notification_log";
 import { showSuccess, showError } from "../../utils/notification";
-import type { NotificationLogEntry } from "../../api/utils/notification_log";
+import type { NotificationLogEntry } from "../../api/core/notification_log";
 import Pagination from "../../components/Shared/Pagination1";
 
 const NotificationLogPage: React.FC = () => {

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
 import { dialogs } from "../../utils/dialogs";
-import purchaseAPI, { type Purchase } from "../../api/utils/purchase";
+import purchaseAPI, { type Purchase } from "../../api/core/purchase";
 
 // Hooks
 import { usePurchases, type PurchaseFilters } from "./hooks/usePurchases";

@@ -6,7 +6,7 @@ import {
   ArrowUpDown,
   PackageMinus,
 } from "lucide-react";
-import type { Product } from "../../../api/utils/product";
+import type { Product } from "../../../api/core/product";
 
 interface ProductActionsDropdownProps {
   product: Product;

@@ -1,7 +1,7 @@
 // src/renderer/pages/category/components/CategoryTable.tsx
 import React from "react";
 import { Eye, Edit, Trash2, Package, Check, X } from "lucide-react";
-import type { Category } from "../../../api/utils/category";
+import type { Category } from "../../../api/core/category";
 
 // ----------------------------------------------------------------------
 // Helper Components

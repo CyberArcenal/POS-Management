@@ -1,8 +1,8 @@
 // src/renderer/pages/supplier/hooks/useSupplierView.ts
 import { useState } from "react";
-import type { Supplier } from "../../../api/utils/supplier";
-import productAPI, { type Product } from "../../../api/utils/product";
-import purchaseAPI, { type Purchase } from "../../../api/utils/purchase";
+import type { Supplier } from "../../../api/core/supplier";
+import productAPI, { type Product } from "../../../api/core/product";
+import purchaseAPI, { type Purchase } from "../../../api/core/purchase";
 
 export function useSupplierView() {
   const [isOpen, setIsOpen] = useState(false);

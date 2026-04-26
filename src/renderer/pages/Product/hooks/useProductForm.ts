@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type Product } from "../../../api/utils/product";
+import { type Product } from "../../../api/core/product";
 
 export interface ProductFormData {
   barcode?: string;
@@ -9,8 +9,9 @@ export interface ProductFormData {
   stockQty?: number;
   description?: string | null;
   isActive?: boolean;
-  categoryId?: number | null; // new field
-  supplierId?: number | null; // new field
+  categoryId?: number | null;
+  supplierId?: number | null;
+  image?: string | null;   // base64 string or null
 }
 
 export function useProductForm() {
@@ -21,6 +22,7 @@ export function useProductForm() {
     sku: "",
     name: "",
     barcode: "",
+    image: null,
     description: "",
     price: 0,
     stockQty: 0,
@@ -52,6 +54,7 @@ export function useProductForm() {
     setInitialData({
       sku: product.sku,
       name: product.name,
+      image: product.image,
       barcode: product.barcode,
       description: product.description || "",
       price:

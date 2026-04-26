@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import type { AuditLogEntry } from "../../../api/utils/audit";
-import auditAPI from "../../../api/utils/audit";
+import type { AuditLogEntry } from "../../../api/core/audit";
+import auditAPI from "../../../api/core/audit";
 
 export interface AuditFilters {
   action: "all" | string;

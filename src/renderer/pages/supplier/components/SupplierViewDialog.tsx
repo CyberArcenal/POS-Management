@@ -1,9 +1,9 @@
 // src/renderer/pages/supplier/components/SupplierViewDialog.tsx
 import React, { useState } from "react";
 import { X, Package, ShoppingCart, Info, Loader2 } from "lucide-react";
-import type { Supplier } from "../../../api/utils/supplier";
-import type { Product } from "../../../api/utils/product";
-import type { Purchase } from "../../../api/utils/purchase";
+import type { Supplier } from "../../../api/core/supplier";
+import type { Product } from "../../../api/core/product";
+import type { Purchase } from "../../../api/core/purchase";
 import Decimal from "decimal.js";
 
 interface SupplierViewDialogProps {

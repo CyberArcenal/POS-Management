@@ -1,7 +1,7 @@
 // src/renderer/pages/purchase/hooks/usePurchases.ts
 import { useState, useEffect, useCallback } from "react";
-import purchaseAPI, { type Purchase } from "../../../api/utils/purchase";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
+import purchaseAPI, { type Purchase } from "../../../api/core/purchase";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
 
 export interface PurchaseFilters {
   search: string;

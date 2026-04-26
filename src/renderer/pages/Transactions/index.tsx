@@ -16,7 +16,7 @@ import { TransactionsTable } from "./components/TransactionsTable";
 import { TransactionDetailsDrawer } from "./components/TransactionDetailsDrawer";
 import { PromptDialog } from "../../components/Shared/PromptDialog"; // <-- new import
 import { dialogs } from "../../utils/dialogs";
-import saleAPI, { type Sale } from "../../api/utils/sale";
+import saleAPI, { type Sale } from "../../api/core/sale";
 import Pagination from "../../components/Shared/Pagination1";
 import { hideLoading, showLoading } from "../../utils/notification";
 

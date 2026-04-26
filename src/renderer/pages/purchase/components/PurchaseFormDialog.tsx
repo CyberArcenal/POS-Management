@@ -8,7 +8,7 @@ import {
 } from "../hooks/usePurchaseForm";
 import SupplierSelect from "../../../components/Selects/Supplier";
 import ProductSelect from "../../../components/Selects/Product";
-import purchaseAPI from "../../../api/utils/purchase";
+import purchaseAPI from "../../../api/core/purchase";
 import { dialogs } from "../../../utils/dialogs";
 import { format } from "date-fns";
 

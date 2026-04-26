@@ -22,6 +22,7 @@ module.exports = async (params, queryRunner) => {
     console.error("[IPC] sale:generate_receipt error:", error);
     return {
       status: false,
+      // @ts-ignore
       message: error.message || "Failed to generate receipt",
       data: null,
     };

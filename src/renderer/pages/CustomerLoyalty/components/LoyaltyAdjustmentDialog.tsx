@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Loader2, Search } from "lucide-react";
-import loyaltyAPI from "../../../api/utils/loyalty";
-import customerAPI, { type Customer } from "../../../api/utils/customer";
+import loyaltyAPI from "../../../api/core/loyalty";
+import customerAPI, { type Customer } from "../../../api/core/customer";
 import { dialogs } from "../../../utils/dialogs";
 
 interface LoyaltyAdjustmentDialogProps {

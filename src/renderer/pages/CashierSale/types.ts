@@ -1,5 +1,5 @@
-import { type Product as ApiProduct } from "../../api/utils/product";
-import { type Customer as ApiCustomer } from "../../api/utils/customer";
+import { type Product as ApiProduct } from "../../api/core/product";
+import { type Customer as ApiCustomer } from "../../api/core/customer";
 
 export type Product = ApiProduct;
 export type Customer = ApiCustomer;

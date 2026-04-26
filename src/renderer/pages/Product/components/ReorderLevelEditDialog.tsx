@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { X, Loader2 } from "lucide-react";
-import productAPI from "../../../api/utils/product";
+import productAPI from "../../../api/core/product";
 import { dialogs } from "../../../utils/dialogs";
-import type { Product } from "../../../api/utils/product";
+import type { Product } from "../../../api/core/product";
 
 interface ReorderLevelEditDialogProps {
   product: Product | null;

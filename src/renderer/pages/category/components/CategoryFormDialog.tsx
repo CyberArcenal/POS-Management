@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { X, Loader2 } from "lucide-react";
-import categoryAPI, { type Category } from "../../../api/utils/category";
+import categoryAPI, { type Category } from "../../../api/core/category";
 import { dialogs } from "../../../utils/dialogs";
 import { type FormMode } from "../hooks/useCategoryForm";
 

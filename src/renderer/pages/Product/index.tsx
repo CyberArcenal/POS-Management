@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
 import { dialogs } from "../../utils/dialogs";
-import productAPI, { type Product } from "../../api/utils/product";
+import productAPI, { type Product } from "../../api/core/product";
 
 // Hooks
 import { useProducts, type ProductFilters } from "./hooks/useProducts";

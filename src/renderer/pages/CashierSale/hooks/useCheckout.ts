@@ -1,5 +1,5 @@
 import { useState } from "react";
-import saleAPI from "../../../api/utils/sale";
+import saleAPI from "../../../api/core/sale";
 import { dialogs } from "../../../utils/dialogs";
 import type { CartItem, Customer, PaymentMethod } from "../types";
 import Decimal from "decimal.js";

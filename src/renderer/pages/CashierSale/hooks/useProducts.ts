@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import productAPI, { type Product } from "../../../api/utils/product";
+import productAPI, { type Product } from "../../../api/core/product";
 import { dialogs } from "../../../utils/dialogs";
 
 export const useProducts = () => {

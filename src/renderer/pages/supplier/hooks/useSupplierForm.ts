@@ -1,6 +1,6 @@
 // src/renderer/pages/supplier/hooks/useSupplierForm.ts
 import { useState } from "react";
-import type { Supplier } from "../../../api/utils/supplier";
+import type { Supplier } from "../../../api/core/supplier";
 
 export type FormMode = "add" | "edit";
 

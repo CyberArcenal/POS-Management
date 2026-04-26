@@ -1,7 +1,7 @@
 // src/renderer/pages/purchase/components/PurchaseTable.tsx
 import React from "react";
 import { Eye, Edit, Trash2, ShoppingCart, Tag } from "lucide-react";
-import { type Purchase } from "../../../api/utils/purchase";
+import { type Purchase } from "../../../api/core/purchase";
 import Decimal from "decimal.js";
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Award, TrendingUp, Users, RefreshCw } from "lucide-react";
-import type { LoyaltyStatisticsResponse } from "../../../api/utils/loyalty";
+import type { LoyaltyStatisticsResponse } from "../../../api/core/loyalty";
 
 interface LoyaltyOverviewProps {
   statistics: LoyaltyStatisticsResponse["data"];

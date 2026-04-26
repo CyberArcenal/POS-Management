@@ -10,7 +10,7 @@ import {
 import { VendorCard } from "./components/VendorCard";
 import { ReorderTable } from "./components/ReorderTable";
 import { PurchaseFormDialog } from "../purchase/components/PurchaseFormDialog"; // adjust path as needed
-import type { Supplier } from "../../api/utils/supplier";
+import type { Supplier } from "../../api/core/supplier";
 
 const ReorderPage: React.FC = () => {
   const { supplierGroups, loading, error, reload } = useReorder();

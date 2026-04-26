@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import supplierAPI, {
   type Supplier,
   type SupplierWithProductCount,
-} from "../../../api/utils/supplier";
+} from "../../../api/core/supplier";
 
 export interface SupplierFilters {
   search: string;

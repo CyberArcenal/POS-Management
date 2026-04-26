@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Customer } from "../../../api/utils/customer";
+import type { Customer } from "../../../api/core/customer";
 
 type FormMode = "add" | "edit";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { X, Calendar, User, Tag, FileText, Database, Code } from "lucide-react";
 import { getActionColor } from "../hooks/useAuditLogs";
-import type { AuditLogEntry } from "../../../api/utils/audit";
+import type { AuditLogEntry } from "../../../api/core/audit";
 
 interface AuditViewDialogProps {
   isOpen: boolean;

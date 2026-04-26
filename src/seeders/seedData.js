@@ -1,5 +1,5 @@
 // seedData.js
-// Tillify System Seeder (Updated with all entity fields)
+// Tillify System Seeder - Food/Restaurant/Fastfood Edition
 // Run with: npm run seed [options]
 
 const { DataSource } = require("typeorm");
@@ -26,14 +26,14 @@ const NotificationLog = require("../entities/NotificationLog");
 
 // ========== CONFIGURATION ==========
 const DEFAULT_CONFIG = {
-  productCount: 50,
+  productCount: 60,      // more products for a diverse menu
   customerCount: 30,
   saleCount: 100,
   inventoryMovementCount: 150,
   loyaltyTransactionCount: 80,
   auditLogCount: 60,
-  categoryCount: 5,
-  supplierCount: 10,
+  categoryCount: 6,
+  supplierCount: 8,
   purchaseCount: 30,
   returnRefundCount: 20,
   notificationLogCount: 50,
@@ -52,7 +52,7 @@ const DEFAULT_CONFIG = {
   skipNotificationLogs: false,
 };
 
-// ========== RANDOM HELPERS ==========
+// ========== RANDOM HELPERS (with food theme) ==========
 const random = {
   int: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
   float: (min, max, decimals = 2) =>
@@ -89,62 +89,96 @@ const random = {
   email: (prefix) => `${prefix}${random.int(1, 999)}@example.com`,
   name: () => {
     const first = [
-      "John",
-      "Jane",
-      "Michael",
-      "Sarah",
-      "David",
-      "Maria",
-      "James",
-      "Patricia",
-      "Robert",
-      "Jennifer",
+      "John", "Jane", "Michael", "Sarah", "David", "Maria", "James", "Patricia", "Robert", "Jennifer",
+      "Marco", "Angela", "Ramon", "Luz", "Eduardo", "Teresa"
     ];
     const last = [
-      "Smith",
-      "Doe",
-      "Johnson",
-      "Brown",
-      "Davis",
-      "Garcia",
-      "Rodriguez",
-      "Wilson",
-      "Martinez",
-      "Taylor",
+      "Smith", "Doe", "Johnson", "Brown", "Davis", "Garcia", "Rodriguez", "Wilson", "Martinez", "Taylor",
+      "Santos", "Reyes", "Cruz", "Aquino", "Gonzales"
     ];
     return `${random.element(first)} ${random.element(last)}`;
   },
+  
+  // ---------- Food-specific product names ----------
   productName: () => {
-    const adjectives = [
-      "Premium",
-      "Deluxe",
-      "Basic",
-      "Pro",
-      "Lite",
-      "Eco",
-      "Smart",
-      "Classic",
-    ];
-    const nouns = [
-      "Widget",
-      "Gadget",
-      "Tool",
-      "Device",
-      "Appliance",
-      "Component",
-      "Accessory",
-      "Supply",
-    ];
-    return `${random.element(adjectives)} ${random.element(nouns)}`;
+    const items = {
+      burgers: [
+        "Cheeseburger", "Double Cheeseburger", "Bacon Burger", "Chicken Burger", 
+        "Veggie Burger", "Mushroom Swiss Burger", "BBQ Burger", "Teri Burger",
+        "Angus Beef Burger", "Spicy Chicken Burger"
+      ],
+      fries: [
+        "French Fries", "Curly Fries", "Sweet Potato Fries", "Garlic Fries", 
+        "Cheese Fries", "Chili Cheese Fries", "Wedges"
+      ],
+      drinks: [
+        "Coca-Cola", "Pepsi", "Sprite", "Royal", "Iced Tea", "Lemonade", 
+        "Mango Shake", "Buko Juice", "Calamansi Juice", "Bottled Water"
+      ],
+      desserts: [
+        "Sundae", "Chocolate Ice Cream", "Strawberry Shake", "Apple Pie", 
+        "Brownie", "Churros", "Leche Flan", "Halo-Halo"
+      ],
+      rice_meals: [
+        "Chicken Adobo Rice Meal", "Pork Sinigang Rice Meal", "Beef Tapa Rice Meal",
+        "Longganisa Rice Meal", "Tocino Rice Meal", "Fried Chicken Rice Meal",
+        "Bangus Rice Meal", "Pork Sisig Rice Meal", "Lechon Kawali Rice Meal"
+      ],
+      breakfast: [
+        "Bacon & Eggs", "Sausage & Eggs", "Corned Beef & Rice", "Pancakes",
+        "Garlic Rice with Tapa", "Daing na Bangus Breakfast"
+      ],
+      snacks: [
+        "Burger Steak", "Spaghetti", "Lasagna", "Macaroni Soup", "Carbonara",
+        "Siomai Rice", "Lumpiang Shanghai", "Pizza Slice"
+      ]
+    };
+    const categories = Object.keys(items);
+    const cat = random.element(categories);
+    return random.element(items[cat]);
   },
-  description: () =>
-    random.boolean(0.3)
-      ? `High quality ${random.productName().toLowerCase()} for everyday use.`
-      : null,
+  
+  description: () => {
+    const descs = [
+      "Freshly prepared with quality ingredients.",
+      "Served hot and delicious.",
+      "Customer favorite!",
+      "Best paired with rice or fries.",
+      "Made from scratch daily.",
+      "Authentic recipe, guaranteed satisfaction.",
+      "Perfect for your meal break.",
+      "Recommended by our chef."
+    ];
+    return random.boolean(0.6) ? random.element(descs) : null;
+  },
+  
   voucherCode: () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     return `VOUCH-${Array.from({ length: 6 }, () => chars[random.int(0, chars.length - 1)]).join("")}`;
   },
+  
+  // Food price range (PHP)
+  foodPrice: () => random.float(45, 350),
+  
+  // Category names (food themed)
+  foodCategoryName: (index) => {
+    const names = [
+      "Burgers", "Fries & Sides", "Beverages", "Desserts", 
+      "Rice Meals", "Breakfast", "Snacks & Pasta"
+    ];
+    return names[index % names.length];
+  },
+  
+  // Supplier names for food distributors
+  supplierName: () => {
+    const names = [
+      "Puregold Supply Corp.", "SM Food Service", "Monde Nissin Distributor",
+      "Coca-Cola Beverages PH", "San Miguel Foods", "Universal Robina",
+      "Jollibee Commissary", "McDonald's Logistics", "KFC Supplier PH",
+      "Local Farm Produce", "Meat Depot Inc.", "Fresh Seafoods Traders"
+    ];
+    return random.element(names);
+  }
 };
 
 // ========== SEEDER CLASS ==========
@@ -197,35 +231,16 @@ class POSSeeder {
   }
 
   async seedCategories() {
-    console.log(`📂 Seeding ${this.config.categoryCount} categories...`);
+    console.log(`📂 Seeding ${this.config.categoryCount} food categories...`);
     const categories = [];
-    const names = [
-      "Electronics",
-      "Clothing",
-      "Home & Garden",
-      "Sports",
-      "Toys",
-      "Books",
-      "Beauty",
-      "Automotive",
-    ];
-    for (
-      let i = 0;
-      i < Math.min(this.config.categoryCount, names.length);
-      i++
-    ) {
+    const uniqueNames = new Set();
+    for (let i = 0; i < this.config.categoryCount; i++) {
+      let name = random.foodCategoryName(i);
+      if (uniqueNames.has(name)) name = `Food ${i+1}`;
+      uniqueNames.add(name);
       categories.push({
-        name: names[i],
-        description: `${names[i]} products category`,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: null,
-      });
-    }
-    while (categories.length < this.config.categoryCount) {
-      categories.push({
-        name: `Category ${categories.length + 1}`,
-        description: "Miscellaneous items",
+        name: name,
+        description: `${name} category - delicious menu items`,
         isActive: true,
         createdAt: new Date(),
         updatedAt: null,
@@ -242,11 +257,11 @@ class POSSeeder {
     const suppliers = [];
     for (let i = 0; i < this.config.supplierCount; i++) {
       suppliers.push({
-        name: `Supplier ${random.name()}`,
+        name: random.supplierName(),
         contactInfo: random.boolean(0.8) ? random.phone() : null,
         email: random.email("supplier"),
         phone: random.boolean(0.8) ? random.phone() : null,
-        address: random.boolean(0.6) ? `${random.int(1, 999)} Main St` : null,
+        address: random.boolean(0.6) ? `${random.int(1, 999)} Food Hub St` : null,
         isActive: random.boolean(0.9),
         createdAt: random.pastDate(),
         updatedAt: random.boolean(0.2) ? random.pastDate() : null,
@@ -259,11 +274,11 @@ class POSSeeder {
   }
 
   async seedProducts(categories, suppliers) {
-    console.log(`📦 Seeding ${this.config.productCount} products...`);
+    console.log(`🍔 Seeding ${this.config.productCount} food products...`);
     const products = [];
     for (let i = 0; i < this.config.productCount; i++) {
-      const price = random.float(10, 500);
-      const stockQty = random.int(0, 100);
+      const price = random.foodPrice();
+      const stockQty = random.int(10, 200);
       products.push({
         sku: random.sku(this.usedSkus),
         barcode: random.barcode(this.usedBarcodes),
@@ -271,9 +286,9 @@ class POSSeeder {
         description: random.description(),
         price: price,
         stockQty: stockQty,
-        reorderLevel: random.int(5, 20),
-        reorderQty: random.int(10, 50),
-        isActive: random.boolean(0.9),
+        reorderLevel: random.int(5, 30),
+        reorderQty: random.int(20, 100),
+        isActive: random.boolean(0.95),
         createdAt: random.pastDate(),
         updatedAt: random.boolean(0.3) ? random.pastDate() : null,
         category: random.element(categories),
@@ -283,7 +298,7 @@ class POSSeeder {
     const repo = this.dataSource.getRepository(Product);
     const saved = await repo.save(products);
     saved.forEach((p) => this.productPriceCache.set(p.id, parseFloat(p.price)));
-    console.log(`✅ ${saved.length} products saved`);
+    console.log(`✅ ${saved.length} food products saved`);
     return saved;
   }
 
@@ -292,14 +307,14 @@ class POSSeeder {
     const customers = [];
     const statuses = ["regular", "vip", "elite"];
     for (let i = 0; i < this.config.customerCount; i++) {
-      const pointsBalance = random.int(0, 500);
+      const pointsBalance = random.int(0, 800);
       customers.push({
         name: random.name(),
         contactInfo: random.boolean(0.7) ? random.phone() : null,
         email: random.email("customer"),
         phone: random.boolean(0.7) ? random.phone() : null,
         loyaltyPointsBalance: pointsBalance,
-        lifetimePointsEarned: pointsBalance + random.int(0, 200),
+        lifetimePointsEarned: pointsBalance + random.int(0, 300),
         status: random.element(statuses),
         createdAt: random.pastDate(),
         updatedAt: random.boolean(0.2) ? random.pastDate() : null,
@@ -312,7 +327,7 @@ class POSSeeder {
   }
 
   async seedSales(products, customers) {
-    console.log(`🧾 Seeding ${this.config.saleCount} sales with items...`);
+    console.log(`🧾 Seeding ${this.config.saleCount} food sales with items...`);
     const saleRepo = this.dataSource.getRepository(Sale);
     const saleItemRepo = this.dataSource.getRepository(SaleItem);
 
@@ -349,8 +364,8 @@ class POSSeeder {
         totalDiscount,
         usedVoucher,
         voucherCode,
-        pointsEarn: 0, // will be updated after items
-        notes: random.boolean(0.2) ? "Sample note" : null,
+        pointsEarn: 0,
+        notes: random.boolean(0.2) ? "Takeout order" : null,
         createdAt: saleDate,
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
         customer: customer ? { id: customer.id } : null,
@@ -361,12 +376,9 @@ class POSSeeder {
 
       for (let j = 0; j < itemCount; j++) {
         const product = random.element(products);
-        const quantity = random.int(1, 5);
-        const unitPrice =
-          this.productPriceCache.get(product.id) || random.float(10, 500);
-        const discount = random.boolean(0.3)
-          ? random.float(0, unitPrice * 0.2)
-          : 0;
+        const quantity = random.int(1, 4);
+        const unitPrice = this.productPriceCache.get(product.id) || random.foodPrice();
+        const discount = random.boolean(0.3) ? random.float(0, unitPrice * 0.2) : 0;
         const tax = random.boolean(0.5) ? random.float(0, unitPrice * 0.12) : 0;
         const lineTotal = quantity * unitPrice - discount + tax;
         totalAmount += lineTotal;
@@ -385,21 +397,17 @@ class POSSeeder {
       }
 
       savedSale.totalAmount = totalAmount;
-      savedSale.pointsEarn = totalAmount; // set pointsEarn equal to totalAmount (or any rule)
+      savedSale.pointsEarn = totalAmount;
       await saleRepo.save(savedSale);
     }
 
     const savedItems = await saleItemRepo.save(saleItems);
-    console.log(
-      `✅ ${sales.length} sales with ${savedItems.length} items saved`,
-    );
+    console.log(`✅ ${sales.length} sales with ${savedItems.length} items saved`);
     return { sales, saleItems: savedItems };
   }
 
   async seedPurchases(products, suppliers) {
-    console.log(
-      `📥 Seeding ${this.config.purchaseCount} purchases with items...`,
-    );
+    console.log(`📥 Seeding ${this.config.purchaseCount} purchases with items...`);
     const purchaseRepo = this.dataSource.getRepository(Purchase);
     const purchaseItemRepo = this.dataSource.getRepository(PurchaseItem);
 
@@ -408,12 +416,7 @@ class POSSeeder {
 
     for (let i = 0; i < this.config.purchaseCount; i++) {
       const supplier = random.element(suppliers);
-      const status = random.element([
-        "pending",
-        "approved",
-        "completed",
-        "cancelled",
-      ]);
+      const status = random.element(["pending", "approved", "completed", "cancelled"]);
       const orderDate = random.pastDate();
       const itemCount = random.int(1, 5);
       let totalAmount = 0;
@@ -433,9 +436,8 @@ class POSSeeder {
 
       for (let j = 0; j < itemCount; j++) {
         const product = random.element(products);
-        const quantity = random.int(5, 50);
-        const unitPrice =
-          this.productPriceCache.get(product.id) || random.float(10, 500);
+        const quantity = random.int(10, 80);
+        const unitPrice = this.productPriceCache.get(product.id) || random.foodPrice();
         const subtotal = quantity * unitPrice;
         totalAmount += subtotal;
 
@@ -454,16 +456,12 @@ class POSSeeder {
     }
 
     const savedItems = await purchaseItemRepo.save(purchaseItems);
-    console.log(
-      `✅ ${purchases.length} purchases with ${savedItems.length} items saved`,
-    );
+    console.log(`✅ ${purchases.length} purchases with ${savedItems.length} items saved`);
     return { purchases, purchaseItems: savedItems };
   }
 
   async seedReturnRefunds(products, customers, sales) {
-    console.log(
-      `🔄 Seeding ${this.config.returnRefundCount} return refunds with items...`,
-    );
+    console.log(`🔄 Seeding ${this.config.returnRefundCount} return refunds with items...`);
     const returnRepo = this.dataSource.getRepository(ReturnRefund);
     const returnItemRepo = this.dataSource.getRepository(ReturnRefundItem);
 
@@ -472,9 +470,7 @@ class POSSeeder {
 
     for (let i = 0; i < this.config.returnRefundCount; i++) {
       const sale = random.element(sales);
-      const customer = sale.customer
-        ? { id: sale.customer.id }
-        : random.element(customers);
+      const customer = sale.customer ? { id: sale.customer.id } : random.element(customers);
       const refundMethod = random.element(["Cash", "Card", "Store Credit"]);
       const status = random.element(["processed", "pending", "cancelled"]);
       const createdAt = random.pastDate();
@@ -483,7 +479,7 @@ class POSSeeder {
 
       const returnRefund = {
         referenceNo: `RET-${Date.now()}-${i}-${random.int(1000, 9999)}`,
-        reason: random.boolean(0.7) ? "Customer returned item" : null,
+        reason: random.boolean(0.7) ? "Customer not satisfied with food" : null,
         refundMethod: refundMethod,
         totalAmount: 0,
         status: status,
@@ -499,8 +495,7 @@ class POSSeeder {
       for (let j = 0; j < itemCount; j++) {
         const product = random.element(products);
         const quantity = random.int(1, 2);
-        const unitPrice =
-          this.productPriceCache.get(product.id) || random.float(10, 500);
+        const unitPrice = this.productPriceCache.get(product.id) || random.foodPrice();
         const subtotal = quantity * unitPrice;
         totalAmount += subtotal;
 
@@ -508,7 +503,7 @@ class POSSeeder {
           quantity: quantity,
           unitPrice: unitPrice,
           subtotal: subtotal,
-          reason: random.boolean(0.3) ? "Defective" : null,
+          reason: random.boolean(0.3) ? "Wrong order / spoiled" : null,
           createdAt: savedReturn.createdAt,
           returnRefund: { id: savedReturn.id },
           product: { id: product.id },
@@ -520,16 +515,12 @@ class POSSeeder {
     }
 
     const savedItems = await returnItemRepo.save(returnItems);
-    console.log(
-      `✅ ${returns.length} return refunds with ${savedItems.length} items saved`,
-    );
+    console.log(`✅ ${returns.length} return refunds with ${savedItems.length} items saved`);
     return { returns, returnItems: savedItems };
   }
 
   async seedInventoryMovements(products, sales, saleItems) {
-    console.log(
-      `📦 Seeding ${this.config.inventoryMovementCount} inventory movements...`,
-    );
+    console.log(`📦 Seeding ${this.config.inventoryMovementCount} inventory movements...`);
     const movementRepo = this.dataSource.getRepository(InventoryMovement);
     const movementTypes = ["sale", "refund", "adjustment", "purchase"];
     const movements = [];
@@ -540,7 +531,7 @@ class POSSeeder {
           movementType: "sale",
           qtyChange: -item.quantity,
           timestamp: item.createdAt,
-          notes: `Sale #${item.sale.id} item`,
+          notes: `Sale #${item.sale.id} - food item`,
           updatedAt: random.boolean(0.1) ? random.pastDate() : null,
           product: { id: item.product.id },
           sale: { id: item.sale.id },
@@ -555,19 +546,14 @@ class POSSeeder {
       let qtyChange;
       if (movementType === "sale") qtyChange = -random.int(1, 10);
       else if (movementType === "refund") qtyChange = random.int(1, 5);
-      else if (movementType === "purchase") qtyChange = random.int(10, 100);
-      else qtyChange = random.int(-20, 20);
+      else if (movementType === "purchase") qtyChange = random.int(20, 120);
+      else qtyChange = random.int(-15, 25);
 
       movements.push({
         movementType: movementType,
         qtyChange: qtyChange,
         timestamp: random.pastDate(),
-        notes:
-          movementType === "purchase"
-            ? "Stock received from supplier"
-            : random.boolean(0.2)
-              ? "Manual adjustment"
-              : null,
+        notes: movementType === "purchase" ? "Restocked ingredients" : random.boolean(0.2) ? "Manual adjustment" : null,
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
         product: { id: product.id },
         sale: sale ? { id: sale.id } : null,
@@ -584,26 +570,22 @@ class POSSeeder {
   }
 
   async seedLoyaltyTransactions(customers, sales) {
-    console.log(
-      `💳 Seeding ${this.config.loyaltyTransactionCount} loyalty transactions...`,
-    );
+    console.log(`💳 Seeding ${this.config.loyaltyTransactionCount} loyalty transactions...`);
     const transactionRepo = this.dataSource.getRepository(LoyaltyTransaction);
     const transactions = [];
 
     for (let i = 0; i < this.config.loyaltyTransactionCount; i++) {
       const customer = random.element(customers);
       const sale = random.boolean(0.4) ? random.element(sales) : null;
-      const pointsChange = random.boolean(0.7)
-        ? random.int(10, 200)
-        : -random.int(5, 50);
+      const pointsChange = random.boolean(0.7) ? random.int(10, 200) : -random.int(5, 50);
       const timestamp = sale ? sale.timestamp : random.pastDate();
-      const transactionType = pointsChange > 0 ? "earn" : "redeem"; // could add 'refund' occasionally if needed
+      const transactionType = pointsChange > 0 ? "earn" : "redeem";
 
       transactions.push({
         transactionType,
         pointsChange: pointsChange,
         timestamp: timestamp,
-        notes: pointsChange > 0 ? "Earned from purchase" : "Redeemed reward",
+        notes: pointsChange > 0 ? "Earned from food purchase" : "Redeemed reward",
         updatedAt: random.boolean(0.1) ? random.pastDate() : null,
         customer: { id: customer.id },
         sale: sale ? { id: sale.id } : null,
@@ -619,17 +601,8 @@ class POSSeeder {
     console.log(`📝 Seeding ${this.config.auditLogCount} audit logs...`);
     const actions = ["CREATE", "UPDATE", "DELETE", "VIEW", "LOGIN", "LOGOUT"];
     const entities = [
-      "Product",
-      "Customer",
-      "Sale",
-      "InventoryMovement",
-      "LoyaltyTransaction",
-      "SystemSetting",
-      "Category",
-      "Supplier",
-      "Purchase",
-      "ReturnRefund",
-      "NotificationLog",
+      "Product", "Customer", "Sale", "InventoryMovement", "LoyaltyTransaction",
+      "SystemSetting", "Category", "Supplier", "Purchase", "ReturnRefund", "NotificationLog"
     ];
 
     const logs = [];
@@ -651,64 +624,14 @@ class POSSeeder {
   async seedSystemSettings() {
     console.log("⚙️ Seeding system settings...");
     const settings = [
-      {
-        key: "store_name",
-        value: "Tillify",
-        setting_type: "general",
-        description: "Store display name",
-        is_public: true,
-        is_deleted: false,
-      },
-      {
-        key: "currency",
-        value: "PHP",
-        setting_type: "general",
-        description: "Currency used for pricing",
-        is_public: true,
-        is_deleted: false,
-      },
-      {
-        key: "tax_rate",
-        value: "12",
-        setting_type: "general",
-        description: "VAT percentage",
-        is_public: false,
-        is_deleted: false,
-      },
-      {
-        key: "loyalty_points_per_currency",
-        value: "1",
-        setting_type: "general",
-        description: "Points earned per unit currency",
-        is_public: false,
-        is_deleted: false,
-      },
-      {
-        key: "enable_inventory_sync",
-        value: "true",
-        setting_type: "general",
-        description: "Enable external inventory sync",
-        is_public: false,
-        is_deleted: false,
-      },
-      {
-        key: "default_payment_method",
-        value: "cash",
-        setting_type: "general",
-        description: "Default payment method",
-        is_public: true,
-        is_deleted: false,
-      },
-      {
-        key: "receipt_footer",
-        value: "Thank you for shopping!",
-        setting_type: "general",
-        description: "Receipt footer message",
-        is_public: true,
-        is_deleted: false,
-      },
+      { key: "store_name", value: "Tillify Fastfood", setting_type: "general", description: "Store display name", is_public: true, is_deleted: false },
+      { key: "currency", value: "PHP", setting_type: "general", description: "Currency used for pricing", is_public: true, is_deleted: false },
+      { key: "tax_rate", value: "12", setting_type: "general", description: "VAT percentage", is_public: false, is_deleted: false },
+      { key: "loyalty_points_per_currency", value: "1", setting_type: "general", description: "Points earned per peso spent", is_public: false, is_deleted: false },
+      { key: "enable_inventory_sync", value: "true", setting_type: "general", description: "Enable external inventory sync", is_public: false, is_deleted: false },
+      { key: "default_payment_method", value: "cash", setting_type: "general", description: "Default payment method", is_public: true, is_deleted: false },
+      { key: "receipt_footer", value: "Thank you for dining with us!", setting_type: "general", description: "Receipt footer message", is_public: true, is_deleted: false },
     ];
-
     const repo = this.dataSource.getRepository(SystemSetting);
     await repo.save(settings);
     console.log(`✅ ${settings.length} system settings saved`);
@@ -716,9 +639,7 @@ class POSSeeder {
   }
 
   async seedNotificationLogs() {
-    console.log(
-      `📧 Seeding ${this.config.notificationLogCount} notification logs...`,
-    );
+    console.log(`📧 Seeding ${this.config.notificationLogCount} notification logs...`);
     const repo = this.dataSource.getRepository(NotificationLog);
     const logs = [];
     const statuses = ["queued", "sent", "failed", "resend"];
@@ -728,11 +649,9 @@ class POSSeeder {
       const sentAt = status === "sent" ? random.pastDate() : null;
       const lastErrorAt = status === "failed" ? random.pastDate() : null;
       logs.push({
-        recipient_email: random.email("user"),
-        subject: random.boolean(0.7) ? "Order Confirmation" : null,
-        payload: random.boolean(0.5)
-          ? JSON.stringify({ orderId: random.int(1000, 9999) })
-          : null,
+        recipient_email: random.email("customer"),
+        subject: random.boolean(0.7) ? "Your food order is ready" : null,
+        payload: random.boolean(0.5) ? JSON.stringify({ orderId: random.int(1000, 9999) }) : null,
         status: status,
         error_message: status === "failed" ? "SMTP error" : null,
         retry_count: status === "failed" ? random.int(1, 3) : 0,
@@ -745,9 +664,7 @@ class POSSeeder {
     }
 
     await repo.save(logs);
-    console.log(
-      `✅ ${this.config.notificationLogCount} notification logs saved`,
-    );
+    console.log(`✅ ${this.config.notificationLogCount} notification logs saved`);
   }
 
   async run() {
@@ -769,12 +686,9 @@ class POSSeeder {
       let suppliers = [];
       let products = [];
       let customers = [];
-      let sales = [],
-        saleItems = [];
-      let purchases = [],
-        purchaseItems = [];
-      let returns = [],
-        returnItems = [];
+      let sales = [], saleItems = [];
+      let purchases = [], purchaseItems = [];
+      let returns = [], returnItems = [];
 
       if (!this.config.skipCategories) categories = await this.seedCategories();
       if (!this.config.skipSuppliers) suppliers = await this.seedSuppliers();
@@ -797,12 +711,7 @@ class POSSeeder {
         purchaseItems = result.purchaseItems;
       }
 
-      if (
-        !this.config.skipReturnRefunds &&
-        products.length &&
-        customers.length &&
-        sales.length
-      ) {
+      if (!this.config.skipReturnRefunds && products.length && customers.length && sales.length) {
         const result = await this.seedReturnRefunds(products, customers, sales);
         returns = result.returns;
         returnItems = result.returnItems;
@@ -841,12 +750,8 @@ class POSSeeder {
       console.log(`   Purchase Items: ${purchaseItems.length}`);
       console.log(`   Return Refunds: ${returns.length}`);
       console.log(`   Return Items: ${returnItems.length}`);
-      console.log(
-        `   Inventory Movements: ${Math.min(this.config.inventoryMovementCount, saleItems.length + (this.config.inventoryMovementCount - saleItems.length))}`,
-      );
-      console.log(
-        `   Loyalty Transactions: ${this.config.loyaltyTransactionCount}`,
-      );
+      console.log(`   Inventory Movements: ${Math.min(this.config.inventoryMovementCount, saleItems.length + (this.config.inventoryMovementCount - saleItems.length))}`);
+      console.log(`   Loyalty Transactions: ${this.config.loyaltyTransactionCount}`);
       console.log(`   Audit Logs: ${this.config.auditLogCount}`);
       console.log(`   Notification Logs: ${this.config.notificationLogCount}`);
       console.log(`   System Settings: 7`);
@@ -867,134 +772,38 @@ function parseArgs() {
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case "--clear-only":
-        config.clearOnly = true;
-        break;
-      case "--products":
-        config.skipProducts = false;
-        config.productCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.productCount;
-        break;
-      case "--customers":
-        config.skipCustomers = false;
-        config.customerCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.customerCount;
-        break;
-      case "--sales":
-        config.skipSales = false;
-        config.saleCount = parseInt(args[++i]) || DEFAULT_CONFIG.saleCount;
-        break;
-      case "--inventory-movements":
-        config.skipInventoryMovements = false;
-        config.inventoryMovementCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.inventoryMovementCount;
-        break;
-      case "--loyalty-transactions":
-        config.skipLoyaltyTransactions = false;
-        config.loyaltyTransactionCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.loyaltyTransactionCount;
-        break;
-      case "--audit-logs":
-        config.skipAuditLogs = false;
-        config.auditLogCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.auditLogCount;
-        break;
-      case "--categories":
-        config.skipCategories = false;
-        config.categoryCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.categoryCount;
-        break;
-      case "--suppliers":
-        config.skipSuppliers = false;
-        config.supplierCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.supplierCount;
-        break;
-      case "--purchases":
-        config.skipPurchases = false;
-        config.purchaseCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.purchaseCount;
-        break;
-      case "--return-refunds":
-        config.skipReturnRefunds = false;
-        config.returnRefundCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.returnRefundCount;
-        break;
-      case "--notification-logs":
-        config.skipNotificationLogs = false;
-        config.notificationLogCount =
-          parseInt(args[++i]) || DEFAULT_CONFIG.notificationLogCount;
-        break;
-      case "--skip-products":
-        config.skipProducts = true;
-        break;
-      case "--skip-customers":
-        config.skipCustomers = true;
-        break;
-      case "--skip-sales":
-        config.skipSales = true;
-        break;
-      case "--skip-inventory-movements":
-        config.skipInventoryMovements = true;
-        break;
-      case "--skip-loyalty-transactions":
-        config.skipLoyaltyTransactions = true;
-        break;
-      case "--skip-audit-logs":
-        config.skipAuditLogs = true;
-        break;
-      case "--skip-system-settings":
-        config.skipSystemSettings = true;
-        break;
-      case "--skip-categories":
-        config.skipCategories = true;
-        break;
-      case "--skip-suppliers":
-        config.skipSuppliers = true;
-        break;
-      case "--skip-purchases":
-        config.skipPurchases = true;
-        break;
-      case "--skip-return-refunds":
-        config.skipReturnRefunds = true;
-        break;
-      case "--skip-notification-logs":
-        config.skipNotificationLogs = true;
-        break;
+      case "--clear-only": config.clearOnly = true; break;
+      case "--products": config.skipProducts = false; config.productCount = parseInt(args[++i]) || DEFAULT_CONFIG.productCount; break;
+      case "--customers": config.skipCustomers = false; config.customerCount = parseInt(args[++i]) || DEFAULT_CONFIG.customerCount; break;
+      case "--sales": config.skipSales = false; config.saleCount = parseInt(args[++i]) || DEFAULT_CONFIG.saleCount; break;
+      case "--inventory-movements": config.skipInventoryMovements = false; config.inventoryMovementCount = parseInt(args[++i]) || DEFAULT_CONFIG.inventoryMovementCount; break;
+      case "--loyalty-transactions": config.skipLoyaltyTransactions = false; config.loyaltyTransactionCount = parseInt(args[++i]) || DEFAULT_CONFIG.loyaltyTransactionCount; break;
+      case "--audit-logs": config.skipAuditLogs = false; config.auditLogCount = parseInt(args[++i]) || DEFAULT_CONFIG.auditLogCount; break;
+      case "--categories": config.skipCategories = false; config.categoryCount = parseInt(args[++i]) || DEFAULT_CONFIG.categoryCount; break;
+      case "--suppliers": config.skipSuppliers = false; config.supplierCount = parseInt(args[++i]) || DEFAULT_CONFIG.supplierCount; break;
+      case "--purchases": config.skipPurchases = false; config.purchaseCount = parseInt(args[++i]) || DEFAULT_CONFIG.purchaseCount; break;
+      case "--return-refunds": config.skipReturnRefunds = false; config.returnRefundCount = parseInt(args[++i]) || DEFAULT_CONFIG.returnRefundCount; break;
+      case "--notification-logs": config.skipNotificationLogs = false; config.notificationLogCount = parseInt(args[++i]) || DEFAULT_CONFIG.notificationLogCount; break;
+      case "--skip-products": config.skipProducts = true; break;
+      case "--skip-customers": config.skipCustomers = true; break;
+      case "--skip-sales": config.skipSales = true; break;
+      case "--skip-inventory-movements": config.skipInventoryMovements = true; break;
+      case "--skip-loyalty-transactions": config.skipLoyaltyTransactions = true; break;
+      case "--skip-audit-logs": config.skipAuditLogs = true; break;
+      case "--skip-system-settings": config.skipSystemSettings = true; break;
+      case "--skip-categories": config.skipCategories = true; break;
+      case "--skip-suppliers": config.skipSuppliers = true; break;
+      case "--skip-purchases": config.skipPurchases = true; break;
+      case "--skip-return-refunds": config.skipReturnRefunds = true; break;
+      case "--skip-notification-logs": config.skipNotificationLogs = true; break;
       case "--help":
         console.log(`
 Usage: node seedData.js [options]
 
-Options:
-  --clear-only                Only wipe database, do not seed.
-  --products [count]          Seed products (default: 50)
-  --customers [count]         Seed customers (default: 30)
-  --sales [count]             Seed sales (default: 100)
-  --inventory-movements [count] Seed inventory movements (default: 150)
-  --loyalty-transactions [count] Seed loyalty transactions (default: 80)
-  --audit-logs [count]        Seed audit logs (default: 60)
-  --categories [count]        Seed categories (default: 5)
-  --suppliers [count]         Seed suppliers (default: 10)
-  --purchases [count]         Seed purchases (default: 30)
-  --return-refunds [count]    Seed return refunds (default: 20)
-  --notification-logs [count] Seed notification logs (default: 50)
-  --skip-products             Skip seeding products
-  --skip-customers            Skip seeding customers
-  --skip-sales                Skip seeding sales
-  --skip-inventory-movements  Skip seeding inventory movements
-  --skip-loyalty-transactions Skip seeding loyalty transactions
-  --skip-audit-logs           Skip seeding audit logs
-  --skip-system-settings      Skip seeding system settings
-  --skip-categories           Skip seeding categories
-  --skip-suppliers            Skip seeding suppliers
-  --skip-purchases            Skip seeding purchases
-  --skip-return-refunds       Skip seeding return refunds
-  --skip-notification-logs    Skip seeding notification logs
-  --help                      Show this help
-
-Examples:
-  node seedData.js --products 20 --customers 10
+Food/Restaurant Seeder Examples:
+  node seedData.js --products 40 --sales 80
   node seedData.js --clear-only
-  node seedData.js --skip-loyalty-transactions --skip-notification-logs
+  node seedData.js --skip-loyalty-transactions
 `);
         process.exit(0);
     }
@@ -1002,7 +811,6 @@ Examples:
   return config;
 }
 
-// ========== EXECUTION ==========
 if (require.main === module) {
   const config = parseArgs();
   const seeder = new POSSeeder(config);

@@ -9,9 +9,9 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
-import { type Customer } from "../../../api/utils/customer";
-import { type Sale } from "../../../api/utils/sale";
-import { type LoyaltyTransaction } from "../../../api/utils/loyalty";
+import { type Customer } from "../../../api/core/customer";
+import { type Sale } from "../../../api/core/sale";
+import { type LoyaltyTransaction } from "../../../api/core/loyalty";
 import Decimal from "decimal.js";
 
 interface CustomerViewDialogProps {

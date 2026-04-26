@@ -10,8 +10,8 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import type { Supplier } from "../../../api/utils/supplier";
-import supplierAPI from "../../../api/utils/supplier";
+import type { Supplier } from "../../../api/core/supplier";
+import supplierAPI from "../../../api/core/supplier";
 
 interface SupplierSelectProps {
   value: number | null;

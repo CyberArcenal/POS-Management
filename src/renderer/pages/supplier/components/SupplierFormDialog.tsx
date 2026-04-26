@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { X, Loader2 } from "lucide-react";
-import supplierAPI, { type Supplier } from "../../../api/utils/supplier";
+import supplierAPI, { type Supplier } from "../../../api/core/supplier";
 import { dialogs } from "../../../utils/dialogs";
 import type { FormMode } from "../hooks/useSupplierForm";
 

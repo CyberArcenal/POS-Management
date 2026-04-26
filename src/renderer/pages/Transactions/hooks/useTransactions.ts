@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import saleAPI, { type Sale } from "../../../api/utils/sale";
+import saleAPI, { type Sale } from "../../../api/core/sale";
 import { dialogs } from "../../../utils/dialogs";
 
 export type PaymentMethod = "cash" | "card" | "wallet";
