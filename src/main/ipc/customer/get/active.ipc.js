@@ -1,5 +1,5 @@
 
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const Customer = require("../../../../entities/Customer");
 const Sale = require("../../../../entities/Sale");
 

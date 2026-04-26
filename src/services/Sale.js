@@ -25,7 +25,7 @@ class SaleService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const Sale = require("../entities/Sale");
     const SaleItem = require("../entities/SaleItem");
     const Customer = require("../entities/Customer");
@@ -71,7 +71,7 @@ class SaleService {
     if (qr) {
       return qr.manager.getRepository(entityClass);
     }
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     return AppDataSource.getRepository(entityClass);
   }
 

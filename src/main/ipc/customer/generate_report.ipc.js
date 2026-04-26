@@ -2,7 +2,7 @@
 
 const Sale = require("../../../entities/Sale");
 const customerService = require("../../../services/Customer");
-const { AppDataSource } = require("../../db/dataSource");
+const { AppDataSource } = require("../../db/data-source");
 
 /**
  * Generate a comprehensive customer report (statistics + top customers + sales summary)

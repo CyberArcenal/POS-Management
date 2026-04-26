@@ -2,7 +2,7 @@
 const { AuditLog } = require("../../../../entities/AuditLog");
 const InventoryMovement = require("../../../../entities/InventoryMovement");
 const Sale = require("../../../../entities/Sale");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const { format } = require("date-fns");
 
 /**

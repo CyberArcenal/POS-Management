@@ -1,6 +1,6 @@
 // src/main/ipc/product/get/inventory_value.ipc
 
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const Product = require("../../../../entities/Product");
 
 /**

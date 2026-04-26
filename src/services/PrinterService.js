@@ -55,7 +55,7 @@ class PrinterService {
    * @returns {Promise<boolean>}
    */
   async printReceipt(saleId) {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const notificationService = require("./NotificationService");
     let driver;
     try {

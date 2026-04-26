@@ -1,6 +1,6 @@
 // src/main/ipc/product/get/by_barcode.ipc.js
 
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const Product  = require("../../../../entities/Product");
 
 // Simple in-memory cache para sa idempotency

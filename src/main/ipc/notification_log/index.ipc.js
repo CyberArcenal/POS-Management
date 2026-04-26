@@ -2,7 +2,7 @@
 
 const { ipcMain } = require("electron");
 const { withErrorHandling } = require("../../../middlewares/errorHandler");
-const { AppDataSource } = require("../../db/dataSource");
+const { AppDataSource } = require("../../db/data-source");
 const { AuditLog } = require("../../../entities/AuditLog");
 const { logger } = require("../../../utils/logger");
 const { NotificationLogService } = require("../../../services/NotificationLog");

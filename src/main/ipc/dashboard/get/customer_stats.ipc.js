@@ -1,8 +1,8 @@
 // src/main/ipc/dashboard/get/customer_stats.ipc.js
-
+//@ts-check
 const Customer = require("../../../../entities/Customer");
 const Sale = require("../../../../entities/Sale");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const { subDays, startOfDay, endOfDay } = require("date-fns");
 
 /**

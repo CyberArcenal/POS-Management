@@ -10,7 +10,7 @@ class InventoryMovementService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const InventoryMovement = require("../entities/InventoryMovement");
     const Product = require("../entities/Product");
     const Sale = require("../entities/Sale");
@@ -45,7 +45,7 @@ class InventoryMovementService {
     if (qr) {
       return qr.manager.getRepository(entityClass);
     }
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     return AppDataSource.getRepository(entityClass);
   }
 

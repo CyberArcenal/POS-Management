@@ -3,7 +3,7 @@
 // Run with: npm run seed [options]
 
 const { DataSource } = require("typeorm");
-const { AppDataSource } = require("../main/db/dataSource");
+const { AppDataSource } = require("../main/db/data-source");
 
 // Existing entities
 const Customer = require("../entities/Customer");

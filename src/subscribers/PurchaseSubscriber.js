@@ -3,7 +3,7 @@ const Purchase = require("../entities/Purchase");
 const {
   PurchaseStateTransitionService,
 } = require("../StateTransitionServices/Purchase");
-const { AppDataSource } = require("../main/db/dataSource");
+const { AppDataSource } = require("../main/db/data-source");
 
 console.log("[Subscriber] Loading PurchaseSubscriber");
 

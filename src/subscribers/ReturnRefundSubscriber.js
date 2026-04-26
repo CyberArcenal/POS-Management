@@ -3,7 +3,7 @@ const ReturnRefund = require("../entities/ReturnRefund");
 const {
   ReturnRefundStateTransitionService,
 } = require("../StateTransitionServices/ReturnRefund");
-const { AppDataSource } = require("../main/db/dataSource");
+const { AppDataSource } = require("../main/db/data-source");
 
 console.log("[Subscriber] Loading ReturnRefundSubscriber");
 

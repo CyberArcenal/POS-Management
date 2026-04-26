@@ -1,5 +1,5 @@
 // src/main/ipc/auditlog/generate_report.ipc.js
-const { AppDataSource } = require("../../db/dataSource");
+const { AppDataSource } = require("../../db/data-source");
 const { AuditLog } = require("../../../entities/AuditLog");
 const fs = require("fs").promises;
 const path = require("path");

@@ -1,4 +1,5 @@
 // config/database.js
+//@ts-check
 const path = require("path");
 const fs = require("fs");
 const { app } = require("electron");

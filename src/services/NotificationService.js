@@ -8,7 +8,7 @@ class NotificationService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const Notification = require("../entities/Notification");
 
     if (!AppDataSource.isInitialized) {
@@ -35,7 +35,7 @@ class NotificationService {
     if (qr) {
       return qr.manager.getRepository(entityClass);
     }
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     return AppDataSource.getRepository(entityClass);
   }
 

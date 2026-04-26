@@ -10,7 +10,7 @@ class ReportService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
     }

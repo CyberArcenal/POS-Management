@@ -1,6 +1,6 @@
 
 const SaleItem = require("../../../../entities/SaleItem");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 
 /**
  * @param {Object} params

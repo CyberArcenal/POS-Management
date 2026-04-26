@@ -1,6 +1,6 @@
 // src/main/ipc/dashboard/get/low_stock_alert.ipc.js
 const Product = require("../../../../entities/Product");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 
 /**
  * Get products with stock below threshold

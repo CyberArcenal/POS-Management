@@ -1,6 +1,6 @@
 // src/main/ipc/dashboard/get/top_products.ipc.js
 const SaleItem = require("../../../../entities/SaleItem");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 
 /**
  * Get top selling products by quantity or revenue

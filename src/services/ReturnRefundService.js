@@ -16,7 +16,7 @@ class ReturnRefundService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const ReturnRefund = require("../entities/ReturnRefund");
     const ReturnRefundItem = require("../entities/ReturnRefundItem");
     const Sale = require("../entities/Sale");
@@ -61,7 +61,7 @@ class ReturnRefundService {
     if (qr) {
       return qr.manager.getRepository(entityClass);
     }
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     return AppDataSource.getRepository(entityClass);
   }
 

@@ -21,7 +21,7 @@ const { SystemSetting, SettingType } = require("../entities/systemSettings");
  * @param {string} settingType
  */
 async function getValue(key, settingType, defaultValue = null) {
-  const { AppDataSource } = require("../main/db/dataSource");
+  const { AppDataSource } = require("../main/db/data-source");
   try {
     // console.log(
     //   `[DB DEBUG] getValue called for key: "${key}", type: "${settingType}"`

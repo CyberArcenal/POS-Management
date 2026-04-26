@@ -2,7 +2,7 @@
 // Return & Refund Report Handler (Read-Only)
 
 const { ipcMain } = require("electron");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 // @ts-ignore
 const Sale = require("../../../../entities/Sale");
 // @ts-ignore

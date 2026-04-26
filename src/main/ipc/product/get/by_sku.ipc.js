@@ -1,6 +1,6 @@
 // src/main/ipc/product/get/by_sku.ipc
 
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 const Product = require("../../../../entities/Product");
 
 /**

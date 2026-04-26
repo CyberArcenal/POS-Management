@@ -1,6 +1,6 @@
 // src/main/ipc/dashboard/get/inventory_status.ipc.js
 const Product = require("../../../../entities/Product");
-const { AppDataSource } = require("../../../db/dataSource");
+const { AppDataSource } = require("../../../db/data-source");
 
 /**
  * Get current inventory status: total products, total value, low stock items (list)

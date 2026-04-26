@@ -262,7 +262,7 @@ function setupGlobalErrorHandlers() {
 // ===================== DATABASE SERVICE =====================
 
 async function initializeDatabase() {
-  const { AppDataSource } = require("./db/datasource.js");
+  const { AppDataSource } = require("./db/data-source.js");
   try {
     log(LogLevel.INFO, "Initializing database...");
 
@@ -334,7 +334,7 @@ async function initializeDatabase() {
  * Safely close database connection
  */
 async function safeCloseDatabase() {
-  const { AppDataSource } = require("./db/datasource.js");
+  const { AppDataSource } = require("./db/data-source.js");
   if (isShuttingDown) return;
 
   isShuttingDown = true;
@@ -770,7 +770,7 @@ function registerIpcHandlers() {
 
   // Database Handlers
   ipcMain.handle("database:get-status", async () => {
-    const { AppDataSource } = require("./db/datasource.js");
+    const { AppDataSource } = require("./db/data-source.js");
     try {
       const isInitialized = AppDataSource.isInitialized;
       let migrationStatus = null;

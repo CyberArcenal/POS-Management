@@ -1,5 +1,5 @@
 // electron-app/main/ipc/handlers/systemConfig.js
-
+//@ts-check
 const { ipcMain } = require("electron");
 // @ts-ignore
 // @ts-ignore
@@ -9,7 +9,7 @@ const { ipcMain } = require("electron");
 const path = require("path");
 const { logger } = require("../../utils/logger");
 const { SystemSetting, SettingType } = require("../../entities/systemSettings");
-const { AppDataSource } = require("../db/dataSource");
+const { AppDataSource } = require("../db/data-source");
 
 class SystemConfigHandler {
   constructor() {

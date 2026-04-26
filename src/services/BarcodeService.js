@@ -39,7 +39,7 @@ class BarcodeService {
    * @param {number} intervalMs - Interval in milliseconds (default: 5000)
    */
   startAutoEmit(intervalMs = 5000) {
-    const { AppDataSource } = require('../main/db/datasource');
+    const { AppDataSource } = require('../main/db/data-source');
     if (!this.isDev) return;
     
     this.stopAutoEmit(); // clear any existing interval

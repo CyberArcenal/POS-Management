@@ -16,7 +16,7 @@ class PurchaseService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const Purchase = require("../entities/Purchase");
     const PurchaseItem = require("../entities/PurchaseItem");
     const Supplier = require("../entities/Supplier");

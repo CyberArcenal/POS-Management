@@ -11,7 +11,7 @@ class AuditLogger {
   }
 
   async initialize() {
-    const { AppDataSource } = require('../main/db/datasource');
+    const { AppDataSource } = require('../main/db/data-source');
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
     }

@@ -1,7 +1,7 @@
 // src/main/ipc/auditlog/index.ipc.js - Audit Log Handler (Read-Only)
 const { ipcMain } = require("electron");
 const { logger } = require("../../../utils/logger");
-const { AppDataSource } = require("../../db/dataSource");
+const { AppDataSource } = require("../../db/data-source");
 const {AuditLog} = require("../../../entities/AuditLog");
 const { withErrorHandling } = require("../../../middlewares/errorHandler");
 

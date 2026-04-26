@@ -20,7 +20,7 @@ class SaleService {
   }
 
   async initialize() {
-    const { AppDataSource } = require("../main/db/dataSource");
+    const { AppDataSource } = require("../main/db/data-source");
     const Sale = require("../entities/Sale");
     const SaleItem = require("../entities/SaleItem");
     const Customer = require("../entities/Customer");
