@@ -1,7 +1,7 @@
 // components/Sidebar.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { version, name } from "../../../../package.json";
+import { version, name } from "../../../package.json";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -39,10 +39,10 @@ import {
   Building2,
   ComputerIcon,
 } from "lucide-react";
-import dashboardAPI from "../../api/analytics/dashboard";
-import { formatCurrency } from "../../utils/formatters";
-import systemConfigAPI from "../../api/utils/system_config";
-import { useSettings } from "../../contexts/SettingsContext";
+import dashboardAPI from "../api/analytics/dashboard";
+import { formatCurrency } from "../utils/formatters";
+import systemConfigAPI from "../api/utils/system_config";
+import { useSettings } from "../contexts/SettingsContext";
 
 interface SidebarProps {
   isOpen: boolean;

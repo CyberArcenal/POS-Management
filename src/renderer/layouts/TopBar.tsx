@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import notificationAPI from "../../api/core/notification";
-import { NotificationDrawer } from "./NotificationDrawer";
-import UpdateNotifier from "./UpdateNotifier";
+import notificationAPI from "../api/core/notification";
+import { NotificationDrawer } from "../components/Shared/NotificationDrawer";
+import UpdateNotifier from "../components/Shared/UpdateNotifier";
 
 interface RouteInfo {
   path: string;

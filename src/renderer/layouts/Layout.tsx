@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Shared/SideBar';
-import TopBar from '../components/Shared/TopBar';
+import Sidebar from './SideBar';
+import TopBar from './TopBar';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
