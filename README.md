@@ -1,204 +1,190 @@
-# Tillify (POS Management System)
+<!-- BEGIN_STORE_STYLE_README -->
+<h1 align="center">
+  <br />
+  <img src="https://raw.githubusercontent.com/CyberArcenal/Tillify/main/public/logo.png" width="70" style="border-radius: 20px;" />
+  <br />
+  Tillify POS
+  <br />
+  <img src="https://img.shields.io/badge/version-1.0.0-blue" />
+  <img src="https://img.shields.io/badge/license-Apache%202.0-green" />
+</h1>
 
-A modern, feature‑rich Point of Sale (POS) management system built with **Electron, React, TypeScript, and SQLite**. This desktop application provides tools for retail operations, inventory tracking, sales processing, and customer relationship management.
+<p align="center">
+  <strong>All‑in‑one Point of Sale system for groceries, restaurants, retail stores, and service businesses</strong><br />
+  ✨ Offline‑first • Touchscreen friendly • Free & open source ✨
+</p>
 
-## Why Tillify?
+<p align="center">
+  <a href="#-download"><img src="https://img.shields.io/badge/⬇️%20Download%20for-Windows-0078D6?style=for-the-badge&logo=windows"></a>
+  <a href="#-download"><img src="https://img.shields.io/badge/⬇️%20Download%20for-macOS-000000?style=for-the-badge&logo=apple"></a>
+  <a href="#-download"><img src="https://img.shields.io/badge/⬇️%20Download%20for-Linux-FCC624?style=for-the-badge&logo=linux"></a>
+</p>
 
-Tillify is an **all-in-one POS system** designed for any business type:
+<p align="center">
+  <img src="https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail1.png?raw=true" width="45%" />
+  <img src="https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail2.png?raw=true" width="45%" />
+</p>
 
-- 🛒 Grocery and retail shops  
-- 🍽 Restaurants and cafés  
-- 🔥 Gasul and supply stores  
-- 🛠 Service-based businesses  
+---
 
-With **offline-first design**, **customer loyalty**, **vouchers**, and **auto-update support**, Tillify adapts to your workflow — no matter the industry.
+## 🎯 Who is Tillify for?
 
-### Touchscreen-Friendly Cashier
+<table align="center">
+  <tr>
+    <td align="center" width="33%">🛒 <b>Grocery / Corner store</b><br />Fast inventory, vouchers, barcode ready</td>
+    <td align="center" width="33%">🍽️ <b>Restaurant / Cafe</b><br />Loyalty points, touchscreen even with wet hands</td>
+    <td align="center" width="33%">🔥 <b>Gas / Hardware / Services</b><br />Works without a scanner, offline first, multi‑branch sync</td>
+  </tr>
+</table>
 
-- Large **grid-based item layout** for quick tap selection  
-- Built-in **search bar** for fast lookup of products  
-- Optimized for **Windows touchscreen devices** (Surface, 2-in-1 laptops, tablets)  
-- Works seamlessly with **mouse + keyboard** or **touch input**  
-- Designed to be **hardware-optional** — fully functional even without barcode scanners or receipt printers
+---
 
-## 📸 Gallery
+## ✨ Features that speed up your business
 
-![Thumbnail 1](https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail1.png?raw=true)
-![Thumbnail 2](https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail2.png?raw=true)
-![Thumbnail 3](https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail3.png?raw=true)
-![Thumbnail 4](https://github.com/CyberArcenal/Tillify/blob/main/screenshots/thumbnail4.png?raw=true)
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="33%">🖥️ <b>Touchscreen POS</b><br />Grid layout + instant search, works with mouse or finger</td>
+      <td align="center" width="33%">📦 <b>Real‑time inventory sync</b><br />Stock updates across multiple branches, with retry logic</td>
+      <td align="center" width="33%">❤️ <b>Loyalty program</b><br />Points earning & redemption, customer history</td>
+    </tr>
+    <tr>
+      <td align="center">📊 <b>Sales analytics</b><br />Interactive charts, sales reports, customer insights</td>
+      <td align="center">💾 <b>Offline‑first</b><br />Works without internet – syncs when back online</td>
+      <td align="center">🔄 <b>Auto backup & audit trail</b><br />Your data never gets lost, every action is logged</td>
+    </tr>
+    <tr>
+      <td align="center">🧾 <b>Receipt generation</b><br />Print or save as PDF</td>
+      <td align="center">🔌 <b>External DB sync</b><br />Connect to another database for inventory</td>
+      <td align="center">⚙️ <b>Auto‑update</b><br />Via GitHub releases – always the latest version</td>
+    </tr>
+  </table>
+</div>
 
-## 🚀 Features
+---
 
-### Core
+## 🚀 Start in under 5 minutes – no coding required
 
-- **Sales Processing**: Full POS workflow with receipt generation
-- **Inventory Management**: Track stock levels, manage products, monitor movements
-- **Customer Management**: Profiles, contact info, transaction history
-- **Loyalty Program**: Points earning and redemption
-- **Cross‑platform**: Windows, macOS, Linux
+1. **Download** the installer for your OS (Windows, macOS, Linux)
+2. **Install** and open Tillify
+3. **Add a product** to your inventory
+4. **Start selling** – just tap on the touchscreen or scan a barcode
 
-### Advanced
+> 💡 You don't need any coding knowledge. If you want to customize or contribute, the technical guide is below.
 
-- **Database Sync**: Real‑time inventory synchronization
-- **Audit Trail**: Comprehensive activity logging
-- **Automated Backups**: Backup and recovery system
-- **Migrations**: Automated schema management
-- **Reporting & Analytics**: Sales, inventory, customer insights, charts
+---
 
-## 🛠 Tech Stack
+## 🛠️ For developers (technical details)
 
-**Frontend**
+<details>
+<summary><b>📁 Expand to see the stack, installation, and scripts</b></summary>
 
-- React 19, TypeScript, Vite, Tailwind CSS
-- Chart.js (analytics), React Router (navigation)
+### Tech stack
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Chart.js
+- **Desktop**: Electron, Node.js
+- **Database**: SQLite + TypeORM, Decimal.js for accurate money math
+- **Build tools**: electron-builder, GitHub Actions
 
-**Backend**
+### Quick setup (if you want to run from source)
 
-- Electron (desktop framework)
-- Node.js runtime
-- TypeORM ORM + SQLite3 database
+```bash
+git clone https://github.com/CyberArcenal/Tillify.git
+cd Tillify
+npm install
+npm run migration:run   # set up database
+npm run seed            # (optional) sample data
+npm run dev
+```
 
-**Key Libraries**
+### Useful scripts
 
-- Decimal.js (precise financial calculations)
-- Lucide React (icons)
-- Reflect Metadata (TypeORM support)
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Vite + Electron hot reload |
+| `npm run build` | Production build |
+| `npm run migration:generate` | Create a new migration |
+| `npm run migration:run` | Apply migrations |
+| `npm run seed:reset` | Reset DB + add sample data |
+| `npm run lint` | Lint the code |
 
-## 📁 Project Structure
+### Project structure (for developers)
 
 ```
 Tillify/
 ├── src/
-│   ├── main/           # Electron main process
-│   │   ├── db/         # Database config
-│   │   ├── entities/   # TypeORM models
-│   │   ├── ipc/        # IPC handlers
-│   │   └── services/   # Business logic
-│   ├── renderer/       # React frontend
-│   └── migrations/     # Database migrations
-├── build/              # Build assets/icons
-├── dist/               # Production build
-├── release/            # Packaged app
-└── assets/             # Static assets
+│   ├── main/         # Electron main process (DB, IPC, entities)
+│   ├── renderer/     # React frontend (UI, routing, hooks)
+│   └── migrations/   # Database migrations
+├── release/          # Packaged app (NSIS, DMG, AppImage)
+└── build/            # Icons and build assets
 ```
 
-## 🔧 Installation
+### Troubleshooting (common issues)
 
-**Prerequisites**: Node.js 18+, npm, Git
+- **Database errors**: Make sure the app has write permissions. Try `npm run rebuild` for SQLite native modules.
+- **Migration failed**: An automatic backup is made before each migration – restore from `userData/backups`.
+- **Build errors**: Check Node.js version (18+), clear `node_modules` and `dist`.
 
-1. Clone repo
-   ```bash
-   git clone https://github.com/CyberArcenal/Tillify.git
-   cd Tillify
-   ```
-2. Install dependencies
-   ```bash
-   npm install
-   ```
-3. Run migrations
-   ```bash
-   npm run migration:run
-   ```
-4. (Optional) Seed data
-   ```bash
-   npm run seed
-   ```
-
-## 🚦 Development
-
-Scripts:
-
-- `npm run dev` → Vite + Electron hot reload
-- `npm run build` → Production build
-- `npm run migration:generate` → New migration
-- `npm run migration:run` → Apply migrations
-- `npm run migration:revert` → Rollback
-- `npm run seed:reset` → Reset DB
-- `npm run lint` → Lint code
-- `npm run preview` → Preview build
-
-## 📦 Production Build
-
-```bash
-npm run build
-```
-
-Outputs packaged app in `release/`.
-
-- Windows: NSIS installer
-- macOS: DMG
-- Linux: AppImage
-- Auto‑update via GitHub releases
-
-## 🗄️ Database
-
-- SQLite stored in user data directory
-- Automatic backups before migrations
-- Recovery system included
-
-**Entities**: Users, Products, Inventory, Sales, Customers, Loyalty, Audit Trail, Settings
-
-## 🔌 Inventory Sync
-
-- Connects to external DBs
-- Real‑time stock sync
-- Retry logic + configurable intervals
-
-## 🔒 Security
-
-- Audit logging
-- SQLite encryption options
-- Input validation
-- Secure IPC
-
-## 📊 Reporting
-
-- Sales, inventory, customer, financial reports
-- Interactive charts via Chart.js
-
-## 🛠 Troubleshooting
-
-- **DB errors**: check permissions, rebuild SQLite modules
-- **Migration failures**: restore backup, check migration files
-- **Build errors**: verify dependencies, Node.js version, TS compilation
-
-Logs: console (dev), user data directory (prod), IPC logging
-
-## 🤝 Contributing
-
-1. Fork repo
-2. Create branch (`git checkout -b feature/XYZ`)
-3. Commit (`git commit -m 'Add XYZ'`)
-4. Push (`git push origin feature/XYZ`)
-5. Open PR
-
-## 📄 License
-
-Proprietary © CyberArcenal. See repo for details.
-
-## 📞 Support
-
-- GitHub issues
-- `/docs` folder
-- Troubleshooting section
-
-## 📜 Changelog
-
-All notable changes are documented in the [CHANGELOG.md](./CHANGELOG.md).
+</details>
 
 ---
 
-## 💖 Support This Project
+## 📦 Download
 
-If you find this project helpful, consider supporting its development:
+| Platform | Link |
+|----------|------|
+| Windows (NSIS installer) | [Download `.exe`](https://github.com/CyberArcenal/Tillify/releases/latest) |
+| macOS (DMG) | [Download `.dmg`](https://github.com/CyberArcenal/Tillify/releases/latest) |
+| Linux (AppImage) | [Download `.AppImage`](https://github.com/CyberArcenal/Tillify/releases/latest) |
+
+> Auto‑update is supported on all platforms via GitHub releases.
+
+---
+
+## 📄 License
+
+Tillify is **dual‑licensed**:
+- **Apache License 2.0** – for open source community use.
+- **Commercial License** – for proprietary or enterprise use (includes dedicated support).
+
+For commercial inquiries: [cyberarcenal1@gmail.com](mailto:cyberarcenal1@gmail.com)
+
+---
+
+## 💖 Support this project
+
+If Tillify has helped your business or you as a developer, you can buy a coffee ☕
 
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-blue)](https://github.com/sponsors/CyberArcenal)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/Lugawan677)
 [![Ko-fi](https://img.shields.io/badge/Support-Ko--fi-red)](https://ko-fi.com/cyberarcenal60019)
 
-## 📱 Donate via GCash
+**GCash / PayMaya** – Scan the QR code below:
 
-Scan the QR code below to send your support:
+<img src="https://github.com/CyberArcenal/Kabisilya-Management/blob/main/screenshots/gcash-qr.JPG?raw=true" width="150" />
 
-![GCash QR](https://github.com/CyberArcenal/Kabisilya-Management/blob/main/screenshots/gcash-qr.JPG?raw=true)
+---
+
+## 🤝 Contribute
+
+1. Fork the repo
+2. Create a branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+
+---
+
+## 📞 Support
+
+- [Open an issue on GitHub](https://github.com/CyberArcenal/Tillify/issues)
+- [Check the `/docs` folder](./docs)
+- [Discussions](https://github.com/CyberArcenal/Tillify/discussions)
+
+---
+
+<p align="center">
+  <b>Made with ❤️ for Filipino businesses and the world</b>
+</p>

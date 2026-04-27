@@ -1,0 +1,65 @@
+# Tillify Commercial License Agreement
+
+**Version 1.0**  
+**Effective Date:** [Date]  
+**Licensor:** CyberArcenal  
+**Contact:** cyberarcenal1@gmail.com
+
+This Commercial License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity) and CyberArcenal for the use of Tillify POS Management System ("Software").
+
+## 1. Dual‑License Overview
+
+Tillify is dual‑licensed:
+- **Open Source:** Apache License 2.0 (for non‑commercial and open source projects).
+- **Commercial:** This Agreement (for proprietary, enterprise, or commercial use).
+
+If you do not agree to this Commercial License, you must use Tillify under the Apache 2.0 terms.
+
+## 2. Grant of License
+
+CyberArcenal grants you a **non‑exclusive, non‑transferable, worldwide** license to:
+- Install and run the Software on any number of devices owned or controlled by you.
+- Modify the Software for internal use.
+- Integrate the Software into your proprietary applications.
+
+You may **not**:
+- Redistribute the Software under any open source license without written permission.
+- Sublicense, rent, or lease the Software to third parties.
+- Remove or alter any copyright or attribution notices.
+
+## 3. Fees and Payment
+
+Commercial use requires a paid license. Fees are determined by:
+- **Tier 1 (Small Business):** $XX one‑time per location.
+- **Tier 2 (Enterprise):** Custom pricing (contact for quote).
+
+Payment is due within 30 days of invoice. Late payments may result in license termination.
+
+## 4. Support and Maintenance
+
+- **Basic support** (email, 3 business day response) – included for first year.
+- **Priority support** (24h response, phone/Slack) – available for an additional fee.
+- **Updates:** Minor versions and patches are included. Major version upgrades may require a new license.
+
+## 5. Warranty Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.
+
+## 6. Termination
+
+This Agreement terminates automatically if you fail to comply with any term. Upon termination, you must cease all use of the Software and delete all copies.
+
+## 7. Governing Law
+
+This Agreement shall be governed by the laws of [Philippines / your jurisdiction], without regard to conflict of laws principles.
+
+## 8. Attribution
+
+You must retain the following notice in any documentation or about box:
+
+> "Powered by Tillify POS – https://github.com/CyberArcenal/Tillify"
+
+## 9. Contact for Commercial Licenses
+
+Email: cyberarcenal1@gmail.com  
+Subject: "Commercial License Inquiry"
